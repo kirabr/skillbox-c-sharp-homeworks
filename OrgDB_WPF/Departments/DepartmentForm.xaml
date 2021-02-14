@@ -1,0 +1,116 @@
+﻿<Window x:Class="OrgDB_WPF.DepartmentForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OrgDB_WPF"
+        mc:Ignorable="d"
+        Title="Департамент" Height="200" Width="479" Loaded="Window_Loaded">
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="UserField">
+            <Setter Property="Control.Margin" Value="5"/>
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+        </Style>
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding 
+            Command="local:DepartmentWindowCommands.Save" 
+            Executed="Save_Executed" 
+            CanExecute="Save_CanExecute"/>
+        <CommandBinding 
+            Command="local:DepartmentWindowCommands.Cancel" 
+            Executed="Cancel_Executed" 
+            CanExecute="Cancel_CanExecute"/>
+        <CommandBinding
+            Command="local:DepartmentWindowCommands.StartParentDepartmentChoise"
+            Executed="StartParentDepartmentChoise_Executed"
+            CanExecute="StartParentDepartmentChoise_CanExecute"/>
+        <CommandBinding
+            Command="local:DepartmentWindowCommands.OpenParentDepartment"
+            Executed="OpenParentDepartment_Executed"
+            CanExecute="OpenParentDepartment_CanExecute"/>
+        <CommandBinding
+            Command="local:DepartmentWindowCommands.ClearParentDepartment"
+            Executed="ClearParentDepartment_Executed"
+            CanExecute="ClearParentDepartment_CanExecute"/>
+    </Window.CommandBindings>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="141*"/>
+            <ColumnDefinition Width="134*"/>
+            <ColumnDefinition Width="120*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            Text="Наименование:"/>
+        <TextBlock
+            Grid.Row="1" 
+            Text="Локация:"/>
+        <TextBlock
+            Grid.Row="2" 
+            Text="Головной департамент:"/>
+        <TextBox
+            x:Name="tbName"
+            Style="{StaticResource UserField}"
+            Grid.Column="1"
+            TextWrapping="Wrap"/>
+        <TextBox
+            x:Name="tbLocation"
+            Style="{StaticResource UserField}"
+            Grid.Column="1"
+            Grid.Row="1"
+            TextWrapping="Wrap"/>
+        <TextBlock
+            x:Name="tblParentDepartment"
+            Style="{StaticResource UserField}"
+            Grid.Column="1"
+            Grid.Row="2"/>
+        <Button
+            x:Name="btnChooseDepartment"
+            Grid.Column="3"
+            Grid.Row="2"
+            Margin="0,5,0,5"
+            Content="..." 
+            Command="local:DepartmentWindowCommands.StartParentDepartmentChoise"/>
+        <Button
+            x:Name="btnOpenDepartment"
+            Grid.Column="4"
+            Grid.Row="2"
+            Margin="0,5,0,5"
+            Content="O"
+            Command="local:DepartmentWindowCommands.OpenParentDepartment"/>
+        <Button
+            x:Name="btnClearParentDepartment"
+            Grid.Column="5"
+            Grid.Row="2"
+            Margin="0,5,0,5"
+            Content="X"
+            Command="local:DepartmentWindowCommands.ClearParentDepartment"/>
+        <Button
+            x:Name="btnSave"
+            Grid.Column="1"
+            Grid.Row="3"
+            Margin="5"
+            Content="Сохранить" 
+            Command="local:DepartmentWindowCommands.Save"/>
+        <Button
+            x:Name="btnCancel"
+            Grid.Column="2"
+            Grid.Row="3"
+            Margin="5"
+            Content="Отмена" 
+            Command="local:DepartmentWindowCommands.Cancel"/>
+    </Grid>
+</Window>

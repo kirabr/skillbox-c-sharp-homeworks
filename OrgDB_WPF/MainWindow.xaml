@@ -1,0 +1,348 @@
+﻿<Window x:Class="OrgDB_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OrgDB_WPF"
+        mc:Ignorable="d"
+        Title="Организация" 
+        Height="450" 
+        Width="1000" 
+        Closed="Window_Closed">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Open" Executed="Open_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Save" Executed="Save_Executed"/>
+        <CommandBinding Command="ApplicationCommands.SaveAs" Executed="SaveAs_Executed"/>
+        <CommandBinding Command="local:WindowCommands.Exit" Executed="Exit_Executed"/>
+        <CommandBinding Command="local:WindowCommands.AddDepartment" Executed="AddDepartment_Executed" CanExecute="AddDepartment_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.ChangeDepartment" Executed="ChangeDepartment_Executed" CanExecute="ChangeDepartment_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.DeleteDepartment" Executed="DeleteDepartment_Executed" CanExecute="DeleteDepartment_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.AddEmployee" Executed="AddEmployee_Executed" CanExecute="AddEmployee_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.ChangeEmployee" Executed="ChangeEmployee_Executed" CanExecute="ChangeEmployee_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.DeleteEmployee" Executed="DeleteEmployee_Executed" CanExecute="DeleteEmployee_CanExecute"/>
+    </Window.CommandBindings>
+    <Window.Resources>
+        <Style x:Key="tbCaption" TargetType="TextBlock">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="tblUserField" TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="BorderBrush" Value="#FF083FE4"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="254*"/>
+        </Grid.RowDefinitions>
+        <Menu x:Name="MainMenu" 
+            Height="30" 
+            Margin="10,10,10,0" 
+            VerticalAlignment="Top">
+            <MenuItem Header="Файл" >
+                <MenuItem Header="Открыть" Command="ApplicationCommands.Open"/>
+                <MenuItem Header="Сохранить" Command="ApplicationCommands.Save"/>
+                <MenuItem Header="Сохранить как..." Command="ApplicationCommands.SaveAs"/>
+                <MenuItem Header="Выход" Command="local:WindowCommands.Exit"/>
+            </MenuItem>
+        </Menu>
+
+        <TabControl
+            Grid.Row="1">
+            <TabItem x:Name="TabItemDepartments" Header="Департаменты">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="137*"/>
+                        <ColumnDefinition Width="165*"/>
+                        <ColumnDefinition Width="160*"/>
+                        <ColumnDefinition Width="524*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30*"/>
+                        <RowDefinition Height="311*"/>
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="btnAddDepartment"
+                        Content="Добавить"
+                        Margin="5"
+                        Command="local:WindowCommands.AddDepartment"/>
+                    <Button
+                        x:Name="btnChangeDeparment"
+                        Grid.Column="1"
+                        Content="Изменить"
+                        Margin="5"
+                        Command="local:WindowCommands.ChangeDepartment"/>
+                    <Button
+                        x:Name="btnDeleteDepartment"
+                        Grid.Column="2"
+                        Content="Удалить"
+                        Margin="5"
+                        Command="local:WindowCommands.DeleteDepartment"/>
+                    <ListView x:Name="DepListView" 
+                              Grid.Row="1" 
+                              Grid.ColumnSpan="4" 
+                              KeyDown="DepListView_KeyDown" 
+                              MouseDoubleClick="DepListView_MouseDoubleClick">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem 
+                                    Header="Добавить"
+                                    Command="local:WindowCommands.AddDepartment"/>
+                                <MenuItem
+                                    Header="Изменить"
+                                    Command="local:WindowCommands.ChangeDepartment"/>
+                                <MenuItem
+                                    Header="Удалить"
+                                    Command="local:WindowCommands.DeleteDepartment"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn 
+                                    x:Name="gvcDepartmentName" 
+                                    Header="Наименование"
+                                    DisplayMemberBinding="{Binding Name}"
+                                    Width="200">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="gvcDepartmentLocation" 
+                                    Header="Расположение"
+                                    DisplayMemberBinding="{Binding Location}"
+                                    Width="300">
+                                </GridViewColumn>
+                                <GridViewColumn
+                                    x:Name="ParentDepartmentName" 
+                                    Header="Головной департамент"
+                                    DisplayMemberBinding ="{Binding ParentName}">
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem 
+                x:Name="TabItemEmployees" Header="Сотрудники">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="27*"/>
+                        <ColumnDefinition Width="110*"/>
+                        <ColumnDefinition Width="165*"/>
+                        <ColumnDefinition Width="160*"/>
+                        <ColumnDefinition Width="524*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30*"/>
+                        <RowDefinition Height="311*"/>
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="btnAddEmployee"
+                        Margin="5"
+                        Content="Добавить"
+                        Command="local:WindowCommands.AddEmployee" Grid.ColumnSpan="2"/>
+                    <Button
+                        x:Name="btnChangeEmployee"
+                        Grid.Column="2"
+                        Margin="5"
+                        Content="Изменить"
+                        Command="local:WindowCommands.ChangeEmployee"/>
+                    <Button
+                        x:Name="btnDeleteEmployee"
+                        Grid.Column="3"
+                        Margin="5"
+                        Content="Удалить"
+                        Command="local:WindowCommands.DeleteEmployee"/>
+                    <ListView x:Name="EmpListView"
+                              Grid.Row="1"
+                              Grid.ColumnSpan="5" 
+                              MouseDoubleClick="EmpListView_MouseDoubleClick" KeyDown="EmpListView_KeyDown">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem 
+                                    Header="Добавить"
+                                    Command="local:WindowCommands.AddEmployee"/>
+                                <MenuItem
+                                    Header="Изменить"
+                                    Command="local:WindowCommands.ChangeEmployee"/>
+                                <MenuItem
+                                    Header="Удалить"
+                                    Command="local:WindowCommands.DeleteEmployee"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn
+                                    x:Name = "evcEmployeePost"
+                                    Header="Должность"
+                                    DisplayMemberBinding="{Binding Post}"
+                                    Width="200">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="evcEmployeeName" 
+                                    Header="Имя"
+                                    DisplayMemberBinding="{Binding Name}"
+                                    Width="200">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="evcEmployeeSurname" 
+                                    Header="Фамилия"
+                                    DisplayMemberBinding="{Binding Surname}"
+                                    Width="200">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="evcEmployeeSalary" 
+                                    Header="Оклад"
+                                    DisplayMemberBinding="{Binding Salary}"
+                                    Width="80">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="evcEmployeeAge" 
+                                    Header="Возраст"
+                                    DisplayMemberBinding="{Binding Age}"
+                                    Width="80">
+                                </GridViewColumn>
+                                <GridViewColumn 
+                                    x:Name="evcEmployeeDepartmentName" 
+                                    Header="Департамент"
+                                    DisplayMemberBinding="{Binding DepartmentName}"
+                                    Width="200">
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem
+                x:Name="TabItemdbSettings" 
+                Header="Настройки">
+
+                <Grid x:Name="SettingsStackPanels">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="72*"/>
+                        <RowDefinition Height="269*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel
+                        x:Name="sp_dbSettings" 
+                        Margin="5"
+                        Grid.Row="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="90*"/>
+                                <ColumnDefinition Width="105*"/>
+                                <ColumnDefinition Width="756*"/>
+                                <ColumnDefinition Width="35*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button 
+                                x:Name="ReadFile" 
+                                Content="Прочитать"                         
+                                Margin="5" 
+                                Click="ReadFile_Click"/>
+                            <Button 
+                                x:Name="WriteFile" 
+                                Content="Записать" 
+                                Grid.Column="1" 
+                                Margin="5" 
+                                Click="WriteFile_Click"/>
+                            <TextBlock 
+                                Style="{StaticResource tbCaption}"
+                                Grid.Row="1"
+                                Text="Файл базы:" Height="16" Margin="5,8,5,9"/>
+                            <TextBox 
+                                x:Name="tbDBFilePath"
+                                Style="{StaticResource tblUserField}"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                UndoLimit="300"
+                                Text="{Binding Path=DBFilePath}">
+                            </TextBox>
+                            <Button 
+                                x:Name="SelectFile" 
+                                Content="..." 
+                                Grid.Column="3"
+                                Grid.Row="1"
+                                Margin="5" 
+                                FontSize="14" 
+                                Click="SelectFileButton_Click"/>
+                        </Grid>
+                    </StackPanel>
+                    <StackPanel 
+                        x:Name="sp_OrgSettings"
+                        Margin="5" 
+                        Grid.Row="1">
+                        <Grid Height="138">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="301*"/>
+                                <ColumnDefinition Width="169*"/>
+                                <ColumnDefinition Width="506*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock 
+                                Style="{StaticResource tbCaption}"
+                                Text="Процент управляющего (от з/п подчинённых):" Height="16" Margin="5"/>
+                            <TextBox 
+                                x:Name="tbManagerSalaryPercent"
+                                Style="{StaticResource tblUserField}"
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Text="{Binding ManagerSalaryPercent}"/>
+                            <TextBlock
+                                Style="{StaticResource tbCaption}"
+                                Grid.Row="1"
+                                Text="Минимальный уровень з/п управляющего:" Height="16" Margin="5"/>
+                            <TextBox 
+                                x:Name="tbMinManagerSalary"
+                                Style="{StaticResource tblUserField}"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{Binding MinManagerSalary}"/>
+                            <TextBlock
+                                Style="{StaticResource tbCaption}"
+                                Grid.Row="2"
+                                Text="Минимальный уровень з/п специалиста:" Height="16" Margin="5"/>
+                            <TextBox 
+                                x:Name="tbMinSpecSalary"
+                                Style="{StaticResource tblUserField}"
+                                Grid.Row="2"
+                                Grid.Column="1"                                
+                                Text="{Binding MinSpecSalary}"/>
+                            <TextBlock
+                                Style="{StaticResource tbCaption}"
+                                Grid.Row="3"
+                                Text="Минимальный уровень з/п интерна:" Height="16"/>
+                            <TextBox 
+                                x:Name="tbMinInternSalary"
+                                Style="{StaticResource tblUserField}"
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Text="{Binding MinInternSalary}"/>
+                        </Grid>
+                    </StackPanel>
+
+                </Grid>
+
+            </TabItem>
+        </TabControl>
+
+
+    </Grid>
+</Window>
