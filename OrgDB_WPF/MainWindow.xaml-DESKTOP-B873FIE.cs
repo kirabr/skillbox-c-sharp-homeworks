@@ -15,7 +15,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel;
 
 namespace OrgDB_WPF
 {
@@ -31,10 +30,7 @@ namespace OrgDB_WPF
         // Текущее приложение
         App currApp = (App)App.Current;
 
-        DataBase DB { get; }
-
-        CollectionViewSource DepartmentsViewSource;
-        CollectionViewSource EmployeesViewSource;
+        DataBase DB;
 
         #endregion Поля
 
@@ -49,19 +45,11 @@ namespace OrgDB_WPF
             InitializeComponent();
 
             this.DataContext = DB;
-            sp_OrgSettings.DataContext = DB.Organization;
-            
+
             TestsDB();
 
-            DepartmentsViewSource = new CollectionViewSource();
-            DepartmentsViewSource.Source = DB.Departments;
-            
-            EmployeesViewSource = new CollectionViewSource();
-            EmployeesViewSource.Source = DB.Employees;
-
-            DepListView.ItemsSource = DepartmentsViewSource.View;
-            EmpListView.ItemsSource = EmployeesViewSource.View;
-
+            DepListView.ItemsSource = DB.Departments;
+            EmpListView.ItemsSource = DB.Employees;
         }
 
         #endregion Главный метод
@@ -187,7 +175,7 @@ namespace OrgDB_WPF
 
             EmpListView.ItemsSource = DB.Employees;
             EmpListView.Items.Refresh();
-            
+
         }
 
         /// <summary>
@@ -291,7 +279,6 @@ namespace OrgDB_WPF
             {
                 DB.RemoveEmployee(Emp);
                 LogEvent($"Удалён сотрудник {Emp.Name}");
-                EmployeesViewSource.Source = DB.Employees;
                 EmpListView.Items.Refresh();
             }
             catch (Exception excp)
@@ -346,41 +333,11 @@ namespace OrgDB_WPF
         {
             string filePath = SelectDBFilePathInDialog();
             if (!String.IsNullOrEmpty(filePath))
-            { 
                 DB.DBFilePath = filePath;
-                DB.dbSettings.SetDBFilePath(filePath);
-            }
-        }
-        
-        /// <summary>
-        /// Проверяет правильность указания пути к файлу базы
-        /// </summary>
-        /// <param name="CheckFileExists">
-        /// Булево, проверять существование файла
-        /// </param>
-        /// <returns>
-        /// Булево, признак правильности указания пути к файлу базы
-        /// </returns>
-        private bool CheckDBFilePath(bool CheckFileExists = false)
-        {
-            if (String.IsNullOrEmpty(DB.DBFilePath))
-            {
-                MessageBox.Show("Не указано имя файла базы!", "Проверка имени файла",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-
-            if (CheckFileExists && !File.Exists(DB.DBFilePath))
-            {
-                MessageBox.Show("Указанный файл базы не существует или недоступен!");
-                return false;
-            }
-
-            return true;
         }
 
         #endregion Вспомогательные методы
-                
+
         #region Тесты
 
         private void TestsDB()
@@ -409,12 +366,45 @@ namespace OrgDB_WPF
             string pdn = DB.ParentDepartmentName(d_1);
             string pdn1 = DB.ParentDepartmentName(d_1_1);
 
-            SortingField sortingField = new EmployeeSortField((SortingField.Field)EmployeeSortField.SortFieldVariant.Salary);
+            DB.dbSettings.ManagerSalaryPercent = 20;
+
+            //Department d_r_1 = new Department(;
 
         }
 
         #endregion Тесты
-        
+
+        #region Вспомогательные методы
+
+        /// <summary>
+        /// Проверяет правильность указания пути к файлу базы
+        /// </summary>
+        /// <param name="CheckFileExists">
+        /// Булево, проверять существование файла
+        /// </param>
+        /// <returns>
+        /// Булево, признак правильности указания пути к файлу базы
+        /// </returns>
+        private bool CheckDBFilePath(bool CheckFileExists = false)
+        {
+            if (String.IsNullOrEmpty(DB.DBFilePath))
+            {
+                MessageBox.Show("Не указано имя файла базы!", "Проверка имени файла",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (CheckFileExists && !File.Exists(DB.DBFilePath))
+            {
+                MessageBox.Show("Указанный файл базы не существует или недоступен!");
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion Вспомогательные методы
+
         #region Обработчики команд
 
         #region Обработчики команд приложения
@@ -491,32 +481,6 @@ namespace OrgDB_WPF
 
         #endregion Обработчики команд данных базы
 
-        #region Обработчики команд представления данных базы
-
-        private void SortDepartments_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Sorting.SortingSettings sortingSettings = new Sorting.SortingSettings(
-                new string[,] {
-                    { "Name",           "Location" },
-                    { "Наименование",   "Расположение"} },
-                new List<SortDescription>(DepartmentsViewSource.SortDescriptions));
-            sortingSettings.finishEdit += OnFinishEditDepartmentsSortingSettings;
-            sortingSettings.ShowDialog();
-        }
-
-        private void SortEmployees_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            Sorting.SortingSettings sortingSettings = new Sorting.SortingSettings(
-                new string[,] { 
-                    { "Name",   "Surname",  "Age",      "Salary",   "Post_int" },
-                    { "Имя",    "Фамилия",  "Возраст",  "Оклад",    "Должность"} }, 
-                new List<SortDescription>(EmployeesViewSource.SortDescriptions));
-            sortingSettings.finishEdit += OnFinishEditEmployeesSortingSettings;
-            sortingSettings.ShowDialog();
-        }
-
-        #endregion Обработчики команд представления данных базы
-
         #endregion Обработчики команд
 
         #region Доступность команд
@@ -547,11 +511,6 @@ namespace OrgDB_WPF
             return DepListView != null 
                 && DepListView.SelectedItems.Count == 1 
                 && !DB.LinksExists((Department)DepListView.SelectedItem);
-        }
-
-        private void SortDepartments_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = DB.Departments.Count > 1;
         }
 
         private void AddEmployee_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -587,11 +546,6 @@ namespace OrgDB_WPF
                 && !DB.LinksExists((Employee)EmpListView.SelectedItem));
         }
 
-        private void SortEmployees_CanExecute(object sender, CanExecuteRoutedEventArgs e)
-        {
-            e.CanExecute = DB.Employees.Count > 1;
-        }
-
         #endregion Доступность команд
 
         #region Обработчики внешних событий
@@ -611,7 +565,6 @@ namespace OrgDB_WPF
         {
             DB.AddEmployee(Emp);
             LogEvent($"Добавлен сотрудник {Emp.Name}");
-            EmployeesViewSource.Source = DB.Employees;
             EmpListView.Items.Refresh();
         }
 
@@ -633,22 +586,8 @@ namespace OrgDB_WPF
 
         }
 
-        public void OnFinishEditDepartmentsSortingSettings(List<SortDescription> sortDescriptions)
-        {
-            DepartmentsViewSource.SortDescriptions.Clear();
-            foreach (SortDescription sortDescription in sortDescriptions)
-                DepartmentsViewSource.SortDescriptions.Add(sortDescription);
-        }
-
-        public void OnFinishEditEmployeesSortingSettings(List<SortDescription> sortDescriptions)
-        {
-            EmployeesViewSource.SortDescriptions.Clear();
-            foreach (SortDescription sortDescription in sortDescriptions)
-                EmployeesViewSource.SortDescriptions.Add(sortDescription);
-        }
-
         #endregion Обработчики внешних событий
-
+               
     }
 
     #region Класс - описатель собственных команд
@@ -667,8 +606,6 @@ namespace OrgDB_WPF
         public static RoutedCommand AddEmployee { get; set; }
         public static RoutedCommand ChangeEmployee { get; set; }
         public static RoutedCommand DeleteEmployee { get; set; }
-        public static RoutedCommand SortDepartments { get; set; }
-        public static RoutedCommand SortEmployees { get; set; }
         public static RoutedCommand Exit { get; set; }
 
         #endregion Поля (объявление команд)
@@ -685,12 +622,10 @@ namespace OrgDB_WPF
             AddDepartment = new RoutedCommand("AddDepartment", typeThisWindow);
             ChangeDepartment = new RoutedCommand("ChangeDepartment", typeThisWindow);
             DeleteDepartment = new RoutedCommand("DeleteDepartment", typeThisWindow);
-            SortDepartments = new RoutedCommand("SortDepartments", typeThisWindow);
 
             AddEmployee = new RoutedCommand("AddEmployee", typeThisWindow);
             ChangeEmployee = new RoutedCommand("ChangeEmployee", typeThisWindow);
             DeleteEmployee = new RoutedCommand("DeleteEmployee", typeThisWindow);
-            SortEmployees = new RoutedCommand("SortEmployees", typeThisWindow);
 
         }
 

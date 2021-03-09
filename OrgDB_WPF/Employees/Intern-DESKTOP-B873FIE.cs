@@ -24,7 +24,7 @@ namespace OrgDB_WPF
         { 
             get { return salary; } 
             // Гарантируем зарплату не ниже 250
-            set { salary = Math.Max(currApp.DB.Organization.MinInternSalary, value); OnPropertyChanged("Salary"); } 
+            set { salary = Math.Max(currApp.DB.dbSettings.MinInternSalary, value); OnPropertyChanged("Salary"); } 
         }
 
         public override string Post { get { return post; } }
@@ -47,6 +47,7 @@ namespace OrgDB_WPF
             // Через свойства гарантируем соответствие к требованиям свойств (уникальность имени, уровень з/п)
             this.Name = Name;
             this.Salary = Salary;
+            //this.post_Enum = post_enum.intern;
         }
 
         /// <summary>

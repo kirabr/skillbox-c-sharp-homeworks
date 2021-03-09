@@ -16,6 +16,11 @@
             <Setter Property="Control.Margin" Value="5"/>
             <Setter Property="Grid.ColumnSpan" Value="2" />
         </Style>
+        <x:Array x:Key="colItemsPosts" Type="sys:String">
+            <sys:String>Интерн</sys:String>
+            <sys:String>Специалист</sys:String>
+            <sys:String>Управляющий</sys:String>
+        </x:Array>
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding 
@@ -78,8 +83,7 @@
             x:Name="cbPost"
             Grid.Column="1"
             Grid.ColumnSpan="2"
-            Margin="2" 
-            SelectionChanged="cbPost_SelectionChanged"
+            Margin="2"
             />
         <TextBox
             x:Name="tbName"

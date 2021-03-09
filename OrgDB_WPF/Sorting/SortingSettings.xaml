@@ -1,0 +1,115 @@
+﻿<Window x:Class="OrgDB_WPF.Sorting.SortingSettings"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OrgDB_WPF.Sorting"
+        mc:Ignorable="d"
+        Title="Настройки сортировки" Height="310" Width="510">
+    <Window.Resources>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="local:SortWindowCommands.AddSortDescription" Executed="AddSortingDescription_Executed" CanExecute="AddSortingDescription_CanExecute"/>
+        <CommandBinding Command="local:SortWindowCommands.RemoveSortDescription" Executed="RemoveSortDescription_Executed" CanExecute="RemoveSortDescription_CanExecute"/>
+        
+        <CommandBinding Command="local:SortWindowCommands.SwitchDirectionSortDescription" Executed="SwitchDirectionSortDescription_Executed" CanExecute="SwitchDirectionSortDescription_CanExecute"/>
+        <CommandBinding Command="local:SortWindowCommands.MoveSortDescriptionUp" Executed="MoveSortDescriptionUp_Executed" CanExecute="MoveSortDescriptionUp_CanExecute"/>
+        <CommandBinding Command="local:SortWindowCommands.MoveSortDescriptionDown" Executed="MoveSortDescriptionDown_Executed" CanExecute="MoveSortDescriptionDown_CanExecute"/>
+
+        <CommandBinding Command="local:SortWindowCommands.OK" Executed="OK_Executed" CanExecute="OK_CanExecute"/>
+        <CommandBinding Command="local:SortWindowCommands.Cancel" Executed="Cancel_Executed" CanExecute="Cancel_CanExecute"/>
+    </Window.CommandBindings>
+    <Grid>
+        <Grid HorizontalAlignment="Left" Height="269" VerticalAlignment="Top" Width="492">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="28*"/>
+                <RowDefinition Height="53*"/>
+                <RowDefinition Height="32*"/>
+                <RowDefinition Height="32*"/>
+                <RowDefinition Height="32*"/>
+                <RowDefinition Height="60*"/>
+                <RowDefinition Height="32*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="218*"/>
+                <ColumnDefinition Width="32*"/>
+                <ColumnDefinition Width="121*"/>
+                <ColumnDefinition Width="89*"/>
+                <ColumnDefinition Width="32*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock 
+                HorizontalAlignment="Center" 
+                Margin="62,5,60,5" 
+                TextWrapping="Wrap" 
+                Text="Поля сортировки" Width="96" TextAlignment="Center"/>
+            <TextBox 
+                Grid.ColumnSpan="2" 
+                Grid.Column="2" 
+                HorizontalAlignment="Center" 
+                Margin="22,5,20,5" 
+                Text="Выбранные поля сортировки" Width="168" TextAlignment="Center"/>
+            <Button
+                x:Name="MoveToSelectedFields"
+                Content="→" 
+                Grid.Column="1"
+                Grid.Row="2"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.AddSortDescription"/>
+            <Button
+                x:Name="MoveFromSelectedFields"
+                Content="←" 
+                Grid.Column="1"
+                Grid.Row="4"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.RemoveSortDescription"/>
+            <Button x:Name="btnSwitchSortDirection" 
+                Content="↕" 
+                Grid.Column="4"  
+                Grid.Row="2"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.SwitchDirectionSortDescription"/>
+            <Button x:Name="btnMoveSelectedFieldUp" 
+                Content="↑" 
+                Grid.Column="4"  
+                Grid.Row="3"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.MoveSortDescriptionUp"/>
+            <Button x:Name="btnMoveSelectedFieldDown" 
+                Content="↓" 
+                Grid.Column="4"  
+                Grid.Row="4"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.MoveSortDescriptionDown"/>
+            <ListBox x:Name="lb_unUsedFields" 
+                Margin="5" 
+                Grid.Row="1" 
+                Grid.RowSpan="5"/>
+            <ListBox x:Name="lb_sortDesriptions"
+                Grid.ColumnSpan="2" 
+                Grid.Column="2" 
+                Margin="5" 
+                Grid.Row="1" 
+                Grid.RowSpan="5"/>
+            <Button x:Name="btnOK"
+                Content="OK" 
+                Grid.Column="2"  
+                Grid.Row="6"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.OK"/>
+            <Button x:Name="btnCancel"
+                Content="Cancel" 
+                Grid.Column="3"  
+                Grid.Row="6"
+                Grid.ColumnSpan="2"
+                Style="{StaticResource ButtonStyle}"
+                Command="local:SortWindowCommands.Cancel"/>
+        </Grid>
+
+    </Grid>
+</Window>

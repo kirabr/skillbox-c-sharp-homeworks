@@ -34,6 +34,7 @@ namespace OrgDB_WPF
         public EmployeeForm()
         {
             InitializeComponent();
+            //EditingEmployee.Flush();
             this.DataContext = EditingEmployee;
         }
 
@@ -53,17 +54,29 @@ namespace OrgDB_WPF
                 EditingEmployee.DepartmentName = Emp.DepartmentName;
                 EditingEmployee.Post_Enum = Emp.post_Enum;
                 EditingEmployee.Post = Emp.Post;
-                
+
+                switch (Emp.Post)
+                {
+                    case "intern":
+                        cbPost.SelectedIndex = 0;
+                        break;
+                    case "specialist":
+                        cbPost.SelectedIndex = 1;
+                        break;
+                    case "manager":
+                        cbPost.SelectedIndex = 2;
+                        break;
+                }
+
             }
-            
+
             cbPost.ItemsSource = Enum.GetValues(typeof(Employee.post_enum));
+            //cbPost.SetBinding(ComboBox.TextProperty, Common.DBElementbinding(EditingEmployee, "post_Enum"));
             tbName.SetBinding(TextBox.TextProperty, Common.DBElementbinding(EditingEmployee, "Name"));
             tbSurname.SetBinding(TextBox.TextProperty, Common.DBElementbinding(EditingEmployee, "Surname"));
             tbAge.SetBinding(TextBox.TextProperty, Common.DBElementbinding(EditingEmployee, "Age"));
             tbSalary.SetBinding(TextBox.TextProperty, Common.DBElementbinding(EditingEmployee, "Salary"));
             tbDepartmentName.SetBinding(TextBox.TextProperty, Common.DBElementbinding(EditingEmployee, "DepartmentName"));
-
-            cbPost.SelectedIndex = (int)EditingEmployee.Post_Enum;
 
         }
 
@@ -72,8 +85,7 @@ namespace OrgDB_WPF
         #region Обработчики событий элементов формы
         private void cbPost_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            EditingEmployee.Post_Enum = (Employee.post_enum)((object[])e.AddedItems)[0];
-            EditingEmployee.Post = EmployeePostDescriptionConverter.GetEnumDescription(EditingEmployee.Post_Enum);
+            SetPostBycbPostValue(((System.Windows.Controls.ComboBox)sender).SelectedIndex);    
         }
 
         #endregion Обработчики событий элементов формы
@@ -127,7 +139,7 @@ namespace OrgDB_WPF
             }
             else
             {
-                if (Emp.post_Enum == EditingEmployee.Post_Enum)
+                if (Emp.Post == EditingEmployee.Post)
                 {
                     Emp.Name = EditingEmployee.Name;
                     Emp.Surname = EditingEmployee.Surname;
@@ -152,15 +164,15 @@ namespace OrgDB_WPF
 
         private void CreateEmployee()
         {
-            switch (EditingEmployee.Post_Enum)
+            switch (EditingEmployee.Post)
             {
-                case Employee.post_enum.manager:
+                case "manager":
                     Emp = new Manager(EditingEmployee.Name, EditingEmployee.Surname, EditingEmployee.Age, EditingEmployee.Salary, EditingEmployee.DepartmentID);
                     break;
-                case Employee.post_enum.specialist:
+                case "specialist":
                     Emp = new Specialist(EditingEmployee.Name, EditingEmployee.Surname, EditingEmployee.Age, EditingEmployee.Salary, EditingEmployee.DepartmentID);
                     break;
-                case Employee.post_enum.intern:
+                case "intern":
                     Emp = new Intern(EditingEmployee.Name, EditingEmployee.Surname, EditingEmployee.Age, EditingEmployee.Salary, EditingEmployee.DepartmentID);
                     break;
             }
@@ -193,7 +205,30 @@ namespace OrgDB_WPF
         }
 
         #endregion Основные методы
-        
+
+        #region Служебные методы
+
+        private void SetPostBycbPostValue(int SelectedIndex)
+        {
+
+            EditingEmployee.Post = "";
+            
+            switch (SelectedIndex)
+            {
+                case 0:
+                    EditingEmployee.Post = "intern";
+                    break;
+                case 1:
+                    EditingEmployee.Post = "specialist";
+                    break;
+                case 2:
+                    EditingEmployee.Post = "manager";
+                    break;
+            }
+        }
+
+        #endregion Служебные методы
+
         #region Обработчики команд
 
         private void Save_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -209,6 +244,7 @@ namespace OrgDB_WPF
         private void CalculateSalary_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             CalculateSalary();
+
         }
 
         private void StartDepartmentChoise_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -243,7 +279,7 @@ namespace OrgDB_WPF
 
         private void CalculateSalary_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = EditingEmployee.Post_Enum == Employee.post_enum.manager && EditingEmployee.DepartmentID != Guid.Empty;
+            e.CanExecute = EditingEmployee.Post == "manager" && EditingEmployee.DepartmentID != Guid.Empty;
         }
 
         private void StartDepartmentChoise_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -256,9 +292,12 @@ namespace OrgDB_WPF
             e.CanExecute = EditingEmployee.DepartmentID != Guid.Empty;
         }
 
-
         #endregion Доступность команд
-                
+
+        private void cbPost_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 
     #region Класс - описатель собственных команд

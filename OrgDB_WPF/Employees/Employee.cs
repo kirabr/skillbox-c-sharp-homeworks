@@ -42,9 +42,9 @@ namespace OrgDB_WPF
         protected string post;
         public enum post_enum 
         { 
-            [Description("Управляющий")] manager, 
-            [Description("Специалист")] specialist, 
-            [Description("Интерн")] intern 
+            [Description("Управляющий")] manager=10, 
+            [Description("Специалист")] specialist=5, 
+            [Description("Интерн")] intern=1 
         }
 
         // ID департамента
@@ -73,6 +73,8 @@ namespace OrgDB_WPF
         public string DepartmentName { get { return departmentName; } set { departmentName = value; OnPropertyChanged("DepartmentName"); } }
 
         public post_enum post_Enum { get; set; }
+
+        public int Post_int { get; set; }
 
         #endregion
 
@@ -117,6 +119,7 @@ namespace OrgDB_WPF
             salary = Salary;
             post_Enum = Post;
             post = EmployeePostDescriptionConverter.GetEnumDescription(post_Enum);
+            Post_int = (int)post_Enum;
             departmentID = DepartmentID;
         }
 
@@ -143,6 +146,7 @@ namespace OrgDB_WPF
             age = Age;
             post_Enum = Post;
             post = EmployeePostDescriptionConverter.GetEnumDescription(post_Enum);
+            Post_int = (int)post_Enum;
             departmentID = DepartmentID;
         }
 

@@ -77,12 +77,6 @@
     <Compile Include="Employees\EmployeePostDescriptionConverter.cs" />
     <Compile Include="Employees\Specialist.cs" />
     <Compile Include="Employees\Manager.cs" />
-    <Compile Include="Sorting\DepartmentSortingField.cs" />
-    <Compile Include="Sorting\EmployeeSortField.cs" />
-    <Compile Include="Sorting\SortingField.cs" />
-    <Compile Include="Sorting\SortingSettings.xaml.cs">
-      <DependentUpon>SortingSettings.xaml</DependentUpon>
-    </Compile>
     <Page Include="Departments\DepartmentChoiseForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -110,14 +104,8 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Sorting\SortingSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Organization\Organization.cs" />
-    <Compile Include="Organization\OrganizationJsonConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

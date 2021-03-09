@@ -7,8 +7,7 @@
         mc:Ignorable="d"
         Title="Организация" 
         Height="450" 
-        Width="1000" 
-        Closed="Window_Closed">
+        Width="1000" Closed="Window_Closed">
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Open" Executed="Open_Executed"/>
         <CommandBinding Command="ApplicationCommands.Save" Executed="Save_Executed"/>
@@ -20,8 +19,6 @@
         <CommandBinding Command="local:WindowCommands.AddEmployee" Executed="AddEmployee_Executed" CanExecute="AddEmployee_CanExecute"/>
         <CommandBinding Command="local:WindowCommands.ChangeEmployee" Executed="ChangeEmployee_Executed" CanExecute="ChangeEmployee_CanExecute"/>
         <CommandBinding Command="local:WindowCommands.DeleteEmployee" Executed="DeleteEmployee_Executed" CanExecute="DeleteEmployee_CanExecute"/>
-        <CommandBinding Command="local:WindowCommands.SortDepartments" Executed="SortDepartments_Executed" CanExecute="SortDepartments_CanExecute"/>
-        <CommandBinding Command="local:WindowCommands.SortEmployees" Executed="SortEmployees_Executed" CanExecute="SortEmployees_CanExecute"/>
     </Window.CommandBindings>
     <Window.Resources>
         <Style x:Key="tbCaption" TargetType="TextBlock">
@@ -40,7 +37,8 @@
             <Setter Property="BorderBrush" Value="#FF083FE4"/>
         </Style>
     </Window.Resources>
-    <Grid>
+
+    <Grid ShowGridLines="False">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -68,8 +66,7 @@
                         <ColumnDefinition Width="137*"/>
                         <ColumnDefinition Width="165*"/>
                         <ColumnDefinition Width="160*"/>
-                        <ColumnDefinition Width="143*"/>
-                        <ColumnDefinition Width="381*"/>
+                        <ColumnDefinition Width="524*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30*"/>
@@ -92,15 +89,9 @@
                         Content="Удалить"
                         Margin="5"
                         Command="local:WindowCommands.DeleteDepartment"/>
-                    <Button
-                        x:Name="btnSortDepartments"
-                        Grid.Column="3"
-                        Content="Сортировать"
-                        Margin="5"
-                        Command="local:WindowCommands.SortDepartments"/>
                     <ListView x:Name="DepListView" 
                               Grid.Row="1" 
-                              Grid.ColumnSpan="5" 
+                              Grid.ColumnSpan="4" 
                               KeyDown="DepListView_KeyDown" 
                               MouseDoubleClick="DepListView_MouseDoubleClick">
                         <ListView.ContextMenu>
@@ -148,8 +139,7 @@
                         <ColumnDefinition Width="110*"/>
                         <ColumnDefinition Width="165*"/>
                         <ColumnDefinition Width="160*"/>
-                        <ColumnDefinition Width="120*"/>
-                        <ColumnDefinition Width="404*"/>
+                        <ColumnDefinition Width="524*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30*"/>
@@ -159,8 +149,7 @@
                         x:Name="btnAddEmployee"
                         Margin="5"
                         Content="Добавить"
-                        Command="local:WindowCommands.AddEmployee" 
-                        Grid.ColumnSpan="2"/>
+                        Command="local:WindowCommands.AddEmployee" Grid.ColumnSpan="2"/>
                     <Button
                         x:Name="btnChangeEmployee"
                         Grid.Column="2"
@@ -173,15 +162,9 @@
                         Margin="5"
                         Content="Удалить"
                         Command="local:WindowCommands.DeleteEmployee"/>
-                    <Button
-                        x:Name="btnSortEmployees"
-                        Grid.Column="4"
-                        Margin="5"
-                        Content="Сортировать"
-                        Command="local:WindowCommands.SortEmployees"/>
                     <ListView x:Name="EmpListView"
                               Grid.Row="1"
-                              Grid.ColumnSpan="6" 
+                              Grid.ColumnSpan="5" 
                               MouseDoubleClick="EmpListView_MouseDoubleClick" KeyDown="EmpListView_KeyDown">
                         <ListView.ContextMenu>
                             <ContextMenu>
@@ -241,122 +224,103 @@
             </TabItem>
             <TabItem
                 x:Name="TabItemdbSettings" 
-                Header="Настройки">
-
-                <Grid x:Name="SettingsStackPanels">
+                Header="Настройки базы">
+                <Grid x:Name="gridDBSettings">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="72*"/>
-                        <RowDefinition Height="269*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel
-                        x:Name="sp_dbSettings" 
-                        Margin="5"
-                        Grid.Row="0">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="90*"/>
-                                <ColumnDefinition Width="105*"/>
-                                <ColumnDefinition Width="756*"/>
-                                <ColumnDefinition Width="35*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button 
-                                x:Name="ReadFile" 
-                                Content="Прочитать"                         
-                                Margin="5" 
-                                Click="ReadFile_Click"/>
-                            <Button 
-                                x:Name="WriteFile" 
-                                Content="Записать" 
-                                Grid.Column="1" 
-                                Margin="5" 
-                                Click="WriteFile_Click"/>
-                            <TextBlock 
-                                Style="{StaticResource tbCaption}"
-                                Grid.Row="1"
-                                Text="Файл базы:" Height="16" Margin="5,8,5,9"/>
-                            <TextBox 
-                                x:Name="tbDBFilePath"
-                                Style="{StaticResource tblUserField}"
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Grid.ColumnSpan="3"
-                                UndoLimit="300"
-                                Text="{Binding Path=DBFilePath}">
-                            </TextBox>
-                            <Button 
-                                x:Name="SelectFile" 
-                                Content="..." 
-                                Grid.Column="3"
-                                Grid.Row="1"
-                                Margin="5" 
-                                FontSize="14" 
-                                Click="SelectFileButton_Click"/>
-                        </Grid>
-                    </StackPanel>
-                    <StackPanel 
-                        x:Name="sp_OrgSettings"
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200*"/>
+                        <ColumnDefinition Width="200*"/>
+                        <ColumnDefinition Width="145*"/>
+                        <ColumnDefinition Width="200*"/>
+                        <ColumnDefinition Width="175*"/>
+                        <ColumnDefinition Width="69*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button 
+                        x:Name="ReadFile" 
+                        Content="Прочитать"                         
                         Margin="5" 
-                        Grid.Row="1">
-                        <Grid Height="138">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="301*"/>
-                                <ColumnDefinition Width="169*"/>
-                                <ColumnDefinition Width="506*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock 
-                                Style="{StaticResource tbCaption}"
-                                Text="Процент управляющего (от з/п подчинённых):" Height="16" Margin="5"/>
-                            <TextBox 
-                                x:Name="tbManagerSalaryPercent"
-                                Style="{StaticResource tblUserField}"
-                                Grid.Row="0"
-                                Grid.Column="1"
-                                Text="{Binding ManagerSalaryPercent}"/>
-                            <TextBlock
-                                Style="{StaticResource tbCaption}"
-                                Grid.Row="1"
-                                Text="Минимальный уровень з/п управляющего:" Height="16" Margin="5"/>
-                            <TextBox 
-                                x:Name="tbMinManagerSalary"
-                                Style="{StaticResource tblUserField}"
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                Text="{Binding MinManagerSalary}"/>
-                            <TextBlock
-                                Style="{StaticResource tbCaption}"
-                                Grid.Row="2"
-                                Text="Минимальный уровень з/п специалиста:" Height="16" Margin="5"/>
-                            <TextBox 
-                                x:Name="tbMinSpecSalary"
-                                Style="{StaticResource tblUserField}"
-                                Grid.Row="2"
-                                Grid.Column="1"                                
-                                Text="{Binding MinSpecSalary}"/>
-                            <TextBlock
-                                Style="{StaticResource tbCaption}"
-                                Grid.Row="3"
-                                Text="Минимальный уровень з/п интерна:" Height="16"/>
-                            <TextBox 
-                                x:Name="tbMinInternSalary"
-                                Style="{StaticResource tblUserField}"
-                                Grid.Row="3"
-                                Grid.Column="1"
-                                Text="{Binding MinInternSalary}"/>
-                        </Grid>
-                    </StackPanel>
-
+                        Click="ReadFile_Click"/>
+                    <Button 
+                        x:Name="WriteFile" 
+                        Content="Записать" 
+                        Grid.Column="1" 
+                        Margin="5" 
+                        Click="WriteFile_Click"/>
+                    <TextBlock 
+                        Style="{StaticResource tbCaption}"
+                        Grid.Row="1"
+                        Text="Файл базы:"/>
+                    <TextBox 
+                        x:Name="tbDBFilePath"
+                        Style="{StaticResource tblUserField}"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="4"
+                        UndoLimit="300"
+                        Text="{Binding DBFilePath}"/>
+                    <Button 
+                        x:Name="SelectFile" 
+                        Content="..." 
+                        Grid.Column="5"
+                        Grid.Row="1"
+                        Margin="5" 
+                        FontSize="14" 
+                        Click="SelectFileButton_Click"/>
+                    <TextBlock 
+                        Style="{StaticResource tbCaption}"
+                        Grid.Row="2"
+                        Text="Процент управляющего (от з/п подчинённых):"/>
+                    <TextBox 
+                        x:Name="tbManagerSalaryPercent"
+                        Style="{StaticResource tblUserField}"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Text="{Binding ManagerSalaryPercent}"/>
+                    <TextBlock
+                        Style="{StaticResource tbCaption}"
+                        Grid.Row="3"
+                        Text="Минимальный уровень з/п управляющего:"
+                        />
+                    <TextBox 
+                        x:Name="tbMinManagerSalary"
+                        Style="{StaticResource tblUserField}"
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Text="{Binding Path=MinManagerSalary, Mode=TwoWay}"/>
+                    <TextBlock
+                        Style="{StaticResource tbCaption}"
+                        Grid.Row="4"
+                        Text="Минимальный уровень з/п специалиста:"
+                        />
+                    <TextBox 
+                        x:Name="tbMinSpecSalary"
+                        Style="{StaticResource tblUserField}"
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Text="{Binding MinSpecSalary}"/>
+                    <TextBlock
+                        Style="{StaticResource tbCaption}"
+                        Grid.Row="5"
+                        Text="Минимальный уровень з/п интерна:"
+                        />
+                    <TextBox 
+                        x:Name="tbMinInternSalary"
+                        Style="{StaticResource tblUserField}"
+                        Grid.Row="5"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Text="{Binding MinInternSalary}"/>
                 </Grid>
-
             </TabItem>
         </TabControl>
 
