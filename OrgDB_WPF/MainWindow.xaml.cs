@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
+using System.Threading;
 
 namespace OrgDB_WPF
 {
@@ -410,6 +411,26 @@ namespace OrgDB_WPF
             string pdn1 = DB.ParentDepartmentName(d_1_1);
 
             SortingField sortingField = new EmployeeSortField((SortingField.Field)EmployeeSortField.SortFieldVariant.Salary);
+
+            Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
+            
+            Clients.Individual individual = new Clients.Individual("Иван Петрович");
+            
+            BankAccounts.BankAccount bankAccount = new BankAccounts.BankAccount("000001", individual, new List<Products.BankProduct>() { deposit });
+            BankAccounts.BankAccountBalance bankAccountBalance = new BankAccounts.BankAccountBalance(bankAccount);
+
+            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance, 59);
+            Thread.Sleep(1);
+            BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance, 45);
+
+            bankAccountBalance.AddBankOperation(bankOperation1);
+            bankAccountBalance.AddBankOperation(bankOperation2);
+            bankAccountBalance.AddBankOperation(bankOperation1);
+
+
+            //bankAccountBalance.AddBankOperation(bankOperation1);
+            //bankAccountBalance.AddBankOperation(bankOperation2);
+            //bankAccountBalance.AddBankOperation(bankOperation1);
 
         }
 

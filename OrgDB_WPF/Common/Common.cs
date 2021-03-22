@@ -57,36 +57,13 @@ namespace OrgDB_WPF
             writer.WriteElementString("DepartmentId", Emp.DepartmentID.ToString());
             writer.WriteEndElement();
         }
-    
-        /// <summary>
-        /// Возвращает привязку данных. Вариант для департамента.
-        /// </summary>
-        /// <param name="dbElement">Департамент</param>
-        /// <param name="PropertyPath">Путь к данным</param>
-        /// <returns></returns>
-        public static Binding DBElementbinding(Department dbElement, string PropertyPath)
-        {
-            Binding binding = new Binding();
-            binding.Source = dbElement;
-            binding.Path = new System.Windows.PropertyPath(PropertyPath);
-            return binding;
-        }
 
         /// <summary>
-        /// Возвращает привязку данных. Вариант для сотрудника.
+        /// Возвращает привязку данных.
         /// </summary>
-        /// <param name="dbElement">Сотрудник</param>
+        /// <param name="dbElement">Элемент привязки - департамент, сотрудник, редактируемый сотрудник, и т.п.</param>
         /// <param name="PropertyPath">Путь к данным</param>
-        /// <returns></returns>
-        public static Binding DBElementbinding(Employee dbElement, string PropertyPath)
-        {
-            Binding binding = new Binding();
-            binding.Source = dbElement;
-            binding.Path = new System.Windows.PropertyPath(PropertyPath);
-            return binding;
-        }
-
-        public static Binding DBElementbinding(EditingEmployee dbElement, string PropertyPath)
+        public static Binding DBElementbinding<T>(T dbElement, string PropertyPath)
         {
             Binding binding = new Binding();
             binding.Source = dbElement;

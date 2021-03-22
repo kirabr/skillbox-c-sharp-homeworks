@@ -58,6 +58,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BankAccounts\BankAccount.cs" />
+    <Compile Include="BankAccounts\BankAccountBalance.cs" />
+    <Compile Include="BankOperations\BankOperation.cs" />
+    <Compile Include="BankOperations\Refill.cs" />
+    <Compile Include="BankOperations\SimpleChangeBalance.cs" />
+    <Compile Include="BankOperations\Withdrawing.cs" />
+    <Compile Include="Clients\Client.cs" />
+    <Compile Include="Clients\ClientStatus.cs" />
+    <Compile Include="Clients\Individual.cs" />
+    <Compile Include="Clients\IndividualStatus.cs" />
+    <Compile Include="Clients\LegalEntity.cs" />
+    <Compile Include="Clients\LegalEntityStatus.cs" />
     <Compile Include="DataBase\DBSettingsJsonConverter.cs" />
     <Compile Include="Common\Common.cs" />
     <Compile Include="DataBase\DataBase.cs" />
@@ -77,6 +89,10 @@
     <Compile Include="Employees\EmployeePostDescriptionConverter.cs" />
     <Compile Include="Employees\Specialist.cs" />
     <Compile Include="Employees\Manager.cs" />
+    <Compile Include="Products\BankAccountService.cs" />
+    <Compile Include="Products\BankProduct.cs" />
+    <Compile Include="Products\Credit.cs" />
+    <Compile Include="Products\Deposit.cs" />
     <Compile Include="Sorting\DepartmentSortingField.cs" />
     <Compile Include="Sorting\EmployeeSortField.cs" />
     <Compile Include="Sorting\SortingField.cs" />
