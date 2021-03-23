@@ -18,6 +18,9 @@ namespace OrgDB_WPF.BankAccounts
         // Текущее состояние счёта
         double balance;
 
+        // Возможен "уход в минус"
+        bool overdraftPossible = false;
+
         // История операций
         SortedList<BankOperation, double> operationsHistory;
 
@@ -30,6 +33,9 @@ namespace OrgDB_WPF.BankAccounts
 
         // Текущее состояние счёта
         public double Balance { get { return balance; } }
+
+        // Возможен "уход в минус"
+        public bool OverdraftPossible { get { return overdraftPossible; } set { overdraftPossible = value; } }
 
         // История операций
         public SortedList<BankOperation, double> OperationsHistory { get { return operationsHistory; } }
@@ -88,6 +94,7 @@ namespace OrgDB_WPF.BankAccounts
         void ApplyBankOperation(BankOperation bankOperation)
         {
             balance = bankOperation.Calculate(this);
+            if (balance < 0 && !overdraftPossible) throw new Exception("Операция привела к отрицательному состоянию баланса!");
         }
 
         #endregion Собственные методы

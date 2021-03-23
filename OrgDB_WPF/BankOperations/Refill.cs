@@ -12,12 +12,13 @@ namespace OrgDB_WPF.BankOperations
         public Refill(List<BankAccounts.BankAccountBalance> operationAccountBalances, double changingSum) 
             : base(operationAccountBalances, changingSum, "Пополнение счёта на отрицательную сумму невозможно!") {}
 
-        public Refill(BankAccounts.BankAccountBalance operationAccountBalances, double fillSum)
-            : this(new List<BankAccounts.BankAccountBalance>() { operationAccountBalances }, fillSum) { }
+        public Refill(BankAccounts.BankAccountBalance operationAccountBalances, double changingSum)
+            : this(new List<BankAccounts.BankAccountBalance>() { operationAccountBalances }, changingSum) { }
                
         public override double Calculate(BankAccounts.BankAccountBalance bankAccountBalance)
         {
-            return bankAccountBalance.Balance + Sum;
+            //return bankAccountBalance.Balance + Sum;
+            return AccountBalances[0].Balance + Sum;
         }
     }
 }

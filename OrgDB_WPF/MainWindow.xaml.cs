@@ -1,20 +1,10 @@
-﻿using Microsoft.SqlServer.Server;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Threading;
 
@@ -409,28 +399,44 @@ namespace OrgDB_WPF
 
             string pdn = DB.ParentDepartmentName(d_1);
             string pdn1 = DB.ParentDepartmentName(d_1_1);
-
-            SortingField sortingField = new EmployeeSortField((SortingField.Field)EmployeeSortField.SortFieldVariant.Salary);
-
+                        
             Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
             
-            Clients.Individual individual = new Clients.Individual("Иван Петрович");
+            Clients.Individual individual1 = new Clients.Individual("Иван Петрович");
             
-            BankAccounts.BankAccount bankAccount = new BankAccounts.BankAccount("000001", individual, new List<Products.BankProduct>() { deposit });
-            BankAccounts.BankAccountBalance bankAccountBalance = new BankAccounts.BankAccountBalance(bankAccount);
+            BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit });
+            BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
 
-            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance, 59);
+            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 59);
             Thread.Sleep(1);
-            BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance, 45);
+            BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
 
-            bankAccountBalance.AddBankOperation(bankOperation1);
-            bankAccountBalance.AddBankOperation(bankOperation2);
-            bankAccountBalance.AddBankOperation(bankOperation1);
+            try { bankAccountBalance1.AddBankOperation(bankOperation1); }
+            catch {}
+            try { bankAccountBalance1.AddBankOperation(bankOperation2); }
+            catch { }            
+
+            Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
+
+            BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000001", individual2, new List<Products.BankProduct>() { deposit });
+            BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount1);
+
+            Thread.Sleep(1);
+
+            BankOperations.BankOperation bankOperationTransfer =
+                new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 15);
 
 
-            //bankAccountBalance.AddBankOperation(bankOperation1);
-            //bankAccountBalance.AddBankOperation(bankOperation2);
-            //bankAccountBalance.AddBankOperation(bankOperation1);
+            //using (TransactionScope scope = new TransactionScope())
+
+                try
+            {
+                bankAccountBalance1.AddBankOperation(bankOperationTransfer);
+                bankAccountBalance2.AddBankOperation(bankOperationTransfer);
+            }
+            catch { }
+            
+
 
         }
 

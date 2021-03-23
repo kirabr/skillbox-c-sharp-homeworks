@@ -16,7 +16,8 @@ namespace OrgDB_WPF.BankOperations
 
         public override double Calculate(BankAccounts.BankAccountBalance bankAccountBalance)
         {
-            return bankAccountBalance.Balance - Sum;
+            //return bankAccountBalance.Balance - Sum;
+            return AccountBalances[0].Balance - Sum;
         }
     }
 }

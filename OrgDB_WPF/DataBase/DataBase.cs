@@ -323,12 +323,7 @@ namespace OrgDB_WPF
         {
             return CalculateManagerSalary(GetDepartment(manager.DepartmentID));
         }
-
-        public void SortEmployeesByFields(List<EmployeeSortField> employeesSortingFields)
-        {
-
-        }
-
+        
         #endregion Сотрудники
 
         #region Проверка ссылок

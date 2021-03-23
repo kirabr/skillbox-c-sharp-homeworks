@@ -31,7 +31,7 @@ namespace OrgDB_WPF.BankOperations
         public DateTime DateTime { get { return dateTime; } }
 
         // Обслуживаемые операцией балансы счетов
-        List<BankAccounts.BankAccountBalance> AccountBalances { get { return accountBalances; } }
+        protected List<BankAccounts.BankAccountBalance> AccountBalances { get { return accountBalances; } }
 
         // Признак сторно операции
         public bool IsStorno { get { return isStorno; } }
@@ -54,6 +54,8 @@ namespace OrgDB_WPF.BankOperations
         /// <param name="operationDateTime">Дата / время операции</param>
         public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances, DateTime operationDateTime)
         {
+            accountBalances = new List<BankAccounts.BankAccountBalance>();
+            foreach (BankAccounts.BankAccountBalance bankAccountBalance in operationAccountBalances) AccountBalances.Add(bankAccountBalance);
             dateTime = operationDateTime;
         }
 
