@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.BankOperations
 {
+    // Перевод между счетами
     class TransferBetweenAccounts : BankOperation
     {
 
@@ -53,11 +54,17 @@ namespace OrgDB_WPF.BankOperations
 
         }
 
+        public override void Apply()
+        {
+            AccountBalances[0].AddBankOperation(this);
+            AccountBalances[1].AddBankOperation(this);
+        }
+
         #endregion API
 
         #region Собственные методы
 
         #endregion Собственные методы
-        
+
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.BankOperations
 {
+    // Простая операция
     public abstract class SimpleChangeBalance : BankOperation
     {
 

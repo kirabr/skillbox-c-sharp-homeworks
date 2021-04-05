@@ -11,19 +11,22 @@ namespace OrgDB_WPF.Products
 
         #region Поля
 
-
+        // Капитализация
+        bool hasCapitalization = false;
 
         #endregion Поля
 
-
         #region Свойства
+
+        // Капитализация
+        public bool HasCapitalization { get { return hasCapitalization; } }
 
         #endregion Свойства
 
-
         #region Конструкторы
-        public Deposit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0) : base(productName, productPercentPerYear, productPricePerYear)
+        public Deposit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0, bool hasCap = false) : base(productName, productPercentPerYear, productPricePerYear)
         {
+            hasCapitalization = hasCap;
         }
         #endregion Конструкторы
 

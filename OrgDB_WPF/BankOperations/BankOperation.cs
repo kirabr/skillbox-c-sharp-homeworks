@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.BankOperations
 {
+    // Банковская операция
     public abstract class BankOperation
     {
 
@@ -44,7 +45,7 @@ namespace OrgDB_WPF.BankOperations
         #region Конструкторы
 
         /// <summary>
-        /// Конструктор по банковским операциям
+        /// Конструктор по банковским балансам
         /// </summary>
         public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances) : this(operationAccountBalances, DateTime.Now) { }
 
@@ -80,6 +81,8 @@ namespace OrgDB_WPF.BankOperations
         #endregion Конструкторы
 
         #region API
+
+        public abstract void Apply();
 
         public abstract double Calculate(BankAccounts.BankAccountBalance bankAccountBalance);
 

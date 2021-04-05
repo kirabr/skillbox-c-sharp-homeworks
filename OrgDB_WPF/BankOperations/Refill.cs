@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.BankOperations
 {
+    // Пополненение баланса счёта
     public class Refill : SimpleChangeBalance
     {
         
@@ -14,11 +15,18 @@ namespace OrgDB_WPF.BankOperations
 
         public Refill(BankAccounts.BankAccountBalance operationAccountBalances, double changingSum)
             : this(new List<BankAccounts.BankAccountBalance>() { operationAccountBalances }, changingSum) { }
-               
+
+        
         public override double Calculate(BankAccounts.BankAccountBalance bankAccountBalance)
         {
-            //return bankAccountBalance.Balance + Sum;
             return AccountBalances[0].Balance + Sum;
         }
+
+        public override void Apply()
+        {
+            AccountBalances[0].AddBankOperation(this);
+        }
+
+
     }
 }

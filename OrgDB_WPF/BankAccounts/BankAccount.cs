@@ -8,6 +8,7 @@ using OrgDB_WPF.Products;
 
 namespace OrgDB_WPF.BankAccounts
 {
+    // Банковский счёт
     public class BankAccount
     {
 

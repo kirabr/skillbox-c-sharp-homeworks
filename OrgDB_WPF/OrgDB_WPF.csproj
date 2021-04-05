@@ -40,6 +40,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -60,7 +61,10 @@
     </ApplicationDefinition>
     <Compile Include="BankAccounts\BankAccount.cs" />
     <Compile Include="BankAccounts\BankAccountBalance.cs" />
+    <Compile Include="BankOperations\AccrualInterestLoan.cs" />
     <Compile Include="BankOperations\BankOperation.cs" />
+    <Compile Include="BankOperations\ChargeForInterest.cs" />
+    <Compile Include="BankOperations\CreditOpening.cs" />
     <Compile Include="BankOperations\Refill.cs" />
     <Compile Include="BankOperations\SimpleChangeBalance.cs" />
     <Compile Include="BankOperations\TransferBetweenAccounts.cs" />
@@ -149,6 +153,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.Products
 {
+    
+    // Обслуживание банковского счёта
     public class BankAccountService : BankProduct
     {
         public BankAccountService(string productName, double productPercentPerYear = 0, double productPricePerYear = 0) : base(productName, productPercentPerYear, productPricePerYear)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.BankOperations
 {
+    // Списание с баланса счёта
     public class Withdrawing : SimpleChangeBalance
     {
         public Withdrawing(List<BankAccounts.BankAccountBalance> operationAccountBalances, double changingSum) 
@@ -18,6 +19,11 @@ namespace OrgDB_WPF.BankOperations
         {
             //return bankAccountBalance.Balance - Sum;
             return AccountBalances[0].Balance - Sum;
+        }
+
+        public override void Apply()
+        {
+            AccountBalances[0].AddBankOperation(this);
         }
     }
 }

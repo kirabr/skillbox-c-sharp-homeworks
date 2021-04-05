@@ -12,17 +12,36 @@ using Newtonsoft.Json;
 using System.Xml.Schema;
 using System.Xml;
 using Newtonsoft.Json.Linq;
+using OrgDB_WPF.Clients;
+using OrgDB_WPF.Products;
+using OrgDB_WPF.BankAccounts;
 
 namespace OrgDB_WPF
 {
     public class DataBase : INotifyPropertyChanged
     {
 
+        
+
         #region Поля
 
-        // Департаметны, сотрудники
+        // Департаметны
         protected List<Department> departments;
+        
+        // Сотрудники
         protected List<Employee> employees;
+
+        // Клиенты
+        protected List<Client> clients;
+
+        // Статусы клиентов
+        protected List<ClientStatus> clientStatuses;
+
+        // Банковские продукты
+        protected List<BankProduct> bankProducts;
+
+        // Банковские балансы
+        protected List<BankAccountBalance> accountBalances;
 
         // Организация
         private Organization organization;
@@ -39,9 +58,23 @@ namespace OrgDB_WPF
 
         // Свойства "Департаменты" и "Сотрудники" с доступом public нужны Json-сериализатору, иначе они игнорируются
 
-        // Департаметны, сотрудники
+        // Департаметны
         public List<Department> Departments { get { return departments; } }
+
+        // Сотрудники
         public List<Employee> Employees { get { return employees; } }
+
+        // Клиенты
+        public List<Client> Clients { get { return Clients; } }
+
+        // Статусы клиентов
+        public List<ClientStatus> ClientStatuses { get { return ClientStatuses; } }
+
+        // Банковские продукты
+        public List<BankProduct> BankProducts { get { return bankProducts; } }
+
+        // Банковские балансы
+        public List<BankAccountBalance> AccountBalances { get { return accountBalances; } }
 
         /// <summary>
         /// Путь к файлу базы

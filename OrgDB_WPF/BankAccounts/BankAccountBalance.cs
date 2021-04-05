@@ -7,6 +7,7 @@ using OrgDB_WPF.BankOperations;
 
 namespace OrgDB_WPF.BankAccounts
 {
+    // Баланс банковского счёта
     public class BankAccountBalance
     {
 
@@ -93,13 +94,12 @@ namespace OrgDB_WPF.BankAccounts
         /// <param name="bankOperation"></param>
         void ApplyBankOperation(BankOperation bankOperation)
         {
-            balance = bankOperation.Calculate(this);
-            if (balance < 0 && !overdraftPossible) throw new Exception("Операция привела к отрицательному состоянию баланса!");
+            double operationResult = bankOperation.Calculate(this);
+            if (operationResult < 0 && !overdraftPossible) throw new Exception("Операция привела бы к отрицательному состоянию баланса!");
+            balance = operationResult;
         }
 
         #endregion Собственные методы
-
-
     }
 
     class BankOperationComparer : IComparer<BankOperation>

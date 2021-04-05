@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OrgDB_WPF.Clients
 {
+    
     public abstract class Client
     {
 

@@ -407,36 +407,61 @@ namespace OrgDB_WPF
             BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit });
             BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
 
-            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 59);
+            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
             Thread.Sleep(1);
             BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
 
-            try { bankAccountBalance1.AddBankOperation(bankOperation1); }
+            try { bankOperation1.Apply(); }
             catch {}
-            try { bankAccountBalance1.AddBankOperation(bankOperation2); }
-            catch { }            
+            //try { bankOperation2.Apply(); }
+            //catch { }            
 
-            Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
+            //Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
 
-            BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000001", individual2, new List<Products.BankProduct>() { deposit });
-            BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount1);
+            //BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000001", individual2, new List<Products.BankProduct>() { deposit });
+            //BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount1);
+
+            //Thread.Sleep(1);
+
+            //BankOperations.BankOperation bankOperationTransfer =
+            //    new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
+                        
+            //try
+            //{
+            //    bankOperationTransfer.Apply();
+      
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("Отказ в выполненении операции: " + e.Message);
+            //}
+
+            for (int i = 1; i<5; i++)
+            {
+                Thread.Sleep(1);
+
+                BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
+                chargeForInterest1.Apply();
+            }
 
             Thread.Sleep(1);
-
-            BankOperations.BankOperation bankOperationTransfer =
-                new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 15);
-
-
-            //using (TransactionScope scope = new TransactionScope())
-
-                try
+            BankOperations.Withdrawing withdrawing1 = new BankOperations.Withdrawing(bankAccountBalance1, 10);
+            try
             {
-                bankAccountBalance1.AddBankOperation(bankOperationTransfer);
-                bankAccountBalance2.AddBankOperation(bankOperationTransfer);
+                withdrawing1.Apply();
             }
-            catch { }
-            
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
 
+            for (int i = 1; i < 5; i++)
+            {
+                Thread.Sleep(1);
+
+                BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
+                chargeForInterest1.Apply();
+            }
 
         }
 
