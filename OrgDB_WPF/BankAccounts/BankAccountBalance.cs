@@ -4,14 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OrgDB_WPF.BankOperations;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.BankAccounts
 {
     // Баланс банковского счёта
-    public class BankAccountBalance
+    public class BankAccountBalance : IXmlServices
     {
 
         #region Поля
+
+        // Идентификатор
+        Guid id;
 
         // Банковский счёт
         BankAccount bankAccount;
@@ -29,8 +34,11 @@ namespace OrgDB_WPF.BankAccounts
 
         #region Свойства
 
+        // Идентификатор
+        public Guid ID { get { return id; } }
+
         // Банковский счёт
-        public BankAccount BalanceBankAccount { get { return bankAccount; } }
+        public BankAccount BankAccount { get { return bankAccount; } }
 
         // Текущее состояние счёта
         public double Balance { get { return balance; } }
@@ -52,6 +60,7 @@ namespace OrgDB_WPF.BankAccounts
         public BankAccountBalance(BankAccount balanceBankAccount)
         {
             bankAccount = balanceBankAccount;
+            id = new Guid();
             balance = 0;
             operationsHistory = new SortedList<BankOperation, double>(new BankOperationComparer());
         }
@@ -83,6 +92,33 @@ namespace OrgDB_WPF.BankAccounts
             ApplyBankOperation(bankOperation);
             operationsHistory.Add(bankOperation, balance);
         }
+
+
+        #region Запись в XML
+
+        public void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            writer.WriteAttributeString("ID", ID.ToString());
+            BankAccount.WriteXml(writer);
+            Common.WriteXMLElement(writer, "Balance", Balance);
+            writer.WriteStartElement("OperationsHistory");
+            foreach (KeyValuePair<BankOperation, double> OpHistoryElement in OperationsHistory)
+            {
+                OpHistoryElement.Key.WriteXml(writer);
+                Common.WriteXMLElement(writer, "OperationResult", OpHistoryElement.Value);
+            }
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
+
 
         #endregion API
 

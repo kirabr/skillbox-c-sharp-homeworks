@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using OrgDB_WPF.Clients;
 using OrgDB_WPF.Products;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.BankAccounts
 {
     // Банковский счёт
-    public class BankAccount
+    public class BankAccount : IXmlServices
     {
 
         #region Поля
@@ -50,6 +52,30 @@ namespace OrgDB_WPF.BankAccounts
         #endregion Конструкторы
 
         #region API
+
+        #region Запись в XML
+
+        public void WriteXml(XmlWriter writer)
+        {
+                        
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            string EmptyID = Common.EmptyIDString();
+
+            writer.WriteAttributeString("Number", Number);
+            writer.WriteElementString("OwnerID", Owner == null ? EmptyID : Owner.ID.ToString());
+            writer.WriteStartElement("Products");
+            foreach (BankProduct product in Products)
+                writer.WriteElementString("ProductID", product.ID.ToString());
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
 
         #endregion API
 

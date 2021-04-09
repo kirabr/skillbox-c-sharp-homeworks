@@ -15,7 +15,7 @@ namespace OrgDB_WPF
     /// <summary>
     /// Базовый абстрактный класс "Сотрудники"
     /// </summary>
-    public abstract class Employee : INotifyPropertyChanged
+    public abstract class Employee : INotifyPropertyChanged, IXmlServices
     {
 
         #region Поля
@@ -272,7 +272,25 @@ namespace OrgDB_WPF
         /// </summary>
         /// <param name="writer"></param>
         public abstract void WriteXml(XmlWriter writer);
-                
+        
+        public void WriteXmlEmployee(XmlWriter writer, string NodeName)
+        {
+            writer.WriteStartElement(NodeName);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            writer.WriteAttributeString("id", id.ToString());
+            writer.WriteElementString("Name", Name);
+            writer.WriteElementString("SurName", Surname);
+            Common.WriteXMLElement(writer, "Age", Age);
+            Common.WriteXMLElement(writer, "Salary", Salary);
+            writer.WriteElementString("DepartmentId", DepartmentID.ToString());
+            
+        }
+
         #endregion Публичные методы
 
         #region Реализация INotifyPropertyChanged
@@ -293,6 +311,6 @@ namespace OrgDB_WPF
         }
 
         #endregion Реализация INotifyPropertyChanged
-        
+
     }
 }

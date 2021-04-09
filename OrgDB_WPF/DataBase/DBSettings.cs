@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace OrgDB_WPF
 {
-    public struct DBSettings
+    public struct DBSettings : IXmlServices
     {
 
         #region  Поля
@@ -61,7 +61,14 @@ namespace OrgDB_WPF
         /// </param>
         public void WriteXml(XmlWriter writer)
         {
-             writer.WriteElementString("dbFilePath", DBFilePath);
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            writer.WriteElementString("dbFilePath", DBFilePath);
         }
 
         /// <summary>

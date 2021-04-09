@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -49,5 +50,17 @@ namespace OrgDB_WPF.BankOperations
         {
             return AccountBalances[0].Balance - creditSum;
         }
+
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            Common.WriteXMLElement(writer, "CreditSum", CreditSum);
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
     }
 }

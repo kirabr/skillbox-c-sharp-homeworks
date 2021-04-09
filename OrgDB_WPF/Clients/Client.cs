@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.Clients
 {
     
-    public abstract class Client
+    public abstract class Client : OrgDB_WPF.IXmlServices
     {
 
         #region Поля
@@ -58,6 +60,25 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Конструкторы
+
+        #region Запись в XML
+
+        public abstract void WriteXml(XmlWriter writer);
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+
+            string EmptyID = Common.EmptyIDString();
+            
+            writer.WriteAttributeString("id", ID.ToString());
+            writer.WriteElementString("Name", Name);
+            writer.WriteElementString("ClientManagerID", ClientManager == null ? EmptyID : ClientManager.id.ToString());
+            Common.WriteXMLElement(writer, "IsResident", IsResident);
+            writer.WriteElementString("ClientStatusID", ClientStatus == null ? EmptyID : ClientStatus.ID.ToString());
+        }
+
+        #endregion Запись в XML
+
 
     }
 

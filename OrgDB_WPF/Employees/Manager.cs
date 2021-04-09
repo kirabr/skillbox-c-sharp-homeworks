@@ -63,7 +63,7 @@ namespace OrgDB_WPF
 
         #endregion Конструкторы
 
-        #region Публичные методы
+        #region Запись в XML
 
         /// <summary>
         /// Записывает менеджера в XML-запись
@@ -71,10 +71,10 @@ namespace OrgDB_WPF
         /// <param name="writer">XML-запись</param>
         public override void WriteXml(XmlWriter writer)
         {
-            Common.WriteXMLEmployee(this, writer);
+            WriteXmlEmployee(writer, GetType().Name);
         }
 
-        #endregion Публичные методы
+        #endregion Запись в XML
 
     }
 }

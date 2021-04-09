@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.BankOperations
 {
     // Банковская операция
-    public abstract class BankOperation
+    public abstract class BankOperation : IXmlServices
     {
 
         #region Поля
+
+        // Идентификатор
+        Guid id;
 
         // Дата и время операции
         DateTime dateTime;
@@ -27,6 +32,9 @@ namespace OrgDB_WPF.BankOperations
         #endregion Поля
 
         #region Свойства
+
+        // Идентификатор
+        public Guid ID { get { return id; } }
 
         // Дата и время операции
         public DateTime DateTime { get { return dateTime; } }
@@ -55,6 +63,7 @@ namespace OrgDB_WPF.BankOperations
         /// <param name="operationDateTime">Дата / время операции</param>
         public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances, DateTime operationDateTime)
         {
+            id = new Guid();
             accountBalances = new List<BankAccounts.BankAccountBalance>();
             foreach (BankAccounts.BankAccountBalance bankAccountBalance in operationAccountBalances) AccountBalances.Add(bankAccountBalance);
             dateTime = operationDateTime;
@@ -73,6 +82,7 @@ namespace OrgDB_WPF.BankOperations
         /// <param name="operationStorno">Сторнируеамая операция</param>
         public BankOperation(DateTime operationDateTime, BankOperation operationStorno)
         {
+            id = new Guid();
             dateTime = operationDateTime;
             isStorno = true;
             stornoOperation = operationStorno; 
@@ -86,6 +96,25 @@ namespace OrgDB_WPF.BankOperations
 
         public abstract double Calculate(BankAccounts.BankAccountBalance bankAccountBalance);
 
+        #region Запись в XML
+        abstract public void WriteXml(XmlWriter writer);
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            writer.WriteAttributeString("id", ID.ToString());
+            Common.WriteXMLElement(writer, "DateTime", DateTime);
+            writer.WriteStartElement("AccountBalancesIds");
+            foreach (BankAccounts.BankAccountBalance bankAccountBalance in AccountBalances)
+                writer.WriteElementString("AccountBalanceId", bankAccountBalance.ID.ToString());
+            writer.WriteEndElement();
+            Common.WriteXMLElement(writer, "IsStorno", IsStorno);
+            if (IsStorno)
+                writer.WriteElementString("StornoOperationID", StornoOperation.ID.ToString());
+
+        }
+
+        #endregion Запись в XML
+
         #endregion API
 
         #region Собственные методы
@@ -93,7 +122,7 @@ namespace OrgDB_WPF.BankOperations
         #endregion Собственные методы
 
 
-        
+
     }
 
 }

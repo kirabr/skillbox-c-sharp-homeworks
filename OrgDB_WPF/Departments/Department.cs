@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace OrgDB_WPF
 {
-    public class Department : INotifyPropertyChanged
+    public class Department : INotifyPropertyChanged, IXmlServices
     {
 
         #region Поля
@@ -136,12 +136,17 @@ namespace OrgDB_WPF
         /// <param name="writer">Запись XML</param>
         public void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement("department");
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
             writer.WriteAttributeString("id", id.ToString());
             writer.WriteElementString("Name", Name);
             writer.WriteElementString("Location", Location);
             writer.WriteElementString("ParentId", ParentId.ToString());
-            writer.WriteEndElement();
         }
 
         #endregion Запись в XML

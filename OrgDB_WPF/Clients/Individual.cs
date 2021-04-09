@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml;
 
 namespace OrgDB_WPF.Clients
 {
@@ -39,7 +40,28 @@ namespace OrgDB_WPF.Clients
 
         #endregion Конструкторы
 
-    }
 
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+
+            string EmptyID = Common.EmptyIDString();
+            
+            writer.WriteStartElement(GetType().Name);
+
+            WriteXmlBasicProperties(writer);
+
+            writer.WriteElementString("FirstName", FirstName);
+            writer.WriteElementString("SurName", SurName);
+            writer.WriteElementString("Patronymic", Patronymic);
+            Common.WriteXMLElement(writer, "IsVIP", IsVIP);
+            
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
+
+    }
 
 }

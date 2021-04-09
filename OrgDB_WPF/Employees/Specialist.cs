@@ -71,7 +71,7 @@ namespace OrgDB_WPF
         /// <param name="writer"></param>
         public override void WriteXml(XmlWriter writer)
         {
-            Common.WriteXMLEmployee(this, writer);
+            WriteXmlEmployee(writer, GetType().Name);
         } 
         #endregion Запись в XML
 

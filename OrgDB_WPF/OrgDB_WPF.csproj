@@ -75,6 +75,7 @@
     <Compile Include="Clients\IndividualStatus.cs" />
     <Compile Include="Clients\LegalEntity.cs" />
     <Compile Include="Clients\LegalEntityStatus.cs" />
+    <Compile Include="Common\IXmlServices.cs" />
     <Compile Include="DataBase\DBSettingsJsonConverter.cs" />
     <Compile Include="Common\Common.cs" />
     <Compile Include="DataBase\DataBase.cs" />
@@ -153,8 +154,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
+    <None Include="ClassDiagram4.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

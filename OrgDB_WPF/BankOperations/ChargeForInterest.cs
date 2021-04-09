@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -31,7 +32,7 @@ namespace OrgDB_WPF.BankOperations
         public override double Calculate(BankAccountBalance bankAccountBalance)
         {
 
-            Products.Deposit deposit = (Products.Deposit)bankAccountBalance.BalanceBankAccount.Products[0];
+            Products.Deposit deposit = (Products.Deposit)bankAccountBalance.BankAccount.Products[0];
 
             // Если основной банковский продукт с капитализацией, то просто начисляем процент на актуальное состояние баланса
             if (deposit.HasCapitalization)
@@ -78,5 +79,16 @@ namespace OrgDB_WPF.BankOperations
         {
             AccountBalances[0].AddBankOperation(this);
         }
+
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
     }
 }

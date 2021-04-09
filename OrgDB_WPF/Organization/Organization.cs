@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace OrgDB_WPF
 {
-    public class Organization : INotifyPropertyChanged
+    public class Organization : INotifyPropertyChanged, IXmlServices
     {
 
         #region Поля
@@ -66,6 +66,13 @@ namespace OrgDB_WPF
         /// XML-запись
         /// </param>
         public void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
         {
             Common.WriteXMLElement(writer, "ManagerSalaryPercent", ManagerSalaryPercent);
             Common.WriteXMLElement(writer, "MinManagerSalary", MinManagerSalary);

@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.Products
 {
-    public abstract class BankProduct
+    public abstract class BankProduct : IXmlServices
     {
         #region Поля
+
+        // Идентификатор
+        Guid id;
 
         // Наименование продукта
         string name;
@@ -26,6 +31,9 @@ namespace OrgDB_WPF.Products
 
         #region Свойства
 
+        // Идентификатор
+        public Guid ID { get { return id; } }
+
         // Наименование продукта
         public string Name { get { return name; } set { name = value; } }
 
@@ -42,9 +50,10 @@ namespace OrgDB_WPF.Products
 
         #region Конструкторы
 
-        public BankProduct(string productName, double productPercentPerYear = 0, double productPricePerYear = 0)
+        public BankProduct(string productName, Guid productId, double productPercentPerYear = 0, double productPricePerYear = 0)
         {
             name = productName;
+            id = productId;
             basicPercentPerYear = productPercentPerYear;
             basicPricePerYear = productPricePerYear;
         }
@@ -52,6 +61,23 @@ namespace OrgDB_WPF.Products
         #endregion Конструкторы
 
         #region API
+
+
+        #region Запись в XML
+
+        abstract public void WriteXml(XmlWriter writer);
+
+        public void WriteXmlBasicProperties(XmlWriter writer)
+        {
+            writer.WriteAttributeString("ID", ID.ToString());
+            writer.WriteElementString("Name", Name);
+            writer.WriteElementString("Description", Description);
+            writer.WriteStartElement("BasicPercentPerYear"); writer.WriteValue(BasicPercentPerYear); writer.WriteEndElement();
+            writer.WriteStartElement("BasicPrice"); writer.WriteValue(BasicPrice); writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
+
 
         #endregion API
 

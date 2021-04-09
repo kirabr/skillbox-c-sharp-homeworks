@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -25,5 +26,16 @@ namespace OrgDB_WPF.BankOperations
         {
             AccountBalances[0].AddBankOperation(this);
         }
+
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlSCBProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
     }
 }

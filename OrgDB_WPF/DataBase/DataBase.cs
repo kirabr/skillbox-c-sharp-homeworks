@@ -21,9 +21,13 @@ namespace OrgDB_WPF
     public class DataBase : INotifyPropertyChanged
     {
 
-        
-
         #region Поля
+
+        // Общие настройки базы
+        public DBSettings dbSettings = new DBSettings();
+
+        // Организация
+        private Organization organization;
 
         // Департаметны
         protected List<Department> departments;
@@ -31,23 +35,17 @@ namespace OrgDB_WPF
         // Сотрудники
         protected List<Employee> employees;
 
-        // Клиенты
-        protected List<Client> clients;
-
         // Статусы клиентов
         protected List<ClientStatus> clientStatuses;
+
+        // Клиенты
+        protected List<Client> clients;
 
         // Банковские продукты
         protected List<BankProduct> bankProducts;
 
         // Банковские балансы
-        protected List<BankAccountBalance> accountBalances;
-
-        // Организация
-        private Organization organization;
-
-        // Общие настройки базы
-        public DBSettings dbSettings = new DBSettings();
+        protected List<BankAccountBalance> accountBalances;        
         
         #endregion
         
@@ -64,11 +62,11 @@ namespace OrgDB_WPF
         // Сотрудники
         public List<Employee> Employees { get { return employees; } }
 
-        // Клиенты
-        public List<Client> Clients { get { return Clients; } }
-
         // Статусы клиентов
         public List<ClientStatus> ClientStatuses { get { return ClientStatuses; } }
+
+        // Клиенты
+        public List<Client> Clients { get { return Clients; } }        
 
         // Банковские продукты
         public List<BankProduct> BankProducts { get { return bankProducts; } }
@@ -93,13 +91,18 @@ namespace OrgDB_WPF
         }
 
         /// <summary>
-        /// Признак, что база пустая (нет департаменов и сотрудников)
+        /// Признак, что база пустая (нет значимых данных)
         /// </summary>
         public bool IsEmpty
         {
             get
             {
-                return departments.Count == 0 && employees.Count == 0;
+                return departments.Count == 0
+                    && employees.Count == 0
+                    && clientStatuses.Count == 0
+                    && clients.Count == 0
+                    && bankProducts.Count == 0
+                    && accountBalances.Count == 0;
             }
         }
 
@@ -445,7 +448,7 @@ namespace OrgDB_WPF
             protected List<string> errorList = new List<string>();
 
             public DBSerializer(DataBase dataBase) { db = dataBase; }
-            public DBSerializer(DBSerializer dBSerializer) { }
+            //public DBSerializer(DBSerializer dBSerializer) { }
             public DBSerializer() { }
 
             virtual public bool Serialize()
@@ -475,7 +478,7 @@ namespace OrgDB_WPF
             }
 
         }
-        public class XMLDataBaseSerializer : DBSerializer, IXmlSerializable
+        public class XMLDataBaseSerializer : DBSerializer, IXmlSerializable, IXmlServices
         {
 
             #region Поля
@@ -514,7 +517,10 @@ namespace OrgDB_WPF
 
                 Stream fStream = new FileStream(db.DBFilePath, FileMode.Create, FileAccess.Write);
 
-                XmlSerializer xmlSerializer = new XmlSerializer(typeof(XMLDataBaseSerializer));
+                XmlRootAttribute xRoot = new XmlRootAttribute();
+                xRoot.ElementName = "CSLearnDB";
+
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(XMLDataBaseSerializer), xRoot);
                 xmlSerializer.Serialize(fStream, this);
                 fStream.Close();
 
@@ -704,20 +710,21 @@ namespace OrgDB_WPF
 
             public void WriteXml(XmlWriter writer)
             {
+                WriteXmlBasicProperties(writer);
+            }
+
+            public void WriteXmlBasicProperties(XmlWriter writer)
+            {
                 // Узел dbSettings
-                writer.WriteStartElement("dbSettings");
                 db.dbSettings.WriteXml(writer);
-                writer.WriteEndElement();
 
                 // Узел organization
-                writer.WriteStartElement("organization");
                 db.Organization.WriteXml(writer);
-                writer.WriteEndElement();
 
                 // Узел Departments
                 if (db.departments != null && db.departments.Count > 0)
                 {
-                    writer.WriteStartElement("departments");
+                    writer.WriteStartElement("Departments");
                     foreach (Department Dep in db.departments) Dep.WriteXml(writer);
                     writer.WriteEndElement();
                 }
@@ -725,10 +732,16 @@ namespace OrgDB_WPF
                 // Узел Employees
                 if (db.employees != null && db.employees.Count > 0)
                 {
-                    writer.WriteStartElement("employees");
+                    writer.WriteStartElement("Employees");
                     foreach (Employee Emp in db.employees) Emp.WriteXml(writer);
                     writer.WriteEndElement();
                 }
+
+                // Узел ClienStatuses
+                // Узел Clients
+                // Узел BankProducts
+                // Узел AccountBalances
+                //
             }
 
             #endregion Реализация IXmlSerializable

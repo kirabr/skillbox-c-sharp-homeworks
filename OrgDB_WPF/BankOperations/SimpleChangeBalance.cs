@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -63,7 +64,22 @@ namespace OrgDB_WPF.BankOperations
         #endregion Конструкторы
 
         #region API
-        
+
+        #region Запись в XML
+
+        //new public abstract void WriteXml(XmlWriter writer);
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        public void WriteXmlSCBProperties(XmlWriter writer) 
+        {
+            WriteXmlBasicProperties(writer);
+            writer.WriteStartElement("Sum"); writer.WriteValue(Sum); writer.WriteEndElement();    
+        }
+
+        #endregion Запись в XML
+
         #endregion API
 
     }

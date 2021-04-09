@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace OrgDB_WPF.Products
 {
@@ -24,11 +26,25 @@ namespace OrgDB_WPF.Products
         #endregion Свойства
 
         #region Конструкторы
-        public Deposit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0, bool hasCap = false) : base(productName, productPercentPerYear, productPricePerYear)
+        public Deposit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0, bool hasCap = false) 
+            : base(productName, new Guid(), productPercentPerYear, productPricePerYear)
         {
             hasCapitalization = hasCap;
         }
+
         #endregion Конструкторы
+
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement("Credit");
+            WriteXmlBasicProperties(writer);
+            Common.WriteXMLElement(writer, "HasCapitalization", HasCapitalization);
+            writer.WriteEndElement();
+        } 
+
+        #endregion Запись в XML
 
     }
 }

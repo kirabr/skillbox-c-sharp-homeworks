@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -47,13 +48,25 @@ namespace OrgDB_WPF.BankOperations
             double SumToInterest = KeyOperation.CreditSum;
 
             // Начисление процентов
-            return SumToInterest - bankAccountBalance.BalanceBankAccount.Products[0].BasicPercentPerYear / 1200;
+            return SumToInterest - bankAccountBalance.BankAccount.Products[0].BasicPercentPerYear / 1200;
         }
 
         public override void Apply()
         {
             AccountBalances[0].AddBankOperation(this);
         }
-                
+
+
+        #region Запись в XML
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            writer.WriteStartElement(GetType().Name);
+            WriteXmlBasicProperties(writer);
+            writer.WriteEndElement();
+        }
+
+        #endregion Запись в XML
+
     }
 }

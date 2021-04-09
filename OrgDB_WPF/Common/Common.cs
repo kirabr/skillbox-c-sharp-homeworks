@@ -46,17 +46,17 @@ namespace OrgDB_WPF
         /// </summary>
         /// <param name="Emp">Сотрудник</param>
         /// <param name="writer">Запись XML</param>
-        public static void WriteXMLEmployee(Employee Emp, XmlWriter writer)
-        {
-            writer.WriteStartElement(Emp.post_Enum.ToString());
-            writer.WriteAttributeString("id", Emp.id.ToString());
-            writer.WriteElementString("Name", Emp.Name);
-            writer.WriteElementString("SurName", Emp.Surname);
-            writer.WriteStartElement("Age"); writer.WriteValue(Emp.Age); writer.WriteEndElement();
-            writer.WriteStartElement("Salary"); writer.WriteValue(Emp.Salary); writer.WriteEndElement();
-            writer.WriteElementString("DepartmentId", Emp.DepartmentID.ToString());
-            writer.WriteEndElement();
-        }
+        //public static void WriteXMLEmployee(Employee Emp, XmlWriter writer)
+        //{
+        //    writer.WriteStartElement(Emp.post_Enum.ToString());
+        //    writer.WriteAttributeString("id", Emp.id.ToString());
+        //    writer.WriteElementString("Name", Emp.Name);
+        //    writer.WriteElementString("SurName", Emp.Surname);
+        //    writer.WriteStartElement("Age"); writer.WriteValue(Emp.Age); writer.WriteEndElement();
+        //    writer.WriteStartElement("Salary"); writer.WriteValue(Emp.Salary); writer.WriteEndElement();
+        //    writer.WriteElementString("DepartmentId", Emp.DepartmentID.ToString());
+        //    writer.WriteEndElement();
+        //}
 
         /// <summary>
         /// Возвращает привязку данных.
@@ -77,6 +77,11 @@ namespace OrgDB_WPF
             writer.WriteValue(value);
             writer.WriteEndElement();
        }
+
+        public static string EmptyIDString()
+        {
+            return "00000000-0000-0000-0000-000000000000";
+        }
 
     }
 }
