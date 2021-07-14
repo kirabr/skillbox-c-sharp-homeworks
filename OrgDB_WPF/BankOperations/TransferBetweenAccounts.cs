@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -42,6 +43,14 @@ namespace OrgDB_WPF.BankOperations
             Sum = transferSum;
         }
 
+        public TransferBetweenAccounts(XPathNavigator xPathNavigator) : base(xPathNavigator)
+        {
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//Sum");
+            if (selectedNode != null) sum = selectedNode.ValueAsDouble;
+        }
+
+        public TransferBetweenAccounts(BankOperation operationStorno) : base(operationStorno) { }
+
         #endregion Конструкторы
 
         #region API
@@ -49,9 +58,17 @@ namespace OrgDB_WPF.BankOperations
         public override double Calculate(BankAccountBalance bankAccountBalance)
         {
             if (bankAccountBalance == AccountBalances[0])
-                return bankAccountBalance.Balance - sum;
+            {
+                if (IsStorno) return CalculateStorno(bankAccountBalance);
+
+                return bankAccountBalance.Balance - sum; 
+            }
             else
-                return bankAccountBalance.Balance + sum;
+            {
+                if (IsStorno) return CalculateStorno(bankAccountBalance);
+
+                return bankAccountBalance.Balance + sum; 
+            }
 
         }
 

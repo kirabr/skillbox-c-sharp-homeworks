@@ -8,6 +8,8 @@ namespace OrgDB_WPF.Clients
         {
         }
 
+        public LegalEntityStatus(XmlReader reader) : base(reader) { }
+
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)

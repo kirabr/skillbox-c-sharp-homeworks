@@ -5,12 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
+
 
 namespace OrgDB_WPF.BankOperations
 {
     // Начисление процентов по кредиту
     class AccrualInterestLoan : BankOperation
     {
+
+
+        #region Поля
+
+        #endregion Поля
+
+        #region Свойства
+
+        #endregion Свойства
+
+        #region Конструкторы
         public AccrualInterestLoan(List<BankAccountBalance> operationAccountBalances) : base(operationAccountBalances)
         {
         }
@@ -27,8 +40,17 @@ namespace OrgDB_WPF.BankOperations
         {
         }
 
+        public AccrualInterestLoan(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        #endregion Конструкторы
+
+        #region API
+
         public override double Calculate(BankAccountBalance bankAccountBalance)
         {
+
+            if (IsStorno) return CalculateStorno();
+            
             // Все ключи операций
             IList<BankOperation> bankOperations = AccountBalances[0].OperationsHistory.Keys;
 
@@ -56,7 +78,6 @@ namespace OrgDB_WPF.BankOperations
             AccountBalances[0].AddBankOperation(this);
         }
 
-
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)
@@ -67,6 +88,13 @@ namespace OrgDB_WPF.BankOperations
         }
 
         #endregion Запись в XML
+
+        #endregion API
+
+        #region Собственные методы
+
+
+        #endregion Собственные методы
 
     }
 }

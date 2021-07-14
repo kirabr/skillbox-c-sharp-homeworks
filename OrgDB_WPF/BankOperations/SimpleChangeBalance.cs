@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -61,16 +62,13 @@ namespace OrgDB_WPF.BankOperations
             
         }
 
+        protected SimpleChangeBalance(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
         #endregion Конструкторы
 
         #region API
 
         #region Запись в XML
-
-        //new public abstract void WriteXml(XmlWriter writer);
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         public void WriteXmlSCBProperties(XmlWriter writer) 
         {

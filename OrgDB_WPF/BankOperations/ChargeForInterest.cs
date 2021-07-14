@@ -5,13 +5,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.BankOperations
 {
     // Начисление процентов (по депозиту)
     public class ChargeForInterest : BankOperation
     {
-        public ChargeForInterest(List<BankAccountBalance> operationAccountBalances) : base(operationAccountBalances) 
+
+
+        #region Поля
+
+        #endregion Поля
+
+        #region Свойства
+
+        #endregion Свойства
+
+        #region Конструкторы
+        public ChargeForInterest(List<BankAccountBalance> operationAccountBalances) : base(operationAccountBalances)
         {
         }
 
@@ -29,8 +41,16 @@ namespace OrgDB_WPF.BankOperations
         {
         }
 
+        public ChargeForInterest(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        #endregion Конструкторы
+
+        #region API
+
         public override double Calculate(BankAccountBalance bankAccountBalance)
         {
+
+            if (IsStorno) return CalculateStorno();
 
             Products.Deposit deposit = (Products.Deposit)bankAccountBalance.BankAccount.Products[0];
 
@@ -46,10 +66,10 @@ namespace OrgDB_WPF.BankOperations
             {
                 // Первая операция начисления процентов - ключ для сдвига к балансу до этой операции
                 BankOperation KeyBefore = en.Current.Key;
-                
+
                 // Признак наличия в истории таких же операций
                 bool HasSameOperation = en.Current.Key.GetType() == GetType();
-               
+
                 // Двигаемся по истории в прошлое, ищем такие же операции.
                 // Если нашли, переустанавливаем операцию-ключ
                 while (en.MoveNext())
@@ -60,7 +80,7 @@ namespace OrgDB_WPF.BankOperations
                         HasSameOperation = true;
                     }
                 }
-                
+
                 // Если в истории есть такие же операции, позиционируемся на моменте перед первой такой операцией и берём баланс из этого момента.
                 if (HasSameOperation)
                 {
@@ -90,5 +110,12 @@ namespace OrgDB_WPF.BankOperations
         }
 
         #endregion Запись в XML
+
+        #endregion API
+
+        #region Собственные методы
+
+
+        #endregion Собственные методы
     }
 }

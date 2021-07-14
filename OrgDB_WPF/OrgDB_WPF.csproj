@@ -70,7 +70,9 @@
     <Compile Include="BankOperations\TransferBetweenAccounts.cs" />
     <Compile Include="BankOperations\Withdrawing.cs" />
     <Compile Include="Clients\Client.cs" />
+    <Compile Include="Clients\ClientJsonConverter.cs" />
     <Compile Include="Clients\ClientStatus.cs" />
+    <Compile Include="Clients\ClientStatusJsonConverter.cs" />
     <Compile Include="Clients\Individual.cs" />
     <Compile Include="Clients\IndividualStatus.cs" />
     <Compile Include="Clients\LegalEntity.cs" />

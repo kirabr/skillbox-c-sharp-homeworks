@@ -48,7 +48,7 @@ namespace OrgDB_WPF
         /// Конструктор по XML-чтению. Используется при восстановлении базы из XML-файла
         /// </summary>
         /// <param name="reader"></param>
-        public Specialist(XmlReader reader) : base(reader, post_enum.specialist) { }
+        public Specialist(XmlReader reader) : base(reader, "Specialist") { }
 
         /// <summary>
         /// Конструктор по JSON (DTO) - объекту специалиста. Используется при восстановлении базы из JSON-файла

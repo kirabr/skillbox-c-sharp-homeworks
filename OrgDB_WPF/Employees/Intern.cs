@@ -53,7 +53,7 @@ namespace OrgDB_WPF
         /// Конструктор по XML-читалке
         /// </summary>
         /// <param name="reader"></param>
-        public Intern(XmlReader reader) : base(reader, post_enum.intern){ }
+        public Intern(XmlReader reader) : base(reader, "Intern"){ }
 
         /// <summary>
         /// Конструктор по JSON (DTO) - объекту интерна

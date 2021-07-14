@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml;
 using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace OrgDB_WPF.Clients
 {
@@ -19,6 +20,10 @@ namespace OrgDB_WPF.Clients
         ClientStatus previousClientStatus;
         ClientStatus nextClientStatus;
 
+        // Идентификаторы ранжированных статусов
+        Guid previousClientStatusId;
+        Guid nextClientStatusId;
+
         // Уменьшение базовой ставки по кредиту
         double creditDiscountPercent;
 
@@ -36,8 +41,28 @@ namespace OrgDB_WPF.Clients
         public string Name { get { return name; } set { name = value; } }
 
         // Ранжирование статуса - статутсы ступенью ниже и выше
-        public ClientStatus PreviousClientStatus { get { return previousClientStatus; } set { previousClientStatus = value; } }
-        public ClientStatus NextClientStatus { get { return nextClientStatus; } set { nextClientStatus = value; } }
+        public ClientStatus PreviousClientStatus 
+        { 
+            get { return previousClientStatus; } 
+            set 
+            { 
+                previousClientStatus = value;
+                previousClientStatusId = previousClientStatus.ID;
+            } 
+        }
+        public ClientStatus NextClientStatus 
+        { 
+            get { return nextClientStatus; } 
+            set 
+            { 
+                nextClientStatus = value;
+                nextClientStatusId = nextClientStatus.ID;
+            } 
+        }
+
+        // Идентификаторы ранжированных статусов
+        public Guid PreviousClientStatusId { get { return previousClientStatusId; } }
+        public Guid NextClientStatusId { get { return nextClientStatusId; } }
 
         // Уменьшение базовой ставки по кредиту
         public double CreditDiscountPercent { get { return creditDiscountPercent; } set { creditDiscountPercent = value; } }
@@ -51,8 +76,13 @@ namespace OrgDB_WPF.Clients
 
         public ClientStatus(string Name)
         {
-            id = new Guid();
+            id = Guid.NewGuid();
             name = Name;
+        }
+
+        public ClientStatus(XmlReader reader)
+        {
+            ReadXmlBasicProperties(reader);
         }
 
         #endregion Конструкторы
@@ -76,6 +106,55 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в XML
+
+
+        #region Чтение из XML
+
+        private void ReadXmlBasicProperties(XmlReader reader)
+        {
+            // Начинаем чтение, позиционируемся на первом элементе
+            reader.Read();
+
+            string nodeName = reader.Name;
+
+            // Позиционируемся на атрибуте id, устанавливаем id этого сотрудника
+            reader.MoveToAttribute("id");
+            id = new Guid(reader.Value);
+
+            // Позиционируемся в чтении на следующем элементе
+            reader.Read();
+
+            while (!(reader.Name == nodeName && reader.NodeType == XmlNodeType.EndElement))
+            {
+                switch (reader.Name)
+                {
+                    case "Name":
+                        Name = reader.ReadElementContentAsString();
+                        break;
+                    case "PreviousClientStatusId":
+                        previousClientStatusId = new Guid(reader.ReadElementContentAsString());
+                        break;
+                    case "NextClientStatusId":
+                        nextClientStatusId = new Guid(reader.ReadElementContentAsString());
+                        break;
+                    case "CreditDiscountPercent":
+                        CreditDiscountPercent = reader.ReadElementContentAsDouble();
+                        break;
+                    case "DepositAdditionalPercent":
+                        DepositAdditionalPercent = reader.ReadElementContentAsDouble();
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
+                }
+            }
+
+
+
+        }
+
+        #endregion Чтение из XML
+
 
     }
 

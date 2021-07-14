@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.Products
 {
@@ -50,12 +51,31 @@ namespace OrgDB_WPF.Products
 
         #region Конструкторы
 
-        public BankProduct(string productName, Guid productId, double productPercentPerYear = 0, double productPricePerYear = 0)
+        public BankProduct(string productName, double productPercentPerYear = 0, double productPricePerYear = 0)
         {
             name = productName;
-            id = productId;
+            id = Guid.NewGuid();
             basicPercentPerYear = productPercentPerYear;
             basicPricePerYear = productPricePerYear;
+        }
+
+        public BankProduct(XPathNavigator xPathNavigator)
+        {
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//@id");
+            if (selectedNode != null) id = new Guid(selectedNode.Value);
+
+            selectedNode = xPathNavigator.SelectSingleNode("//Name");
+            if (selectedNode != null) name = selectedNode.Value;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//Description");
+            if (selectedNode != null) description = selectedNode.Value;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//BasicPercentPerYear");
+            if (selectedNode != null) basicPercentPerYear = selectedNode.ValueAsDouble;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//BasicPrice");
+            if (selectedNode != null) basicPricePerYear = selectedNode.ValueAsDouble;
+
         }
 
         #endregion Конструкторы
@@ -69,7 +89,7 @@ namespace OrgDB_WPF.Products
 
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
-            writer.WriteAttributeString("ID", ID.ToString());
+            writer.WriteAttributeString("id", ID.ToString());
             writer.WriteElementString("Name", Name);
             writer.WriteElementString("Description", Description);
             writer.WriteStartElement("BasicPercentPerYear"); writer.WriteValue(BasicPercentPerYear); writer.WriteEndElement();

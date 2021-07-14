@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Windows.Data;
+using System.Collections.ObjectModel;
 
 namespace OrgDB_WPF
 {
@@ -42,23 +43,6 @@ namespace OrgDB_WPF
         }
 
         /// <summary>
-        /// Записывает сотрудника в запись XML
-        /// </summary>
-        /// <param name="Emp">Сотрудник</param>
-        /// <param name="writer">Запись XML</param>
-        //public static void WriteXMLEmployee(Employee Emp, XmlWriter writer)
-        //{
-        //    writer.WriteStartElement(Emp.post_Enum.ToString());
-        //    writer.WriteAttributeString("id", Emp.id.ToString());
-        //    writer.WriteElementString("Name", Emp.Name);
-        //    writer.WriteElementString("SurName", Emp.Surname);
-        //    writer.WriteStartElement("Age"); writer.WriteValue(Emp.Age); writer.WriteEndElement();
-        //    writer.WriteStartElement("Salary"); writer.WriteValue(Emp.Salary); writer.WriteEndElement();
-        //    writer.WriteElementString("DepartmentId", Emp.DepartmentID.ToString());
-        //    writer.WriteEndElement();
-        //}
-
-        /// <summary>
         /// Возвращает привязку данных.
         /// </summary>
         /// <param name="dbElement">Элемент привязки - департамент, сотрудник, редактируемый сотрудник, и т.п.</param>
@@ -71,13 +55,43 @@ namespace OrgDB_WPF
             return binding;
         }
 
-       public static void WriteXMLElement(XmlWriter writer, string elementName, object value)
-       {
+        /// <summary>
+        /// Записывает узел XML-элемента (для которого нет штатного метода записи)
+        /// </summary>
+        /// <param name="writer">Запись XML</param>
+        /// <param name="elementName">Строка, име элемента</param>
+        /// <param name="value">Значение элемента</param>
+        public static void WriteXMLElement(XmlWriter writer, string elementName, object value)
+        {
             writer.WriteStartElement(elementName);
             writer.WriteValue(value);
             writer.WriteEndElement();
-       }
+        }
 
+        public static void WriteXmlList<T, T1>(XmlWriter writer, T listT1, string NodeName) where T:List<T1> where T1 : IXmlServices
+        {
+
+            if (listT1 == null || listT1.Count == 0) return;
+
+            writer.WriteStartElement(NodeName);
+            foreach (T1 t1 in listT1) t1.WriteXml(writer);
+            writer.WriteEndElement();
+        }
+
+        public static void WriteXmlReadOnlyList<T, T1>(XmlWriter writer, T readOnlyListT1, string NodeName) where T : ReadOnlyCollection<T1> where T1 : IXmlServices
+        {
+            if (readOnlyListT1 == null || readOnlyListT1.Count == 0) return;
+
+            writer.WriteStartElement(NodeName);
+            foreach (T1 t1 in readOnlyListT1) t1.WriteXml(writer);
+            writer.WriteEndElement();
+        }
+
+
+        /// <summary>
+        /// Возвращает "00000000-0000-0000-0000-000000000000" - строковое представление пустого GUID'а
+        /// </summary>
+        /// <returns></returns>
         public static string EmptyIDString()
         {
             return "00000000-0000-0000-0000-000000000000";

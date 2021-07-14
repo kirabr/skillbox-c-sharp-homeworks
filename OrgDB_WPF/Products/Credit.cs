@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.Products
 {
@@ -14,17 +14,20 @@ namespace OrgDB_WPF.Products
 
         #endregion Поля
 
-
         #region Свойства
 
         #endregion Свойства
 
 
         #region Конструкторы
+
         public Credit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0) 
-            : base(productName, new Guid(), productPercentPerYear, productPricePerYear)
+            : base(productName, productPercentPerYear, productPricePerYear)
         {
         }
+
+        public Credit(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
         #endregion Конструкторы
 
 

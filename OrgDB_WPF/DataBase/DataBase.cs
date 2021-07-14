@@ -11,10 +11,12 @@ using System.Xml.Serialization;
 using Newtonsoft.Json;
 using System.Xml.Schema;
 using System.Xml;
+using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
 using OrgDB_WPF.Clients;
 using OrgDB_WPF.Products;
 using OrgDB_WPF.BankAccounts;
+using System.Collections.ObjectModel;
 
 namespace OrgDB_WPF
 {
@@ -30,22 +32,30 @@ namespace OrgDB_WPF
         private Organization organization;
 
         // Департаметны
-        protected List<Department> departments;
-        
+        private List<Department> departments;
+
         // Сотрудники
-        protected List<Employee> employees;
+        private List<Employee> employees;
 
         // Статусы клиентов
-        protected List<ClientStatus> clientStatuses;
+        [JsonIgnore]
+        private List<ClientStatus> clientStatuses;
 
         // Клиенты
-        protected List<Client> clients;
+        [JsonIgnore]
+        private List<Client> clients;
 
         // Банковские продукты
-        protected List<BankProduct> bankProducts;
+        [JsonIgnore]
+        private List<BankProduct> bankProducts;
+
+        // Банковсеие счета
+        [JsonIgnore]
+        private List<BankAccount> bankAccounts = new List<BankAccount>();
 
         // Банковские балансы
-        protected List<BankAccountBalance> accountBalances;        
+        [JsonIgnore]
+        private List<BankAccountBalance> accountBalances;        
         
         #endregion
         
@@ -63,16 +73,16 @@ namespace OrgDB_WPF
         public List<Employee> Employees { get { return employees; } }
 
         // Статусы клиентов
-        public List<ClientStatus> ClientStatuses { get { return ClientStatuses; } }
+        public List<ClientStatus> ClientStatuses { get { return clientStatuses; } }
 
         // Клиенты
-        public List<Client> Clients { get { return Clients; } }        
+        public List<Client> Clients { get { return clients; } }        
 
         // Банковские продукты
         public List<BankProduct> BankProducts { get { return bankProducts; } }
 
         // Банковские балансы
-        public List<BankAccountBalance> AccountBalances { get { return accountBalances; } }
+        public ReadOnlyCollection<BankAccountBalance> AccountBalances { get { return accountBalances.AsReadOnly(); } }
 
         /// <summary>
         /// Путь к файлу базы
@@ -123,6 +133,11 @@ namespace OrgDB_WPF
 
             departments = new List<Department>();
             employees = new List<Employee>();
+            clientStatuses = new List<ClientStatus>();
+            clients = new List<Client>();
+            bankProducts = new List<BankProduct>();
+            accountBalances = new List<BankAccountBalance>();
+
         }
 
         public DataBase(DataBase dataBase) { }
@@ -359,8 +374,28 @@ namespace OrgDB_WPF
         {
             return CalculateManagerSalary(GetDepartment(manager.DepartmentID));
         }
-        
+
         #endregion Сотрудники
+
+        #region Балансы счетов
+
+        public void AddAccountBalance(BankAccountBalance bankAccountBalance)
+        {
+            if (bankAccounts.Exists(x => x.Number == bankAccountBalance.BankAccount.Number))
+                throw new Exception($"Попытка добавления баланса с неуникальным номером банковского счёта ({bankAccountBalance.BankAccount.Number}).");
+
+            bankAccounts.Add(bankAccountBalance.BankAccount);
+            accountBalances.Add(bankAccountBalance);
+
+        }
+
+        public void RemoveAccountBalance(BankAccountBalance bankAccountBalance)
+        {
+            bankAccounts.Remove(bankAccountBalance.BankAccount);
+            accountBalances.Remove(bankAccountBalance);
+        }
+
+        #endregion Балансы счетов
 
         #region Проверка ссылок
 
@@ -448,7 +483,7 @@ namespace OrgDB_WPF
             protected List<string> errorList = new List<string>();
 
             public DBSerializer(DataBase dataBase) { db = dataBase; }
-            //public DBSerializer(DBSerializer dBSerializer) { }
+            
             public DBSerializer() { }
 
             virtual public bool Serialize()
@@ -541,7 +576,10 @@ namespace OrgDB_WPF
 
                 errorList.Clear();
 
-                XmlSerializer xmlSerializerDB = new XmlSerializer(typeof(XMLDataBaseSerializer));
+                XmlRootAttribute xRoot = new XmlRootAttribute();
+                xRoot.ElementName = "CSLearnDB";
+
+                XmlSerializer xmlSerializerDB = new XmlSerializer(typeof(XMLDataBaseSerializer), xRoot);
 
                 Stream fileStream = new FileStream(db.DBFilePath, FileMode.Open, FileAccess.Read);
 
@@ -575,40 +613,61 @@ namespace OrgDB_WPF
             void ReadDBPart(XmlReader reader)
             {
 
-                if (reader.Name == "dbSettings" && reader.NodeType == XmlNodeType.Element)
+                if (reader.Name == "DBSettings" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader dbSettingsReader = reader.ReadSubtree();
-                    db.dbSettings.ReadXml(dbSettingsReader);
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    db.dbSettings.ReadXml(nodeReader);
 
                     // Оповестим об изменениях свойств
                     db.NotifyDBSettingsPropertiesChanged();
 
                 }
 
-                if (reader.Name == "organization" && reader.NodeType == XmlNodeType.Element)
+                if (reader.Name == "Organization" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader organizationReader = reader.ReadSubtree();
-                    db.organization.ReadXml(organizationReader);
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    db.organization.ReadXml(nodeReader);
                 }
 
-                if (reader.Name == "departments" && reader.NodeType == XmlNodeType.Element)
+                if (reader.Name == "Departments" && reader.NodeType == XmlNodeType.Element)
                 {
                     // В отдельном XML-чтении считаем департаменты
-                    XmlReader DepReader = reader.ReadSubtree();
-                    ReadDepartments(DepReader);
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadDepartments(nodeReader);
 
                 }
 
-                if (reader.Name == "employees" && reader.NodeType == XmlNodeType.Element)
+                if (reader.Name == "Employees" && reader.NodeType == XmlNodeType.Element)
                 {
 
-                    // Создаём объект-список сотрудников
-                    db.employees = new List<Employee>();
-
                     // В отдельном XML-чтении считаем сотрудников
-                    XmlReader EmpReader = reader.ReadSubtree();
-                    ReadEmployees(EmpReader);
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadEmployees(nodeReader);
 
+                }
+
+                if (reader.Name == "ClientStatuses" && reader.NodeType == XmlNodeType.Element)
+                {
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadClientStatuses(nodeReader);
+                }
+
+                if (reader.Name == "Clients" && reader.NodeType == XmlNodeType.Element)
+                {
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadClients(nodeReader);
+                }
+
+                if (reader.Name == "BankProducts" && reader.NodeType == XmlNodeType.Element)
+                {
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadBankProducts(nodeReader);
+                }
+
+                if (reader.Name == "AccountBalances" && reader.NodeType == XmlNodeType.Element)
+                {
+                    XmlReader nodeReader = reader.ReadSubtree();
+                    ReadAccountBalances(nodeReader);
                 }
 
             }
@@ -626,12 +685,12 @@ namespace OrgDB_WPF
                 db.departments = new List<Department>();
 
                 // Перемещаемся к дочернему узлу департамента
-                reader.ReadToDescendant("department");
+                reader.ReadToDescendant("Department");
 
                 // В цикле для каждого узла департамента
                 // создаём отдельную читалку, с помощью соответствующего
                 // конструктора создаём департамент и добавляем его в базу
-                while (!(reader.Name == "departments" && reader.NodeType == XmlNodeType.EndElement))
+                while (!(reader.Name == "Departments" && reader.NodeType == XmlNodeType.EndElement))
                 {
 
                     XmlReader departmentReader = reader.ReadSubtree();
@@ -656,41 +715,236 @@ namespace OrgDB_WPF
             {
                 db.employees = new List<Employee>();
 
-                // Перемещаемся к узлу "employees"
+                // Перемещаемся к узлу "Employees"
                 reader.Read();
                 // Перемещаемся к первому узлу сотрудника
                 reader.Read();
-
+                
                 // В цикле создаём XML-читалку сотрудника, анализируем должность,
                 // создаём соответствующего сотрудника и добавляем его в базу
-                while (!(reader.Name == "employees" && reader.NodeType == XmlNodeType.EndElement))
+                while (!(reader.Name == "Employees" && reader.NodeType == XmlNodeType.EndElement))
                 {
 
                     XmlReader employeeReader = reader.ReadSubtree();
-
-                    Employee.post_enum post_Enum = (Employee.post_enum)Enum.Parse(typeof(Employee.post_enum), reader.Name, false);
-
-                    Employee emp;
-
-                    switch (post_Enum)
+                    Employee emp = null;
+                    switch (reader.Name)
                     {
-                        case Employee.post_enum.intern:
+                        case "Intern":
                             emp = new Intern(employeeReader);
-                            db.employees.Add(emp);
                             break;
-                        case Employee.post_enum.specialist:
+                        case "Specialist":
                             emp = new Specialist(employeeReader);
-                            db.employees.Add(emp);
                             break;
-                        case Employee.post_enum.manager:
+                        case "Manager":
                             emp = new Manager(employeeReader);
-                            db.employees.Add(emp);
                             break;
                     }
+
+                    if (emp!=null)
+                        db.employees.Add(emp);
+                                        
                     reader.Skip();
                 }
 
                 db.FillEmployeesDepartmentNames();
+            }
+
+            private void ReadClientStatuses(XmlReader reader)
+            {
+                // Очищаем список статусов
+                db.ClientStatuses.Clear();
+
+                // Перемещаемся к первому элементу с клиентским статусом
+                reader.Read();
+                reader.Read();
+
+                // Читаем и добавляем статусы
+                while (!(reader.Name == "ClientStatuses" && reader.NodeType== XmlNodeType.EndElement))
+                {
+                    XmlReader clientStatusReader = reader.ReadSubtree();
+                    ClientStatus clientStatus = null;
+                    switch (reader.Name)
+                    {
+                        case "IndividualStatus":
+                            clientStatus = new IndividualStatus(clientStatusReader);
+                            break;
+                        case "LegalEntityStatus":
+                            clientStatus = new LegalEntityStatus(clientStatusReader);
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+
+                    if (clientStatus!=null)
+                        db.clientStatuses.Add(clientStatus);
+
+                    reader.Skip();
+                }
+
+                // Заполняем ранжированные статусы (предыдущий - следующий)
+                foreach (ClientStatus dbClientStatus in db.clientStatuses)
+                {
+                    if (dbClientStatus.PreviousClientStatusId != Guid.Empty) 
+                        dbClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.ID == dbClientStatus.PreviousClientStatusId);
+                    if (dbClientStatus.NextClientStatusId != Guid.Empty)
+                        dbClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.ID == dbClientStatus.NextClientStatusId);
+                }
+            }
+
+            private void ReadClients(XmlReader reader)
+            {
+
+                // Очищаем список клиентов
+                db.Clients.Clear();
+
+                // Перемещаемся к первому элементу-клиенту
+                reader.Read();
+                reader.Read();
+
+                // Считываем и добавляем клиентов
+                while (!(reader.Name == "Clients" && reader.NodeType == XmlNodeType.EndElement))
+                {
+                    XmlReader clientReader = reader.ReadSubtree();
+
+                    Client client = null;
+                    switch (reader.Name)
+                    {
+                        case "Individual":
+                            client = new Individual(new XPathDocument(clientReader).CreateNavigator());
+                            break;
+                        case "LegalEntity":
+                            client = new LegalEntity(new XPathDocument(clientReader).CreateNavigator());
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+
+                    if (client != null)
+                        db.clients.Add(client);
+
+                    reader.Skip();
+                }
+
+                // Заполняем менеджеров, статусы
+                foreach (Client currClient in db.clients)
+                {
+                    if (currClient.ClientManagerId!=Guid.Empty)
+                        currClient.ClientManager = db.Employees.Find(x => x.id == currClient.ClientManagerId);
+                    if (currClient.ClientStatusId!=Guid.Empty)
+                        currClient.ClientStatus = db.ClientStatuses.Find(x => x.ID == currClient.ClientStatusId);
+                } 
+
+            }
+
+            private void ReadBankProducts(XmlReader reader)
+            {
+                // Очищаем список банковских продуктов
+                db.BankProducts.Clear();
+
+                // Перемещаемся к первому продукту
+                reader.Read();
+                reader.Read();
+
+                // Считываем и добавляем банковские продукты
+                while (!(reader.Name == "BankProducts" && reader.NodeType == XmlNodeType.EndElement))
+                {
+                    XmlReader productReader = reader.ReadSubtree();
+
+                    BankProduct bankProduct = null;
+
+                    switch (reader.Name)
+                    {
+                        case "BankAccountService":
+                            bankProduct = new BankAccountService(new XPathDocument(productReader).CreateNavigator());
+                            break;
+                        case "Credit":
+                            bankProduct = new Credit(new XPathDocument(productReader).CreateNavigator());
+                            break;
+                        case "Deposit":
+                            bankProduct = new Deposit(new XPathDocument(productReader).CreateNavigator());
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+
+                    if (bankProduct != null)
+                        db.BankProducts.Add(bankProduct);
+
+                    reader.Skip();
+
+                }
+            }
+
+            private void ReadAccountBalances(XmlReader reader)
+            {
+
+                // Очищаем список балансов
+                db.accountBalances.Clear();
+
+                // Перемещаемся к первому дочернему узлу банковского баланса
+                reader.ReadToDescendant("BankAccountBalance");
+
+                // Считываем и добавляем банковские балансы
+                while (!(reader.Name == "AccountBalances" && reader.NodeType == XmlNodeType.EndElement))
+                {
+                    XmlReader balanceReader = reader.ReadSubtree();
+
+                    XPathNavigator xPathNavigator = new XPathDocument(balanceReader).CreateNavigator();
+
+                    // Подготовим банковский счёт
+                    string AccountNumber = "";
+                    Client AccountOwner = null;
+                    List<BankProduct> AccountProducts = new List<BankProduct>();
+
+                    XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/@Number");
+                    if (selectedNode != null) AccountNumber = selectedNode.Value;
+
+                    selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/OwnerID");
+                    if (selectedNode != null) AccountOwner = db.Clients.Find(x => x.ID == new Guid(selectedNode.Value));
+
+                    selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/Products");
+                    if (selectedNode != null && selectedNode.MoveToFirstChild())
+                    {
+                        do
+                        {
+                            AccountProducts.Add(db.bankProducts.Find(x => x.ID == new Guid(selectedNode.Value)));
+                        } while (selectedNode.MoveToNext());
+                    }
+
+                    if (string.IsNullOrEmpty(AccountNumber) || AccountOwner == null || AccountProducts.Count == 0) continue;
+                    BankAccount bankAccount = new BankAccount(AccountNumber, AccountOwner, AccountProducts);
+
+                    // Создаём баланс и добавляем его в базу
+                    BankAccountBalance accountBalance = new BankAccountBalance(xPathNavigator, bankAccount);
+
+                    db.AddAccountBalance(accountBalance);
+                                        
+                    reader.Skip();
+                }
+
+                // У операций в историях  заполним банковские балансы
+
+                // List AccountBalances для поиска балансов
+                List<BankAccountBalance> accountBalances = new List<BankAccountBalance>(db.AccountBalances.Count);
+                foreach (BankAccountBalance balanceElem in db.AccountBalances) { accountBalances.Add(balanceElem); }
+
+                foreach (BankAccountBalance bankAccountBalance in db.AccountBalances)
+                {
+                    foreach (KeyValuePair<BankOperations.BankOperation, double> historyElement in bankAccountBalance.OperationsHistory)
+                    {
+
+                        BankOperations.BankOperation currentOperation = historyElement.Key;
+
+                        foreach (Guid balancId in currentOperation.AccountBalancesIds)
+                        {
+                            currentOperation.AddAccountBalance(accountBalances.Find(x=>x.ID== balancId));
+                        }
+                    }
+                }
+
             }
 
             #endregion Служебные методы
@@ -722,26 +976,23 @@ namespace OrgDB_WPF
                 db.Organization.WriteXml(writer);
 
                 // Узел Departments
-                if (db.departments != null && db.departments.Count > 0)
-                {
-                    writer.WriteStartElement("Departments");
-                    foreach (Department Dep in db.departments) Dep.WriteXml(writer);
-                    writer.WriteEndElement();
-                }
+                Common.WriteXmlList<List<Department>, Department>(writer, db.Departments, "Departments");
 
                 // Узел Employees
-                if (db.employees != null && db.employees.Count > 0)
-                {
-                    writer.WriteStartElement("Employees");
-                    foreach (Employee Emp in db.employees) Emp.WriteXml(writer);
-                    writer.WriteEndElement();
-                }
-
+                Common.WriteXmlList<List<Employee>, Employee>(writer, db.Employees, "Employees");
+                
                 // Узел ClienStatuses
+                Common.WriteXmlList<List<ClientStatus>, ClientStatus>(writer, db.ClientStatuses, "ClientStatuses");
+
                 // Узел Clients
+                Common.WriteXmlList<List<Client>, Client>(writer, db.Clients, "Clients");
+
                 // Узел BankProducts
+                Common.WriteXmlList<List<Products.BankProduct>, Products.BankProduct>(writer, db.BankProducts, "BankProducts");
+
                 // Узел AccountBalances
-                //
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<BankAccountBalance>, BankAccountBalance>(writer, db.AccountBalances, "AccountBalances");
+
             }
 
             #endregion Реализация IXmlSerializable
@@ -776,7 +1027,10 @@ namespace OrgDB_WPF
                     new DBSettingsJsonConverter(),
                     new OrganizationJsonConverter(),
                     new DepartmentJsonConverter(),
-                    new EmployeeJsonConverter());
+                    new EmployeeJsonConverter(),
+                    new ClientStatusJsonConverter(),
+                    new ClientJsonConverter()
+                    );
                 File.WriteAllText(db.DBFilePath, js);
 
                 return true;
@@ -915,6 +1169,11 @@ namespace OrgDB_WPF
         {
             employees = new List<Employee>();
             departments = new List<Department>();
+            clientStatuses = new List<ClientStatus>();
+            clients = new List<Client>();
+            bankProducts = new List<BankProduct>();
+            bankAccounts = new List<BankAccount>();
+            accountBalances = new List<BankAccountBalance>();
 
             string dbFilePath = DBFilePath;
             dbSettings = new DBSettings();

@@ -3,14 +3,14 @@
   <Class Name="OrgDB_WPF.Clients.Individual" Collapsed="true">
     <Position X="0.5" Y="6.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>IAAAAGgAAABIAAAAAAAEAAAABAAAAAAAAAAAgAAAAAA=</HashCode>
+      <HashCode>IAAAAGgAAABIAAAABAAEAAAABAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Clients\Individual.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="OrgDB_WPF.Clients.Client">
+  <Class Name="OrgDB_WPF.Clients.Client" Collapsed="true">
     <Position X="1.5" Y="2.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>gAAAQAgAAAAAgAAABAAAQAQAAAAEAAAABAAAgIAAAgA=</HashCode>
+      <HashCode>oAAAQAgAAAAAggAABAIAQAQAAAAkAAAABAAAgIAAAgA=</HashCode>
       <FileName>Clients\Client.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -18,7 +18,7 @@
   <Class Name="OrgDB_WPF.Clients.ClientStatus" Collapsed="true">
     <Position X="5.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>IAAAAAgAAIAAgCAAAAAAAAQIQAAGAEAAAAAAiAAAAgA=</HashCode>
+      <HashCode>IAAAAAgAAIAAgCAAAAEAAAQJQAAGAEAAAAAAiAAQAgA=</HashCode>
       <FileName>Clients\ClientStatus.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -33,7 +33,7 @@
   <Class Name="OrgDB_WPF.Clients.LegalEntity" Collapsed="true">
     <Position X="2.5" Y="6.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAIAAAAAAAAoAAAAKAAAAAgAAIAAAAAACAgAAAAAA=</HashCode>
+      <HashCode>AAAAIAAAAAAAAoAABAKAAAAAgAAIAAAAAACAgAAAAAA=</HashCode>
       <FileName>Clients\LegalEntity.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -71,7 +71,7 @@
   <Class Name="OrgDB_WPF.BankOperations.BankOperation" Collapsed="true">
     <Position X="5" Y="8.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAEAgAABAAgCAAAAAgAIAABCCAAAQAAAAAgAAAAhA=</HashCode>
+      <HashCode>AAAEEElAABAAgCQAAAAgAIAIACCACAQAAAAAgAAABhA=</HashCode>
       <FileName>BankOperations\BankOperation.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />

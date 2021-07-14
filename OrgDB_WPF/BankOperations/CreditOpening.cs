@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -12,11 +13,23 @@ namespace OrgDB_WPF.BankOperations
     public class CreditOpening : BankOperation
     {
 
+
+        #region Поля
+
         // Сумма кредита
         double creditSum;
 
+        #endregion Поля
+
+        #region Свойства
+
+        // Сумма кредита
         public double CreditSum { get { return creditSum; } }
-        
+
+        #endregion Свойства
+
+        #region Конструкторы
+
         public CreditOpening(List<BankAccountBalance> operationAccountBalances, double operationCreditSum) : base(operationAccountBalances)
         {
             CreditStart(operationCreditSum);
@@ -35,6 +48,16 @@ namespace OrgDB_WPF.BankOperations
         {
         }
 
+        public CreditOpening(XPathNavigator xPathNavigator) : base(xPathNavigator)
+        {
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//CreditSum");
+            if (selectedNode != null) creditSum = selectedNode.ValueAsDouble;
+        }
+
+        #endregion Конструкторы
+
+        #region API
+
         private void CreditStart(double operationCreditSum)
         {
             if (!AccountBalances[0].OverdraftPossible) throw new Exception("Открытие кредита возможно только на баланс с овердрафтом");
@@ -48,9 +71,11 @@ namespace OrgDB_WPF.BankOperations
 
         public override double Calculate(BankAccountBalance bankAccountBalance)
         {
+            if (IsStorno) return CalculateStorno();
+
             return AccountBalances[0].Balance - creditSum;
         }
-
+        
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)
@@ -62,5 +87,12 @@ namespace OrgDB_WPF.BankOperations
         }
 
         #endregion Запись в XML
+
+        #endregion API
+
+        #region Собственные методы
+
+
+        #endregion Собственные методы
     }
 }

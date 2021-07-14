@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
+using System.Xml.XPath;
+using System.Collections.ObjectModel;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -17,17 +18,23 @@ namespace OrgDB_WPF.BankOperations
         // Идентификатор
         Guid id;
 
-        // Дата и время операции
-        DateTime dateTime;
+        // Отметка времени
+        Int64 ticks;
 
         // Обслуживаемые операцией балансы счетов
         protected List<BankAccounts.BankAccountBalance> accountBalances;
+
+        // Идентификаторы обслуживаемых операцией балансов счетов
+        protected List<Guid> accountBalancesIds;
 
         // Признак сторно операции
         bool isStorno;
         
         // Сторнируемая операция
         BankOperation stornoOperation;
+
+        // Идентификатор сторнируемой операции
+        Guid stornoOperationId;
 
         #endregion Поля
 
@@ -37,17 +44,46 @@ namespace OrgDB_WPF.BankOperations
         public Guid ID { get { return id; } }
 
         // Дата и время операции
-        public DateTime DateTime { get { return dateTime; } }
+        public DateTime DateTime { get { return new DateTime(ticks); } }
+
+        // Отметка времени
+        public Int64 Ticks { get { return ticks; } }
 
         // Обслуживаемые операцией балансы счетов
-        protected List<BankAccounts.BankAccountBalance> AccountBalances { get { return accountBalances; } }
+        protected ReadOnlyCollection<BankAccounts.BankAccountBalance> AccountBalances { get { return accountBalances.AsReadOnly(); } }
+
+        // Идентификаторы обслуживаемых операцией балансов счетов
+        public ReadOnlyCollection<Guid> AccountBalancesIds 
+        { 
+            get 
+            {
+                //List<Guid> ids = new List<Guid>();
+                //foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) ids.Add(bankAccountBalance.ID);
+                //return ids.AsReadOnly(); 
+
+                return accountBalancesIds.AsReadOnly();
+
+            }
+        }
 
         // Признак сторно операции
         public bool IsStorno { get { return isStorno; } }
 
         // Сторнируемая операция
-        public BankOperation StornoOperation { get { return stornoOperation; } }
-        
+        public BankOperation StornoOperation 
+        { 
+            get { return stornoOperation; }
+            set
+            {
+                if (value.id != stornoOperationId) throw new Exception("Сторнируемая операция имеет другой ID.");
+                stornoOperation = value;
+            }
+        }
+
+        // Идентификатор сторнируемой операции
+        public Guid StornoOperationID 
+        { get { return stornoOperationId; } }
+
         #endregion Свойства
 
         #region Конструкторы
@@ -55,7 +91,8 @@ namespace OrgDB_WPF.BankOperations
         /// <summary>
         /// Конструктор по банковским балансам
         /// </summary>
-        public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances) : this(operationAccountBalances, DateTime.Now) { }
+        public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances) : this(operationAccountBalances, DateTime.Now) 
+        { }
 
         /// <summary>
         /// Конструктор по дате / времени
@@ -63,10 +100,10 @@ namespace OrgDB_WPF.BankOperations
         /// <param name="operationDateTime">Дата / время операции</param>
         public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances, DateTime operationDateTime)
         {
-            id = new Guid();
+            id = Guid.NewGuid();
             accountBalances = new List<BankAccounts.BankAccountBalance>();
-            foreach (BankAccounts.BankAccountBalance bankAccountBalance in operationAccountBalances) AccountBalances.Add(bankAccountBalance);
-            dateTime = operationDateTime;
+            foreach (BankAccounts.BankAccountBalance bankAccountBalance in operationAccountBalances) accountBalances.Add(bankAccountBalance);
+            ticks = operationDateTime.Ticks;
         }
 
         /// <summary>
@@ -82,10 +119,42 @@ namespace OrgDB_WPF.BankOperations
         /// <param name="operationStorno">Сторнируеамая операция</param>
         public BankOperation(DateTime operationDateTime, BankOperation operationStorno)
         {
-            id = new Guid();
-            dateTime = operationDateTime;
+            id = Guid.NewGuid();
             isStorno = true;
-            stornoOperation = operationStorno; 
+            stornoOperation = operationStorno;
+            ticks = operationDateTime.Ticks;
+            accountBalances = operationStorno.accountBalances;
+            //accountBalancesIds = operationStorno.AccountBalancesIds;
+        }
+
+        public BankOperation(XPathNavigator xPathNavigator)
+        {
+            id = new Guid(xPathNavigator.GetAttribute("id", ""));
+
+            accountBalances = new List<BankAccounts.BankAccountBalance>();
+
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//Ticks");
+            if (selectedNode != null)
+            {
+                ticks = selectedNode.ValueAsLong;
+
+            }
+            
+            selectedNode = xPathNavigator.SelectSingleNode("//AccountBalancesIds");
+            if (selectedNode!=null && selectedNode.MoveToFirstChild())
+            {
+                accountBalancesIds = new List<Guid>();
+                do
+                {
+                    accountBalancesIds.Add(new Guid(selectedNode.Value));
+                } while (selectedNode.MoveToNext());
+            }
+
+            selectedNode = xPathNavigator.SelectSingleNode("//IsStorno");
+            if (selectedNode != null) isStorno = selectedNode.ValueAsBoolean;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//StornoOperationID");
+            if (selectedNode != null) stornoOperationId = new Guid(selectedNode.Value);
         }
 
         #endregion Конструкторы
@@ -96,13 +165,47 @@ namespace OrgDB_WPF.BankOperations
 
         public abstract double Calculate(BankAccounts.BankAccountBalance bankAccountBalance);
 
+        public double CalculateStorno()
+        {
+            return CalculateStorno(AccountBalances[0]);
+        }
+
+        public double CalculateStorno(BankAccounts.BankAccountBalance bankAccountBalance)
+        {
+
+            // Найдём операцию (1), предшествующую сторнируемой операции и вернём её (1) результат
+
+            // Все ключи операций
+            //IList<BankOperation> bankOperations = AccountBalances[0].OperationsHistory.Keys;
+            IList<BankOperation> bankOperations = bankAccountBalance.OperationsHistory.Keys;
+
+            // Индекс ключа операции, предшествующей сторнинуемой операции
+            int indKeyBefore = bankOperations.IndexOf(StornoOperation) + 1;
+
+            // Если индекс сторнируемой операции не нашли или это индекс последней операции, возвращаем 0, т.к. нет сторнируемой операции
+            if (indKeyBefore == 0 || indKeyBefore > bankOperations.Count - 2) return 0;
+
+            // Возвращаем результат операции, предшествующей сторнируемой
+            return AccountBalances[0].OperationsHistory[bankOperations[indKeyBefore]];
+        }
+
+        public void AddAccountBalance(BankAccounts.BankAccountBalance bankAccountBalance)
+        {
+            // У операции не может быть более 2 балансов
+            if (AccountBalances.Count > 1)
+                throw new Exception("У операции уже более одного баланса, добавление невозможно.");
+
+            accountBalances.Add(bankAccountBalance);
+
+        }
+
         #region Запись в XML
         abstract public void WriteXml(XmlWriter writer);
 
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
             writer.WriteAttributeString("id", ID.ToString());
-            Common.WriteXMLElement(writer, "DateTime", DateTime);
+            Common.WriteXMLElement(writer, "Ticks", ticks);
             writer.WriteStartElement("AccountBalancesIds");
             foreach (BankAccounts.BankAccountBalance bankAccountBalance in AccountBalances)
                 writer.WriteElementString("AccountBalanceId", bankAccountBalance.ID.ToString());
@@ -120,8 +223,6 @@ namespace OrgDB_WPF.BankOperations
         #region Собственные методы
 
         #endregion Собственные методы
-
-
 
     }
 

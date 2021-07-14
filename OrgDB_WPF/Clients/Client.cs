@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.Clients
 {
@@ -23,11 +24,17 @@ namespace OrgDB_WPF.Clients
         // Менеджер клиента 
         Employee clientManager;
 
+        // Идентификатор менеджера клиента
+        Guid clientManagerId;
+
         // Признак, что клиент является резидентом
         bool isResident;
 
         // Статус клиента
-        ClientStatus clientStatus;
+        protected ClientStatus clientStatus;
+
+        // Идентификатор статуса клиента
+        protected Guid clientStatusId;
 
         #endregion Поля
 
@@ -40,13 +47,35 @@ namespace OrgDB_WPF.Clients
         public Guid ID { get { return id; } }
 
         // Менеджер клиента
-        public Employee ClientManager { get { return clientManager; } set { clientManager = value; } }
+        public Employee ClientManager 
+        { 
+            get { return clientManager; } 
+            set 
+            { 
+                clientManager = value;
+                clientManagerId = value.id;
+            } 
+        }
+
+        // Идентификатор менеджера клиента
+        public Guid ClientManagerId { get { return clientManagerId; } }
 
         // Признак, что клиент является резидентом
         public bool IsResident { get { return isResident; } set { isResident = value; } }
 
         // Статус клиента
-        public ClientStatus ClientStatus { get { return clientStatus; } set { clientStatus = value; } }
+        public virtual ClientStatus ClientStatus 
+        { 
+            get { return clientStatus; } 
+            set 
+            { 
+                clientStatus = value;
+                clientStatusId = value.ID;
+            } 
+        }
+
+        // Идентификатор статуса клиента
+        public Guid ClientStatusId { get { return clientStatusId; } }
 
         #endregion Свойства
 
@@ -57,6 +86,24 @@ namespace OrgDB_WPF.Clients
             name = clientName;
             id = clientId;
             isResident = clientIsResident;
+        }
+        
+        public Client (XPathNavigator xPathNavigator)
+        {
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//@id");
+            if (selectedNode != null) id = new Guid(selectedNode.Value);
+
+            selectedNode = xPathNavigator.SelectSingleNode("//Name");
+            if (selectedNode != null) Name = selectedNode.Value;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//ClientManagerID");
+            if (selectedNode != null) clientManagerId = new Guid(selectedNode.Value);
+
+            selectedNode = xPathNavigator.SelectSingleNode("//IsResident");
+            if (selectedNode != null) isResident = selectedNode.ValueAsBoolean;
+
+            selectedNode = xPathNavigator.SelectSingleNode("//ClientStatusID");
+            if (selectedNode != null) clientStatusId = new Guid(selectedNode.Value);
         }
 
         #endregion Конструкторы
@@ -79,6 +126,48 @@ namespace OrgDB_WPF.Clients
 
         #endregion Запись в XML
 
+        #region Чтение из XML
+
+        //private void ReadXmlBasicProperties(XmlReader reader)
+        //{
+
+        //    // Начинаем чтение, позиционируемся на первом элементе
+        //    reader.Read();
+
+        //    string nodeName = reader.Name;
+
+        //    // Позиционируемся на атрибуте id, устанавливаем id этого сотрудника
+        //    reader.MoveToAttribute("id");
+        //    id = new Guid(reader.Value);
+
+        //    // Позиционируемся в чтении на следующем элементе
+        //    reader.Read();
+
+        //    while (!(reader.Name == nodeName && reader.NodeType == XmlNodeType.EndElement))
+        //    {
+        //        switch (reader.Name)
+        //        {
+        //            case "Name":
+        //                Name = reader.ReadElementContentAsString();
+        //                break;
+        //            case "ClientManagerID":
+        //                clientManagerId = new Guid(reader.ReadElementContentAsString());
+        //                break;
+        //            case "IsResident":
+        //                isResident = reader.ReadElementContentAsBoolean();
+        //                break;
+        //            case "ClientStatusID":
+        //                clientStatusId = new Guid(reader.ReadElementContentAsString());
+        //                break;
+        //            default:
+        //                reader.Skip();
+        //                break;
+        //        }
+        //    }
+
+        //}
+
+        #endregion Чтение из XML
 
     }
 

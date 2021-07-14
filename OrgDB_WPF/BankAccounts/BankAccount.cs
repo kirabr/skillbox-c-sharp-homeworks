@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using OrgDB_WPF.Clients;
 using OrgDB_WPF.Products;
 using System.Xml;
-using System.Xml.Serialization;
 
 namespace OrgDB_WPF.BankAccounts
 {

@@ -8,6 +8,8 @@ namespace OrgDB_WPF.Clients
         {
         }
 
+        public IndividualStatus(XmlReader reader) : base(reader) { }
+
 
         #region Запись в XML
 

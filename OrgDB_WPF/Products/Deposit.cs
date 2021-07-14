@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Serialization;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.Products
 {
@@ -27,9 +27,15 @@ namespace OrgDB_WPF.Products
 
         #region Конструкторы
         public Deposit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0, bool hasCap = false) 
-            : base(productName, new Guid(), productPercentPerYear, productPricePerYear)
+            : base(productName, productPercentPerYear, productPricePerYear)
         {
             hasCapitalization = hasCap;
+        }
+
+        public Deposit(XPathNavigator xPathNavigator) : base(xPathNavigator)
+        {
+            XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//HasCapitalization");
+            if (selectedNode != null) hasCapitalization = selectedNode.ValueAsBoolean;
         }
 
         #endregion Конструкторы
@@ -38,7 +44,7 @@ namespace OrgDB_WPF.Products
 
         public override void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement("Credit");
+            writer.WriteStartElement(GetType().Name);
             WriteXmlBasicProperties(writer);
             Common.WriteXMLElement(writer, "HasCapitalization", HasCapitalization);
             writer.WriteEndElement();

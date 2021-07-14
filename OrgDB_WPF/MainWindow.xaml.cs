@@ -399,12 +399,19 @@ namespace OrgDB_WPF
 
             string pdn = DB.ParentDepartmentName(d_1);
             string pdn1 = DB.ParentDepartmentName(d_1_1);
-                        
+
             Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
+            Products.BankAccountService bankAccountService = new Products.BankAccountService("Обслуживание счета", 0, 15);
             
             Clients.Individual individual1 = new Clients.Individual("Иван Петрович");
             
-            BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit });
+            individual1.FirstName = "Иван";
+            individual1.SurName = "Голиков";
+            individual1.Patronymic = "Петрович";
+
+            individual1.ClientManager = i_1;
+            
+            BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit, bankAccountService });
             BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
 
             BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
@@ -413,28 +420,52 @@ namespace OrgDB_WPF
 
             try { bankOperation1.Apply(); }
             catch {}
-            //try { bankOperation2.Apply(); }
-            //catch { }            
+            try { bankOperation2.Apply(); }
+            catch { }
 
-            //Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
+            Clients.ClientStatus clientStatus = new Clients.IndividualStatus("Начинающий");
+            DB.ClientStatuses.Add(clientStatus);
 
-            //BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000001", individual2, new List<Products.BankProduct>() { deposit });
-            //BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount1);
+            Clients.ClientStatus clientStatus1 = new Clients.IndividualStatus("Средний");
+            clientStatus1.PreviousClientStatus = clientStatus;
+            clientStatus.NextClientStatus = clientStatus1;
+            DB.ClientStatuses.Add(clientStatus1);
 
-            //Thread.Sleep(1);
+            Clients.ClientStatus clientStatus2 = new Clients.IndividualStatus("Опытный");
+            clientStatus2.PreviousClientStatus = clientStatus1;
+            clientStatus1.NextClientStatus = clientStatus2;
+            DB.ClientStatuses.Add(clientStatus2);
 
-            //BankOperations.BankOperation bankOperationTransfer =
-            //    new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
-                        
-            //try
-            //{
-            //    bankOperationTransfer.Apply();
-      
-            //}
-            //catch (Exception e)
-            //{
-            //    MessageBox.Show("Отказ в выполненении операции: " + e.Message);
-            //}
+            return;
+
+            Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
+            individual2.ClientStatus = clientStatus;
+            individual2.FirstName = "Петр";
+            individual2.SurName = "Шнурков";
+            individual2.Patronymic = "Сергеевич";
+
+            BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000002", individual2, new List<Products.BankProduct>() { deposit });
+            BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount2);
+
+            Thread.Sleep(1);
+
+            BankOperations.BankOperation bankOperationTransfer =
+                new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
+
+            try
+            {
+                bankOperationTransfer.Apply();
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Отказ в выполненении операции: " + e.Message);
+            }
+
+            Thread.Sleep(1);
+
+            BankOperations.BankOperation bankOperationTransferStorno = new BankOperations.TransferBetweenAccounts(bankOperationTransfer);
+            bankOperationTransferStorno.Apply();
 
             for (int i = 1; i<5; i++)
             {
@@ -455,13 +486,49 @@ namespace OrgDB_WPF
                 MessageBox.Show(e.Message);
             }
 
+            BankOperations.ChargeForInterest LastChargeForInterest = null;
+            BankOperations.ChargeForInterest MiddleChargeForInterest = null;
+
             for (int i = 1; i < 5; i++)
             {
                 Thread.Sleep(1);
 
                 BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
                 chargeForInterest1.Apply();
+
+                Thread.Sleep(1);
+
+                if (i == 3) MiddleChargeForInterest = chargeForInterest1;
+
+                LastChargeForInterest = chargeForInterest1;
             }
+
+            BankOperations.ChargeForInterest StornoLast = new BankOperations.ChargeForInterest(LastChargeForInterest);
+            StornoLast.Apply();
+
+            // Сработает исключение добавления сторно-операции к непоследней операции.
+            //Thread.Sleep(1);
+
+            //BankOperations.ChargeForInterest StornoMiddle = new BankOperations.ChargeForInterest(MiddleChargeForInterest);
+            //StornoMiddle.Apply();
+
+            Clients.LegalEntity legalEntity1 = new Clients.LegalEntity("ООО 'Копа и рогыта'");
+            legalEntity1.FullName = "Общество с неограниченной безответственностью 'Копа и рогыта'";
+            legalEntity1.INN = "000111";
+            legalEntity1.KPP = "12345";
+            legalEntity1.IsCorporate = true;
+            //legalEntity1.ClientStatus = clientStatus1;
+            legalEntity1.ClientManager = s_1;
+
+            DB.BankProducts.Add(deposit);
+            DB.BankProducts.Add(bankAccountService);
+            DB.Clients.Add(individual1);
+            DB.Clients.Add(individual2);
+            DB.Clients.Add(legalEntity1);
+            
+            DB.AddAccountBalance(bankAccountBalance1);
+            DB.AddAccountBalance(bankAccountBalance2);
+
 
         }
 

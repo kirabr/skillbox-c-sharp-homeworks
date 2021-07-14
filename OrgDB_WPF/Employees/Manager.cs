@@ -53,7 +53,7 @@ namespace OrgDB_WPF
         /// Конструктор по XML-чтению. Используется при восстановлении базы из XML-файла
         /// </summary>
         /// <param name="reader"></param>
-        public Manager(XmlReader reader) : base(reader, post_enum.manager) { }
+        public Manager(XmlReader reader) : base(reader, "Manager") { }
 
         /// <summary>
         /// Конструктор по JSON (DTO) - объекту менеджера. Используется при восстановлении базы из JSON-файла

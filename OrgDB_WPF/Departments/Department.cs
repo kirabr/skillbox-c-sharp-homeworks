@@ -97,7 +97,7 @@ namespace OrgDB_WPF
             id = new Guid(reader.Value);
             reader.Read();
 
-            while (!(reader.Name == "department" && reader.NodeType == XmlNodeType.EndElement))
+            while (!(reader.Name == "Department" && reader.NodeType == XmlNodeType.EndElement))
             {
                 switch (reader.Name)
                 {

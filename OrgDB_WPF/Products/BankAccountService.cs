@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace OrgDB_WPF.Products
 {
@@ -12,10 +13,11 @@ namespace OrgDB_WPF.Products
     public class BankAccountService : BankProduct
     {
         public BankAccountService(string productName, double productPercentPerYear = 0, double productPricePerYear = 0) 
-            : base(productName, new Guid(), productPercentPerYear, productPricePerYear)
+            : base(productName, productPercentPerYear, productPricePerYear)
         {
         }
 
+        public BankAccountService(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
 
         #region Запись в XML
 
