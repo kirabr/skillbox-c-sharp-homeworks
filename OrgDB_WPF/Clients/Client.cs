@@ -66,12 +66,12 @@ namespace OrgDB_WPF.Clients
         // Статус клиента
         public virtual ClientStatus ClientStatus 
         { 
-            get { return clientStatus; } 
-            set 
-            { 
+            get { return clientStatus; }
+            set
+            {
                 clientStatus = value;
                 clientStatusId = value.ID;
-            } 
+            }
         }
 
         // Идентификатор статуса клиента
@@ -169,6 +169,6 @@ namespace OrgDB_WPF.Clients
 
         #endregion Чтение из XML
 
-    }
+     }
 
 }

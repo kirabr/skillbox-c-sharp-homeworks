@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace OrgDB_WPF
         #region Поля
 
         // Департаменты, отображаемые в списке
-        public List<Department> Departments;
+        public ReadOnlyCollection<Department> Departments;
 
         // Департаменты, действия над которыми запрещены
         public List<Department> ExceptDepartments;

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -87,6 +88,15 @@ namespace OrgDB_WPF.BankOperations
         }
 
         #endregion Запись в XML
+
+        #region Запись в JSON
+
+        public override void WriteJsonSpecifyedProperties(JsonWriter writer)
+        {
+            writer.WritePropertyName("CreditSum"); writer.WriteValue(CreditSum);
+        }
+
+        #endregion Запись в JSON
 
         #endregion API
 

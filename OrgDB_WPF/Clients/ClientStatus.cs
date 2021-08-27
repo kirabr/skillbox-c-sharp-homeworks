@@ -47,7 +47,10 @@ namespace OrgDB_WPF.Clients
             set 
             { 
                 previousClientStatus = value;
-                previousClientStatusId = previousClientStatus.ID;
+                if (previousClientStatus == null)
+                    previousClientStatusId = Guid.Empty;
+                else
+                    previousClientStatusId = previousClientStatus.ID;
             } 
         }
         public ClientStatus NextClientStatus 
@@ -56,7 +59,10 @@ namespace OrgDB_WPF.Clients
             set 
             { 
                 nextClientStatus = value;
-                nextClientStatusId = nextClientStatus.ID;
+                if (nextClientStatus == null)
+                    nextClientStatusId = Guid.Empty;
+                else
+                    nextClientStatusId = nextClientStatus.ID;
             } 
         }
 
@@ -107,7 +113,6 @@ namespace OrgDB_WPF.Clients
 
         #endregion Запись в XML
 
-
         #region Чтение из XML
 
         private void ReadXmlBasicProperties(XmlReader reader)
@@ -148,15 +153,10 @@ namespace OrgDB_WPF.Clients
                         break;
                 }
             }
-
-
-
         }
 
         #endregion Чтение из XML
-
-
+        
     }
-
 
 }

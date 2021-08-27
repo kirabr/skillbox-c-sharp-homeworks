@@ -38,15 +38,12 @@ namespace OrgDB_WPF
         private List<Employee> employees;
 
         // Статусы клиентов
-        [JsonIgnore]
         private List<ClientStatus> clientStatuses;
 
         // Клиенты
-        [JsonIgnore]
         private List<Client> clients;
 
         // Банковские продукты
-        [JsonIgnore]
         private List<BankProduct> bankProducts;
 
         // Банковсеие счета
@@ -67,19 +64,36 @@ namespace OrgDB_WPF
         // Свойства "Департаменты" и "Сотрудники" с доступом public нужны Json-сериализатору, иначе они игнорируются
 
         // Департаметны
-        public List<Department> Departments { get { return departments; } }
+        public ReadOnlyCollection<Department> Departments { get { return departments.AsReadOnly(); } }
 
         // Сотрудники
-        public List<Employee> Employees { get { return employees; } }
+        public ReadOnlyCollection<Employee> Employees { get { return employees.AsReadOnly(); } }
 
         // Статусы клиентов
-        public List<ClientStatus> ClientStatuses { get { return clientStatuses; } }
+        public ReadOnlyCollection<ClientStatus> ClientStatuses { get { return clientStatuses.AsReadOnly(); } }
 
         // Клиенты
         public List<Client> Clients { get { return clients; } }        
 
         // Банковские продукты
         public List<BankProduct> BankProducts { get { return bankProducts; } }
+
+        // Все банковские операции
+        //[JsonIgnore]
+        public ReadOnlyCollection<BankOperations.BankOperation> AllBankOperations
+        {
+            get
+            {
+                List<BankOperations.BankOperation> bankOperations = new List<BankOperations.BankOperation>();
+                foreach (BankAccountBalance bankAccountBalance in accountBalances)
+                {
+                    foreach (KeyValuePair<BankOperations.BankOperation, double> kv_bankOperation in bankAccountBalance.OperationsHistory) bankOperations.Add(kv_bankOperation.Key);
+                }
+
+                return bankOperations.AsReadOnly();
+            }
+
+        }
 
         // Банковские балансы
         public ReadOnlyCollection<BankAccountBalance> AccountBalances { get { return accountBalances.AsReadOnly(); } }
@@ -377,8 +391,84 @@ namespace OrgDB_WPF
 
         #endregion Сотрудники
 
+        #region Статусы клиентов
+
+        /// <summary>
+        /// Добавляет статус клиента в базу.
+        /// </summary>
+        /// <param name="clientStatus">Добавляемый статус</param>
+        public void AddClientStatus(ClientStatus clientStatus)
+        {
+            // инициализируем список статусов при необходимости
+            if (clientStatuses == null) clientStatuses = new List<ClientStatus>();
+
+            // проверим уникальность ключа
+            if (clientStatuses.Exists(x => x.ID == clientStatus.ID))
+                throw new Exception("Попытка добавления элемента с дублирующимся ключом!");
+
+            // всё ок, добавляем статус
+            clientStatuses.Add(clientStatus);
+        }
+        
+        /// <summary>
+        /// Удаляет статус клиента из базы
+        /// Опционально перед удалением проверяет наличие ссылок. По умолчанию опция включена
+        /// </summary>
+        /// <param name="clientStatus">Статус клиента, который требуется удалить</param>
+        /// <param name="CheckLinks">Проверять наличие ссылок</param>
+        public void RemoveClientStatus(ClientStatus clientStatus, bool CheckLinks = true)
+        {
+
+            // При необходимости проверим целостность ссылок
+            if (CheckLinks && LinksExists(clientStatus))
+                throw new Exception("На данный элемент существуют ссылки, удаление невозможно!");
+
+            // Обслуживаем цепочку статусов
+            if (clientStatus.PreviousClientStatus != null)
+                clientStatus.PreviousClientStatus.NextClientStatus = clientStatus.NextClientStatus;
+            if (clientStatus.NextClientStatus != null)
+                clientStatus.NextClientStatus.PreviousClientStatus = clientStatus.PreviousClientStatus;
+
+            // Удаляем статус            
+            clientStatuses.Remove(clientStatus);
+        }
+
+        /// <summary>
+        /// Устанавливает статус клиента
+        /// Рекомендуется использовать именно этот метод, а не свойство клиента "ClientStatus",
+        /// т.к. этот метод гарантирует установку только существующего в базе статуса клиента.
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        /// <param name="clientStatus">Устанавливаемый статус</param>
+        public void SetClientStatus (Client client, ClientStatus clientStatus)
+        {
+
+            // Проверим, добавлен ли этот статус в базу. Не добавленные в базу статусы нельзя устанавливать
+            if (!clientStatuses.Exists(x=>x==clientStatus))
+                throw new Exception("Данный статус не добавлен в базу, его нельзя установить клиенту.");
+
+            // Проверим соответствие статуса типу клиента
+            Type clientType = client.GetType();
+            Type statusType = clientStatus.GetType();
+
+            if (clientType == typeof(Individual) && statusType != typeof(IndividualStatus))
+                throw new Exception("Для физического лица допускается установка статуса только физического лица.");
+            if(clientType == typeof(LegalEntity) && statusType != typeof(LegalEntityStatus))
+                throw new Exception("Для юридического лица допускается установка статуса только юридического лица.");
+
+            // Проверки пройдены, устанавливаем статус
+            client.ClientStatus = clientStatus;
+
+        }
+         
+        #endregion Статусы клиентов
+
         #region Балансы счетов
 
+        /// <summary>
+        /// Добавляет банковский баланс в базу
+        /// </summary>
+        /// <param name="bankAccountBalance">Банковский баланс</param>
         public void AddAccountBalance(BankAccountBalance bankAccountBalance)
         {
             if (bankAccounts.Exists(x => x.Number == bankAccountBalance.BankAccount.Number))
@@ -426,6 +516,35 @@ namespace OrgDB_WPF
             return false;
         }
 
+        public bool LinksExists(ClientStatus clientStatus)
+        {
+            // Ссылки могут быть в сотрудниках и в других статусах.
+            // Рассматриваем только ссылки в сотрудниках, т.к. ссылки в других статусах являются указателями
+            // в цепочках статусов, и не должны препятствовать проверке перед удалением статусов.
+            // Целостность ссылок в цепочках статусов обеспечивается отдельно
+            return (clients != null && clients.Exists(x => x.ClientStatus == clientStatus));
+        }
+
+        public bool LinksExists(BankAccountBalance accountBalance)
+        {
+            // Если у баланса непустой список истории операций,
+            // то на него точно существуют ссылки в операциях истории.
+            if (accountBalance.OperationsHistory.Count > 0) return true;
+
+            // Проверим, встречаются ли ссылки на этот баланс в 
+            // историях операций других балансов            
+            foreach (BankAccountBalance curBalance in AccountBalances)
+            {
+                if (curBalance == accountBalance) continue;
+                List<BankOperations.BankOperation> operations = new List<BankOperations.BankOperation>();
+                foreach (BankOperations.BankOperation bankOperation in curBalance.OperationsHistory.Keys) operations.Add(bankOperation);
+                if (operations.Exists(x => x.AccountBalancesIds.Contains(accountBalance.ID))) return true;
+
+            }
+
+            return false;
+        }
+        
         #endregion Проверка ссылок
 
         #region Запись / чтение базы
@@ -752,7 +871,7 @@ namespace OrgDB_WPF
             private void ReadClientStatuses(XmlReader reader)
             {
                 // Очищаем список статусов
-                db.ClientStatuses.Clear();
+                db.clientStatuses.Clear();
 
                 // Перемещаемся к первому элементу с клиентским статусом
                 reader.Read();
@@ -827,13 +946,20 @@ namespace OrgDB_WPF
                     reader.Skip();
                 }
 
+                // временные List для поиска элементов
+                List<Employee> EmployeeSearcList = new List<Employee>();
+                foreach (Employee emp in db.Employees) EmployeeSearcList.Add(emp);
+
+                List<ClientStatus> ClientStatusesSearchList = new List<ClientStatus>();
+                foreach (ClientStatus cs in db.ClientStatuses) ClientStatusesSearchList.Add(cs);
+
                 // Заполняем менеджеров, статусы
                 foreach (Client currClient in db.clients)
                 {
                     if (currClient.ClientManagerId!=Guid.Empty)
-                        currClient.ClientManager = db.Employees.Find(x => x.id == currClient.ClientManagerId);
+                        currClient.ClientManager = EmployeeSearcList.Find(x => x.id == currClient.ClientManagerId);
                     if (currClient.ClientStatusId!=Guid.Empty)
-                        currClient.ClientStatus = db.ClientStatuses.Find(x => x.ID == currClient.ClientStatusId);
+                        currClient.ClientStatus = ClientStatusesSearchList.Find(x => x.ID == currClient.ClientStatusId);
                 } 
 
             }
@@ -976,13 +1102,13 @@ namespace OrgDB_WPF
                 db.Organization.WriteXml(writer);
 
                 // Узел Departments
-                Common.WriteXmlList<List<Department>, Department>(writer, db.Departments, "Departments");
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<Department>, Department>(writer, db.Departments, "Departments");
 
                 // Узел Employees
-                Common.WriteXmlList<List<Employee>, Employee>(writer, db.Employees, "Employees");
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<Employee>, Employee>(writer, db.Employees, "Employees");
                 
                 // Узел ClienStatuses
-                Common.WriteXmlList<List<ClientStatus>, ClientStatus>(writer, db.ClientStatuses, "ClientStatuses");
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<ClientStatus>, ClientStatus>(writer, db.ClientStatuses, "ClientStatuses");
 
                 // Узел Clients
                 Common.WriteXmlList<List<Client>, Client>(writer, db.Clients, "Clients");
@@ -1019,17 +1145,19 @@ namespace OrgDB_WPF
             /// <returns></returns>
             override public bool Serialize()
             {
-
+                                               
                 // Пользуемся своими JSON-конвертерами для каждого члена базы,
                 // чтобы управлять записью (записывать только нужные элементы)
 
-                string js = JsonConvert.SerializeObject(db, Newtonsoft.Json.Formatting.Indented,
-                    new DBSettingsJsonConverter(),
-                    new OrganizationJsonConverter(),
-                    new DepartmentJsonConverter(),
-                    new EmployeeJsonConverter(),
-                    new ClientStatusJsonConverter(),
-                    new ClientJsonConverter()
+                string js = JsonConvert.SerializeObject(db, Newtonsoft.Json.Formatting.Indented
+                    //,new DBSettingsJsonConverter()
+                    //,new OrganizationJsonConverter()
+                    , new DepartmentJsonConverter()
+                    , new EmployeeJsonConverter()
+                    , new ClientStatusJsonConverter()
+                    , new ClientJsonConverter()
+                    , new BankOperations.BankOperationJsonConverter()
+                    , new BankAccountBalanceJsonConverter()
                     );
                 File.WriteAllText(db.DBFilePath, js);
 

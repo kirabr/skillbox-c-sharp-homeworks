@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -25,7 +26,7 @@ namespace OrgDB_WPF.BankOperations
         protected List<BankAccounts.BankAccountBalance> accountBalances;
 
         // Идентификаторы обслуживаемых операцией балансов счетов
-        protected List<Guid> accountBalancesIds;
+        protected List<Guid> accountBalancesIds = new List<Guid>();
 
         // Признак сторно операции
         bool isStorno;
@@ -42,10 +43,7 @@ namespace OrgDB_WPF.BankOperations
 
         // Идентификатор
         public Guid ID { get { return id; } }
-
-        // Дата и время операции
-        public DateTime DateTime { get { return new DateTime(ticks); } }
-
+        
         // Отметка времени
         public Int64 Ticks { get { return ticks; } }
 
@@ -57,9 +55,9 @@ namespace OrgDB_WPF.BankOperations
         { 
             get 
             {
-                //List<Guid> ids = new List<Guid>();
-                //foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) ids.Add(bankAccountBalance.ID);
-                //return ids.AsReadOnly(); 
+                // при первом обращении к свойству заполняем его
+                if (accountBalancesIds.Count==0)
+                    foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) accountBalancesIds.Add(bankAccountBalance.ID);
 
                 return accountBalancesIds.AsReadOnly();
 
@@ -122,6 +120,7 @@ namespace OrgDB_WPF.BankOperations
             id = Guid.NewGuid();
             isStorno = true;
             stornoOperation = operationStorno;
+            stornoOperationId = operationStorno.ID;
             ticks = operationDateTime.Ticks;
             accountBalances = operationStorno.accountBalances;
             //accountBalancesIds = operationStorno.AccountBalancesIds;
@@ -217,6 +216,12 @@ namespace OrgDB_WPF.BankOperations
         }
 
         #endregion Запись в XML
+
+        #region Запись в JSON
+
+        public abstract void WriteJsonSpecifyedProperties(JsonWriter writer);
+
+        #endregion Запись в JSON
 
         #endregion API
 

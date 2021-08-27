@@ -424,22 +424,23 @@ namespace OrgDB_WPF
             catch { }
 
             Clients.ClientStatus clientStatus = new Clients.IndividualStatus("Начинающий");
-            DB.ClientStatuses.Add(clientStatus);
+            DB.AddClientStatus(clientStatus);
 
             Clients.ClientStatus clientStatus1 = new Clients.IndividualStatus("Средний");
             clientStatus1.PreviousClientStatus = clientStatus;
             clientStatus.NextClientStatus = clientStatus1;
-            DB.ClientStatuses.Add(clientStatus1);
+            DB.AddClientStatus(clientStatus1);
 
             Clients.ClientStatus clientStatus2 = new Clients.IndividualStatus("Опытный");
             clientStatus2.PreviousClientStatus = clientStatus1;
             clientStatus1.NextClientStatus = clientStatus2;
-            DB.ClientStatuses.Add(clientStatus2);
+            DB.AddClientStatus(clientStatus2);
 
-            return;
+            //DB.RemoveClientStatus(clientStatus);
 
             Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
-            individual2.ClientStatus = clientStatus;
+            //individual2.ClientStatus = clientStatus;
+            DB.SetClientStatus(individual2, clientStatus);
             individual2.FirstName = "Петр";
             individual2.SurName = "Шнурков";
             individual2.Patronymic = "Сергеевич";
@@ -512,12 +513,16 @@ namespace OrgDB_WPF
             //BankOperations.ChargeForInterest StornoMiddle = new BankOperations.ChargeForInterest(MiddleChargeForInterest);
             //StornoMiddle.Apply();
 
+            Clients.LegalEntityStatus legalEntityStatus1 = new Clients.LegalEntityStatus("Начинающий партнёр");
+            DB.AddClientStatus(legalEntityStatus1);
+
             Clients.LegalEntity legalEntity1 = new Clients.LegalEntity("ООО 'Копа и рогыта'");
             legalEntity1.FullName = "Общество с неограниченной безответственностью 'Копа и рогыта'";
             legalEntity1.INN = "000111";
             legalEntity1.KPP = "12345";
             legalEntity1.IsCorporate = true;
-            //legalEntity1.ClientStatus = clientStatus1;
+            //legalEntity1.ClientStatus = legalEntityStatus1;
+            DB.SetClientStatus(legalEntity1, legalEntityStatus1);
             legalEntity1.ClientManager = s_1;
 
             DB.BankProducts.Add(deposit);
@@ -525,6 +530,8 @@ namespace OrgDB_WPF
             DB.Clients.Add(individual1);
             DB.Clients.Add(individual2);
             DB.Clients.Add(legalEntity1);
+
+            
             
             DB.AddAccountBalance(bankAccountBalance1);
             DB.AddAccountBalance(bankAccountBalance2);

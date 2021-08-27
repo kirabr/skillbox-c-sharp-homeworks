@@ -38,13 +38,13 @@ namespace OrgDB_WPF.Clients
         public override ClientStatus ClientStatus 
         {
             get { return clientStatus; }
-            set
-            {
-                if (value.GetType() != typeof(LegalEntityStatus))
-                    throw new Exception("Для юридического лица допускается установка статуса только юридического лица.");
-                clientStatus = value;
-                clientStatusId = value.ID;
-            }
+            //set
+            //{
+            //    if (value.GetType() != typeof(LegalEntityStatus))
+            //        throw new Exception("Для юридического лица допускается установка статуса только юридического лица.");
+            //    clientStatus = value;
+            //    clientStatusId = value.ID;
+            //}
         }
 
         #endregion Свойства
