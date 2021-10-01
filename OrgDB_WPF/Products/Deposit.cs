@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
@@ -38,6 +40,11 @@ namespace OrgDB_WPF.Products
             if (selectedNode != null) hasCapitalization = selectedNode.ValueAsBoolean;
         }
 
+        public Deposit(JObject jBankProduct) : base(jBankProduct)
+        {
+            hasCapitalization = (bool)jBankProduct.SelectToken("HasCapitalization");
+        }
+
         #endregion Конструкторы
 
         #region Запись в XML
@@ -48,9 +55,19 @@ namespace OrgDB_WPF.Products
             WriteXmlBasicProperties(writer);
             Common.WriteXMLElement(writer, "HasCapitalization", HasCapitalization);
             writer.WriteEndElement();
-        } 
+        }
 
         #endregion Запись в XML
+
+        #region Запись в JSON
+        public override void WriteJsonParticularProperties(JsonWriter writer)
+        {
+
+            writer.WritePropertyName("HasCapitalization"); writer.WriteValue(HasCapitalization);
+
+        }
+
+        #endregion Запись в JSON
 
     }
 }

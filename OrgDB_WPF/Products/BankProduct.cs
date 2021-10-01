@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
@@ -78,6 +80,16 @@ namespace OrgDB_WPF.Products
 
         }
 
+        public BankProduct(JObject jBankProduct)
+        {
+            id = (Guid)jBankProduct.SelectToken("id");
+            name = (string)jBankProduct.SelectToken("Name");
+            description = (string)jBankProduct.SelectToken("Description");
+            basicPercentPerYear = (double)jBankProduct.SelectToken("BasicPercentPerYear");
+            basicPricePerYear = (double)jBankProduct.SelectToken("BasicPrice");
+
+        }
+
         #endregion Конструкторы
 
         #region API
@@ -98,6 +110,11 @@ namespace OrgDB_WPF.Products
 
         #endregion Запись в XML
 
+        #region Запись в JSON
+
+        public abstract void WriteJsonParticularProperties(JsonWriter writer);
+
+        #endregion Запись в JSON
 
         #endregion API
 

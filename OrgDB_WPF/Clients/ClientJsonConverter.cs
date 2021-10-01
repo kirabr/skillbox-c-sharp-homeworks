@@ -18,11 +18,13 @@ namespace OrgDB_WPF.Clients
         {
             writer.WriteStartObject();
 
+            writer.WritePropertyName("kind"); writer.WriteValue(value.GetType().Name);
             writer.WritePropertyName("id"); writer.WriteValue(value.ID);
             writer.WritePropertyName("Name"); writer.WriteValue(value.Name);
             writer.WritePropertyName("ClientManagerId"); writer.WriteValue(value.ClientManagerId);
             writer.WritePropertyName("IsResident"); writer.WriteValue(value.IsResident);
             writer.WritePropertyName("ClientStatusId"); writer.WriteValue(value.ClientStatusId);
+            value.WriteJsonParticularProperties(writer);
 
             writer.WriteEndObject();        }
     }

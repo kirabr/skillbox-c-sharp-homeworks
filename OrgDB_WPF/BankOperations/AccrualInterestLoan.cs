@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace OrgDB_WPF.BankOperations
@@ -42,6 +43,10 @@ namespace OrgDB_WPF.BankOperations
         }
 
         public AccrualInterestLoan(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        //public AccrualInterestLoan(JObject jBankOperation) : base(jBankOperation) { }
+
+        public AccrualInterestLoan() { }
 
         #endregion Конструкторы
 
@@ -92,7 +97,7 @@ namespace OrgDB_WPF.BankOperations
 
         #region Запись в JSON
         
-        public override void WriteJsonSpecifyedProperties(JsonWriter writer)
+        public override void WriteJsonParticularProperties(JsonWriter writer)
         {
 
         }

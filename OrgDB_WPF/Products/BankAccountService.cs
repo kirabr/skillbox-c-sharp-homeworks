@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
@@ -19,6 +21,8 @@ namespace OrgDB_WPF.Products
 
         public BankAccountService(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
 
+        public BankAccountService(JObject jBankProduct) : base(jBankProduct) { }
+
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)
@@ -29,6 +33,11 @@ namespace OrgDB_WPF.Products
         }
 
         #endregion Запись в XML
+
+        #region Запись в JSON
+        public override void WriteJsonParticularProperties(JsonWriter writer) {}
+
+        #endregion Запись в JSON
 
     }
 }

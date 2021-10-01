@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
     // Открытие кредита
     public class CreditOpening : BankOperation
     {
-
 
         #region Поля
 
@@ -55,6 +55,13 @@ namespace OrgDB_WPF.BankOperations
             if (selectedNode != null) creditSum = selectedNode.ValueAsDouble;
         }
 
+        /*public CreditOpening(JObject jBankOpertion) : base(jBankOpertion)
+        {
+            creditSum = (double)jBankOpertion.SelectToken("CreditSum");
+        }*/
+
+        public CreditOpening() { }
+
         #endregion Конструкторы
 
         #region API
@@ -91,7 +98,7 @@ namespace OrgDB_WPF.BankOperations
 
         #region Запись в JSON
 
-        public override void WriteJsonSpecifyedProperties(JsonWriter writer)
+        public override void WriteJsonParticularProperties(JsonWriter writer)
         {
             writer.WritePropertyName("CreditSum"); writer.WriteValue(CreditSum);
         }

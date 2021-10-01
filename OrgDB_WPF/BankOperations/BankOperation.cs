@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.XPath;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -23,7 +24,7 @@ namespace OrgDB_WPF.BankOperations
         Int64 ticks;
 
         // Обслуживаемые операцией балансы счетов
-        protected List<BankAccounts.BankAccountBalance> accountBalances;
+        protected List<BankAccounts.BankAccountBalance> accountBalances = new List<BankAccounts.BankAccountBalance>();
 
         // Идентификаторы обслуживаемых операцией балансов счетов
         protected List<Guid> accountBalancesIds = new List<Guid>();
@@ -123,9 +124,12 @@ namespace OrgDB_WPF.BankOperations
             stornoOperationId = operationStorno.ID;
             ticks = operationDateTime.Ticks;
             accountBalances = operationStorno.accountBalances;
-            //accountBalancesIds = operationStorno.AccountBalancesIds;
         }
 
+        /// <summary>
+        /// Конструктор по XPathNavigator. Используется при загрузке из XML
+        /// </summary>
+        /// <param name="xPathNavigator"></param>
         public BankOperation(XPathNavigator xPathNavigator)
         {
             id = new Guid(xPathNavigator.GetAttribute("id", ""));
@@ -156,26 +160,49 @@ namespace OrgDB_WPF.BankOperations
             if (selectedNode != null) stornoOperationId = new Guid(selectedNode.Value);
         }
 
+        /// <summary>
+        /// Конструктор по умолчанию. НЕ УДАЛЯТЬ!
+        /// На него может не быть явных ссылок, применяется при загрузке из файлов через Assembly.CreateInstance
+        /// </summary>
+        public BankOperation() {}
+
         #endregion Конструкторы
 
         #region API
 
+        /// <summary>
+        /// Применить операцию к банковским балансам
+        /// </summary>
         public abstract void Apply();
 
+        /// <summary>
+        /// Вычисляет результат операции при применении к банковскому балансу
+        /// </summary>
+        /// <param name="bankAccountBalance">Банковский баланс, к которому применяется операция</param>
+        /// <returns>Результат применения банковской операции</returns>
         public abstract double Calculate(BankAccounts.BankAccountBalance bankAccountBalance);
 
+        /// <summary>
+        /// Вычисляет результат сторно-операции. Метод применяется только для операций с одним банковским балансом.
+        /// Вычисление результата сторно-операции, содержащей более одного банковского баланса реализуется в этих операциях отдельно
+        /// </summary>
+        /// <returns></returns>
         public double CalculateStorno()
         {
             return CalculateStorno(AccountBalances[0]);
         }
 
+        /// <summary>
+        /// Вычисляет результат сторно-операции для банковского баланса
+        /// </summary>
+        /// <param name="bankAccountBalance">Банковский баланс, к которому применяется сторно-операция</param>
+        /// <returns>Результат применения банковской сторно-операции</returns>
         public double CalculateStorno(BankAccounts.BankAccountBalance bankAccountBalance)
         {
 
             // Найдём операцию (1), предшествующую сторнируемой операции и вернём её (1) результат
 
             // Все ключи операций
-            //IList<BankOperation> bankOperations = AccountBalances[0].OperationsHistory.Keys;
             IList<BankOperation> bankOperations = bankAccountBalance.OperationsHistory.Keys;
 
             // Индекс ключа операции, предшествующей сторнинуемой операции
@@ -188,6 +215,10 @@ namespace OrgDB_WPF.BankOperations
             return AccountBalances[0].OperationsHistory[bankOperations[indKeyBefore]];
         }
 
+        /// <summary>
+        /// Добавляет банковский баланс к операции
+        /// </summary>
+        /// <param name="bankAccountBalance"></param>
         public void AddAccountBalance(BankAccounts.BankAccountBalance bankAccountBalance)
         {
             // У операции не может быть более 2 балансов
@@ -198,9 +229,37 @@ namespace OrgDB_WPF.BankOperations
 
         }
 
+        /// <summary>
+        /// Заполняет детали операции по JSON DTO представлению.
+        /// </summary>
+        /// <param name="jBankOperation">JSON DTO представление операции</param>
+        public virtual void SetDetails(JObject jBankOperation)
+        {
+            id = (Guid)jBankOperation.SelectToken("id");
+            ticks = (long)jBankOperation.SelectToken("Ticks");
+            isStorno = (bool)jBankOperation.SelectToken("IsStorno");
+            if (isStorno) stornoOperationId = (Guid)jBankOperation.SelectToken("StornoOperationID");
+            JToken jToken = jBankOperation["AccountBalancesIds"];
+            if (jToken.HasValues)
+            {
+                JArray jAccountBalancesIds = (JArray)jToken;
+                for (int i = 0; i < jAccountBalancesIds.Count; i++)
+                    accountBalancesIds.Add((Guid)jAccountBalancesIds[i]);
+            }
+        }
+
         #region Запись в XML
+        
+        /// <summary>
+        /// Записывает операцию в XML запись 
+        /// </summary>
+        /// <param name="writer">XML запись</param>
         abstract public void WriteXml(XmlWriter writer);
 
+        /// <summary>
+        /// Записывает общие для всех банковских операций свойства в XML запись
+        /// </summary>
+        /// <param name="writer"></param>
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
             writer.WriteAttributeString("id", ID.ToString());
@@ -219,7 +278,11 @@ namespace OrgDB_WPF.BankOperations
 
         #region Запись в JSON
 
-        public abstract void WriteJsonSpecifyedProperties(JsonWriter writer);
+        /// <summary>
+        /// Записывает частные свойства операции в запись JSON
+        /// </summary>
+        /// <param name="writer"></param>
+        public abstract void WriteJsonParticularProperties(JsonWriter writer);
 
         #endregion Запись в JSON
 

@@ -21,6 +21,7 @@ namespace OrgDB_WPF.BankOperations
 
             // запишем тип операции
             writer.WritePropertyName("Kind"); writer.WriteValue(value.GetType().Name);
+            writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
 
             // запишем общие для всех операций свойства
             writer.WritePropertyName("id"); writer.WriteValue(value.ID);
@@ -36,7 +37,7 @@ namespace OrgDB_WPF.BankOperations
             writer.WriteEndArray();
 
             // запишем индивидуальные (для вида операции) свойства
-            value.WriteJsonSpecifyedProperties(writer);
+            value.WriteJsonParticularProperties(writer);
 
             writer.WriteEndObject();
         }

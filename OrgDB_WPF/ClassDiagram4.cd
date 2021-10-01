@@ -71,7 +71,7 @@
   <Class Name="OrgDB_WPF.BankOperations.BankOperation" Collapsed="true">
     <Position X="5" Y="8.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAEEElAABAAgCQAAAAgAIAIACCACAQAAAAAgAAABhA=</HashCode>
+      <HashCode>AAAEEElAABAAgCQAAAAgAIAIACCACAAAAAAAgAAARhA=</HashCode>
       <FileName>BankOperations\BankOperation.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
@@ -79,7 +79,7 @@
   <Class Name="OrgDB_WPF.BankOperations.SimpleChangeBalance" Collapsed="true">
     <Position X="1.5" Y="10" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAABAAAAAAAAEAAAAAAAAAAAAACAAAAAAAAAAAAAAQ=</HashCode>
+      <HashCode>AAAABAAAAAAAAEAAAAAAAAAAAAACAAAAAAAAAAAAQAQ=</HashCode>
       <FileName>BankOperations\SimpleChangeBalance.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -100,55 +100,55 @@
   <Class Name="OrgDB_WPF.BankOperations.ChargeForInterest" Collapsed="true">
     <Position X="3.25" Y="10" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAQAA=</HashCode>
       <FileName>BankOperations\ChargeForInterest.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.BankOperations.CreditOpening" Collapsed="true">
     <Position X="5" Y="10" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAEAAgABABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAAAA=</HashCode>
+      <HashCode>AAEAAgABABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAQAA=</HashCode>
       <FileName>BankOperations\CreditOpening.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.BankOperations.AccrualInterestLoan" Collapsed="true">
     <Position X="6.75" Y="10" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAQAA=</HashCode>
       <FileName>BankOperations\AccrualInterestLoan.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.BankOperations.TransferBetweenAccounts" Collapsed="true">
     <Position X="8.5" Y="10" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAABAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAAAQ=</HashCode>
+      <HashCode>AAAABAAAABAAAAAAAAAAAAAAACAAAAAAAAAAgAAAQAQ=</HashCode>
       <FileName>BankOperations\TransferBetweenAccounts.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.Products.BankProduct" Collapsed="true">
-    <Position X="3.75" Y="13" Width="1.5" />
+    <Position X="12" Y="5.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAgAAAAgoACAIAAAAAQAAAAEAAAAEAAAgBAAAgA=</HashCode>
       <FileName>Products\BankProduct.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.2" />
+    <Lollipop Position="0.1" />
   </Class>
   <Class Name="OrgDB_WPF.Products.BankAccountService">
-    <Position X="1.75" Y="14.25" Width="1.5" />
+    <Position X="10" Y="7.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Products\BankAccountService.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.Products.Deposit">
-    <Position X="3.75" Y="14.25" Width="1.5" />
+    <Position X="12" Y="7.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAACAAAAAAAAAAAACAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Products\Deposit.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="OrgDB_WPF.Products.Credit">
-    <Position X="5.75" Y="14.25" Width="1.5" />
+    <Position X="14" Y="7.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
       <FileName>Products\Credit.cs</FileName>

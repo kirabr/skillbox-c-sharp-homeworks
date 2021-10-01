@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
     // Списание с баланса счёта
     public class Withdrawing : SimpleChangeBalance
     {
-
 
         #region Поля
 
@@ -30,6 +30,8 @@ namespace OrgDB_WPF.BankOperations
             : this(new List<BankAccounts.BankAccountBalance>() { operationAccountBalances }, changingSum) { }
 
         public Withdrawing(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        public Withdrawing() { }
 
         #endregion Конструкторы
 

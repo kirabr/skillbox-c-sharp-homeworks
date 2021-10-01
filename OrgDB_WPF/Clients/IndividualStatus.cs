@@ -1,4 +1,5 @@
 ﻿using System.Xml;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
@@ -10,6 +11,7 @@ namespace OrgDB_WPF.Clients
 
         public IndividualStatus(XmlReader reader) : base(reader) { }
 
+        public IndividualStatus(JObject jClientStatus) : base(jClientStatus) { }
 
         #region Запись в XML
 

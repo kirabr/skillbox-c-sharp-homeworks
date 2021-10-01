@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using OrgDB_WPF.BankOperations;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankAccounts
 {
@@ -151,6 +153,15 @@ namespace OrgDB_WPF.BankAccounts
 
         }
 
+        public BankAccountBalance(JObject jBankAccountBalance, BankAccount bankAccount)
+        {
+            id = (Guid)jBankAccountBalance.SelectToken("id");
+            this.bankAccount = bankAccount;
+            balance = (double)jBankAccountBalance.SelectToken("Balance");
+            overdraftPossible = (bool)jBankAccountBalance.SelectToken("OverdraftPossible");
+            operationsHistory = new SortedList<BankOperation, double>(new BankOperationComparer());
+        }
+
         #endregion Конструкторы
 
         #region API
@@ -161,9 +172,9 @@ namespace OrgDB_WPF.BankAccounts
         /// <param name="bankOperation"></param>
         public void AddBankOperation(BankOperation bankOperation)
         {
-            
+
             // Проверим, можно ли добавить банковскую операцию.
-            
+
             // Если есть более поздние операции, чем добавляемая, вызываем исключение
             if (operationsHistory.Count > 0)
             {
@@ -194,7 +205,17 @@ namespace OrgDB_WPF.BankAccounts
             operationsHistory.Add(bankOperation, balance);
         }
 
-
+        /// <summary>
+        /// Добавляет банковскую операцию и её результат в историю операций.
+        /// Рекомендуется использовать метод с осторожностью, т.к. не выполняется
+        /// никаких проверок и вычислений. Применение метода допустимо при загрузке данных.
+        /// </summary>
+        /// <param name="bankOperation">банковская операция</param>
+        /// <param name="OperationResult">результат операции для этого баланса</param>
+        internal void AddBankOperation(BankOperation bankOperation, double OperationResult)
+        {
+            operationsHistory.Add(bankOperation, OperationResult);
+        }
 
         #region Запись в XML
 

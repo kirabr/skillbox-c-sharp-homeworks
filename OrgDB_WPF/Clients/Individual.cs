@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
@@ -34,13 +36,7 @@ namespace OrgDB_WPF.Clients
         public override ClientStatus ClientStatus
         {
             get { return clientStatus; }
-            //set
-            //{
-            //    if (value.GetType() != typeof(IndividualStatus))
-            //        throw new Exception("Для физического лица допускается установка статуса только физического лица.");
-            //    clientStatus = value;
-            //    clientStatusId = value.ID;
-            //}
+          
         }
 
         #endregion Свойства
@@ -63,6 +59,14 @@ namespace OrgDB_WPF.Clients
             selectedNode = xPathNavigator.SelectSingleNode("//Patronymic");
             if (selectedNode != null) patronymic = selectedNode.Value;
 
+        }
+
+        public Individual(JObject jClient) : base(jClient)
+        {
+            firstName = (string)jClient.SelectToken("FirstName");
+            surName = (string)jClient.SelectToken("SurName");
+            patronymic = (string)jClient.SelectToken("Patronymic");
+            isVIP = (bool)jClient.SelectToken("IsVIP");
         }
 
         #endregion Конструкторы
@@ -88,6 +92,20 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в XML
+
+
+        #region Запись в JSON
+        public override void WriteJsonParticularProperties(JsonWriter writer)
+        {
+
+            writer.WritePropertyName("FirstName"); writer.WriteValue(FirstName);
+            writer.WritePropertyName("SurName"); writer.WriteValue(SurName);
+            writer.WritePropertyName("Patronymic"); writer.WriteValue(Patronymic);
+            writer.WritePropertyName("IsVIP"); writer.WriteValue(IsVIP);
+
+        }
+
+        #endregion Запись в JSON
 
     }
 

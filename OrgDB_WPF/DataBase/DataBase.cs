@@ -17,6 +17,7 @@ using OrgDB_WPF.Clients;
 using OrgDB_WPF.Products;
 using OrgDB_WPF.BankAccounts;
 using System.Collections.ObjectModel;
+using System.Reflection;
 
 namespace OrgDB_WPF
 {
@@ -47,11 +48,9 @@ namespace OrgDB_WPF
         private List<BankProduct> bankProducts;
 
         // Банковсеие счета
-        [JsonIgnore]
         private List<BankAccount> bankAccounts = new List<BankAccount>();
 
         // Банковские балансы
-        [JsonIgnore]
         private List<BankAccountBalance> accountBalances;        
         
         #endregion
@@ -73,13 +72,15 @@ namespace OrgDB_WPF
         public ReadOnlyCollection<ClientStatus> ClientStatuses { get { return clientStatuses.AsReadOnly(); } }
 
         // Клиенты
-        public List<Client> Clients { get { return clients; } }        
+        public ReadOnlyCollection<Client> Clients { get { return clients.AsReadOnly(); } }        
 
         // Банковские продукты
-        public List<BankProduct> BankProducts { get { return bankProducts; } }
+        public ReadOnlyCollection<BankProduct> BankProducts { get { return bankProducts.AsReadOnly(); } }
+
+        // Банковские счета
+        public ReadOnlyCollection<BankAccount> BankAccounts { get { return bankAccounts.AsReadOnly(); } }
 
         // Все банковские операции
-        //[JsonIgnore]
         public ReadOnlyCollection<BankOperations.BankOperation> AllBankOperations
         {
             get
@@ -101,6 +102,7 @@ namespace OrgDB_WPF
         /// <summary>
         /// Путь к файлу базы
         /// </summary>
+        [JsonIgnore]
         public string DBFilePath
         {
             get { return dbSettings.DBFilePath; }
@@ -460,8 +462,102 @@ namespace OrgDB_WPF
             client.ClientStatus = clientStatus;
 
         }
-         
+
         #endregion Статусы клиентов
+
+        #region Клиенты
+
+        /// <summary>
+        /// Добавляет клиента в базу
+        /// </summary>
+        /// <param name="client">Клиент</param>
+        public void AddClient(Client client)
+        {
+            if (clients == null) clients = new List<Client>();
+
+            // проверяем уникальность ID
+            if (clients.Exists(x => x.ID == client.ID))
+                throw new Exception("Попытка добавления клиента с неуникальным ID");
+
+            clients.Add(client);
+        }
+
+        /// <summary>
+        /// Удаляет клиента из базы. Опционально проверяет существование ссылок на этот элемент
+        /// </summary>
+        /// <param name="client">Удаляемый клиент</param>
+        /// <param name="CheckLinks">Проверять наличие ссылок</param>
+        public void RemoveClient(Client client, bool CheckLinks = true)
+        {
+            if (CheckLinks && LinksExists(client))
+                throw new Exception("На данный элемент существуют ссылки, удаление невозможно!");
+
+            clients.Remove(client);
+
+        }
+
+        #endregion Клиенты
+
+        #region Банковские продукты
+
+        /// <summary>
+        /// Добавляет банковский продукт в базу
+        /// </summary>
+        /// <param name="bankProduct"></param>
+        public void AddBankProduct(BankProduct bankProduct)
+        {
+            if (bankProducts == null) bankProducts = new List<BankProduct>();
+
+            if (bankProducts.Exists(x => x.ID == bankProduct.ID))
+                throw new Exception("Попытка добавления банковского продукта с неуникальным ID");
+
+            bankProducts.Add(bankProduct);
+
+        }
+
+        /// <summary>
+        /// Удаляет банковский продукт из базы. Опционально проверяет наличие ссылок на данный элемент.
+        /// </summary>
+        /// <param name="bankProduct">Банковский продукт</param>
+        /// <param name="CheckLinks">Проверять наличие ссылок</param>
+        public void RemoveBankProduct(BankProduct bankProduct, bool CheckLinks = true)
+        {
+            if (CheckLinks && LinksExists(bankProduct))
+                throw new Exception("На данный элемент существуют ссылки, удаление невозможно");
+
+            bankProducts.Remove(bankProduct);
+        }
+
+        #endregion Банковские продукты
+
+        #region Банковские счета
+        
+        /// <summary>
+        /// Добавляет банковский счёт в базу
+        /// </summary>
+        /// <param name="bankAccount"></param>
+        public void AddBankAccount(BankAccount bankAccount)
+        {
+            if (bankAccounts.Exists(x => x.Number == bankAccount.Number))
+                throw new Exception("Попытка добавления банковского счёта с неуникальным номером!");
+            
+            bankAccounts.Add(bankAccount);
+        }
+
+        /// <summary>
+        /// Удаляет банковский счёт из базы. Опционально проверяет наличие ссылок на данный элемент.
+        /// </summary>
+        /// <param name="bankAccount">Удаляемый банковский счёт</param>
+        /// <param name="CheckLinks">Проверять наличие ссылок</param>
+        public void RemoveBankAccount(BankAccount bankAccount, bool CheckLinks = true)
+        {
+            if (CheckLinks&&LinksExists(bankAccount))
+                throw new Exception("На данный элемент существуют ссылки, удаление невозможно");
+
+            bankAccounts.Remove(bankAccount);
+        }
+
+        #endregion Банковские счета
 
         #region Балансы счетов
 
@@ -516,6 +612,12 @@ namespace OrgDB_WPF
             return false;
         }
 
+        /// <summary>
+        /// Проверяет, существуют ли в других элементах базы ссылки на этот
+        /// Перегрузка для cтатуса клиента
+        /// </summary>
+        /// <param name="clientStatus">Статус клиента</param>
+        /// <returns></returns>
         public bool LinksExists(ClientStatus clientStatus)
         {
             // Ссылки могут быть в сотрудниках и в других статусах.
@@ -525,6 +627,38 @@ namespace OrgDB_WPF
             return (clients != null && clients.Exists(x => x.ClientStatus == clientStatus));
         }
 
+        /// <summary>
+        /// Проверяет, существуют ли в других элементах базы ссылки на этот
+        /// Перегрузка для клиента
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns></returns>
+        public bool LinksExists(Client client)
+        {
+
+            // ссылки могут быть в банковских счетах
+            return (bankAccounts != null && bankAccounts.Exists(x => x.Owner == client));
+        }
+
+        /// <summary>
+        /// Проверяет, существуют ли в других элементах базы ссылки на этот
+        /// Перегрузка для банковского счёта
+        /// </summary>
+        /// <param name="bankAccount">Банковский счёт</param>
+        /// <returns></returns>
+        public bool LinksExists(BankAccount bankAccount)
+        {
+
+            return (accountBalances!=null&&accountBalances.Exists(x=>x.BankAccount.Number==bankAccount.Number));
+
+        }
+
+        /// <summary>
+        /// Проверяет, существуют ли в других элементах базы ссылки на этот
+        /// Перегрузка для cтатуса баланса счёта
+        /// </summary>
+        /// <param name="accountBalance"></param>
+        /// <returns></returns>
         public bool LinksExists(BankAccountBalance accountBalance)
         {
             // Если у баланса непустой список истории операций,
@@ -544,7 +678,23 @@ namespace OrgDB_WPF
 
             return false;
         }
-        
+
+        /// <summary>
+        /// Проверяет, существуют ли в других элементах базы ссылки на этот
+        /// Перегрузка для банковского продукта
+        /// </summary>
+        /// <param name="bankProduct">Банковский продукт</param>
+        /// <returns></returns>
+        public bool LinksExists(BankProduct bankProduct)
+        {
+
+            // ссылки могут быть в банковских счетах
+            if (bankAccounts != null)
+                return bankAccounts.Exists(x => x.Products.Exists(y => y.ID == bankProduct.ID));
+
+            return false;
+        }
+
         #endregion Проверка ссылок
 
         #region Запись / чтение базы
@@ -601,7 +751,10 @@ namespace OrgDB_WPF
             // Список ошибок
             protected List<string> errorList = new List<string>();
 
-            public DBSerializer(DataBase dataBase) { db = dataBase; }
+            public DBSerializer(DataBase dataBase) 
+            { 
+                db = dataBase;
+            }
             
             public DBSerializer() { }
 
@@ -915,7 +1068,7 @@ namespace OrgDB_WPF
             {
 
                 // Очищаем список клиентов
-                db.Clients.Clear();
+                db.clients.Clear();
 
                 // Перемещаемся к первому элементу-клиенту
                 reader.Read();
@@ -967,7 +1120,7 @@ namespace OrgDB_WPF
             private void ReadBankProducts(XmlReader reader)
             {
                 // Очищаем список банковских продуктов
-                db.BankProducts.Clear();
+                db.bankProducts.Clear();
 
                 // Перемещаемся к первому продукту
                 reader.Read();
@@ -997,7 +1150,7 @@ namespace OrgDB_WPF
                     }
 
                     if (bankProduct != null)
-                        db.BankProducts.Add(bankProduct);
+                        db.bankProducts.Add(bankProduct);
 
                     reader.Skip();
 
@@ -1029,7 +1182,7 @@ namespace OrgDB_WPF
                     if (selectedNode != null) AccountNumber = selectedNode.Value;
 
                     selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/OwnerID");
-                    if (selectedNode != null) AccountOwner = db.Clients.Find(x => x.ID == new Guid(selectedNode.Value));
+                    if (selectedNode != null) AccountOwner = Common.ListFromReadOnlyCollection(db.Clients).Find(x => x.ID == new Guid(selectedNode.Value));
 
                     selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/Products");
                     if (selectedNode != null && selectedNode.MoveToFirstChild())
@@ -1111,10 +1264,10 @@ namespace OrgDB_WPF
                 Common.WriteXmlReadOnlyList<ReadOnlyCollection<ClientStatus>, ClientStatus>(writer, db.ClientStatuses, "ClientStatuses");
 
                 // Узел Clients
-                Common.WriteXmlList<List<Client>, Client>(writer, db.Clients, "Clients");
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<Client>, Client>(writer, db.Clients, "Clients");
 
                 // Узел BankProducts
-                Common.WriteXmlList<List<Products.BankProduct>, Products.BankProduct>(writer, db.BankProducts, "BankProducts");
+                Common.WriteXmlReadOnlyList<ReadOnlyCollection<Products.BankProduct>, Products.BankProduct>(writer, db.BankProducts, "BankProducts");
 
                 // Узел AccountBalances
                 Common.WriteXmlReadOnlyList<ReadOnlyCollection<BankAccountBalance>, BankAccountBalance>(writer, db.AccountBalances, "AccountBalances");
@@ -1156,6 +1309,8 @@ namespace OrgDB_WPF
                     , new EmployeeJsonConverter()
                     , new ClientStatusJsonConverter()
                     , new ClientJsonConverter()
+                    , new BankProductJsonConverter()
+                    , new BankAccountJsonConverter()
                     , new BankOperations.BankOperationJsonConverter()
                     , new BankAccountBalanceJsonConverter()
                     );
@@ -1173,11 +1328,8 @@ namespace OrgDB_WPF
 
                 errorList.Clear();
 
-                if (db.departments == null) db.departments = new List<Department>();
-                else db.departments.Clear();
-
-                if (db.employees == null) db.employees = new List<Employee>();
-                else db.employees.Clear();
+                // Очищаем базу перед загрузкой
+                db.Flush();
 
                 string js = File.ReadAllText(db.DBFilePath);
 
@@ -1189,7 +1341,7 @@ namespace OrgDB_WPF
                 JToken jToken;
 
                 // Параметры настройки базы получаем по соответствующим ключам (токенам)
-                jToken = dbJson.SelectToken("dbSettings.dbFilePath");
+                jToken = dbJson.SelectToken("dbSettings.DBFilePath");
                 if (jToken != null)
                     db.dbSettings.DBFilePath = (string)jToken;
                 else
@@ -1277,10 +1429,218 @@ namespace OrgDB_WPF
                     db.FillEmployeesDepartmentNames();
                 }
 
+                // Статусы клиентов
+                jToken = dbJson["ClientStatuses"];
+                if (jToken.HasValues)
+                {
+                    JArray jClientStatuses = (JArray)jToken;
+                    for (int i = 0; i < jClientStatuses.Count; i++)
+                    {
+                        
+                        // Получаем JSON статус-клиента, с помомщью токена "kind" анализируем,
+                        // какой именно надо создать. Создаём, добавляем в базу
+                        JObject jClientStatus = (JObject)jClientStatuses[i];
+                        string kind = (string)jClientStatus.SelectToken("kind");
+                        
+                        ClientStatus clientStatus = null;
+
+                        switch (kind)
+                        {
+                            case "IndividualStatus":
+                                clientStatus = new IndividualStatus(jClientStatus);
+                                break;
+                            case "LegalEntityStatus":
+                                clientStatus = new LegalEntityStatus(jClientStatus);
+                                break;
+                        }
+
+                        db.AddClientStatus(clientStatus);
+
+                    }
+
+                    // Заполняем цепочки статусов
+                    foreach(ClientStatus curClientStatus in db.clientStatuses)
+                    {
+                        if (curClientStatus.PreviousClientStatusId != Guid.Empty)
+                            curClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.ID == curClientStatus.PreviousClientStatusId);
+                        if (curClientStatus.NextClientStatusId != Guid.Empty)
+                            curClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.ID == curClientStatus.NextClientStatusId);
+
+                    }
+                }
+
+                // Клиенты
+                jToken = dbJson["Clients"];
+                if (jToken.HasValues)
+                {
+
+                    JArray jClients = (JArray)jToken;
+                    for (int i = 0; i<jClients.Count; i++)
+                    {
+                        JObject jClient = (JObject)jClients[i];
+
+                        Client client = null;
+
+                        switch ((string)jClient.SelectToken("kind"))
+                        {
+                            case "Individual":
+                                client = new Individual(jClient);
+                                break;
+                            case "LegalEntity":
+                                client = new LegalEntity(jClient);
+                                break;
+                        }
+
+                        if (client.ClientStatusId!=Guid.Empty)
+                            client.ClientStatus = db.clientStatuses.Find(x => x.ID == client.ClientStatusId);
+
+                        if (client!=null) db.AddClient(client);
+                    }
+                    
+                }
+
+                // Банковские продукты
+                jToken = dbJson["BankProducts"];
+                if (jToken.HasValues)
+                {
+                    JArray jBankProducts = (JArray)jToken;
+                    for (int i = 0; i < jBankProducts.Count; i++)
+                    {
+                        JObject jBankProduct = (JObject)jBankProducts[i];
+
+                        BankProduct bankProduct = null;
+
+                        switch ((string)jBankProduct.SelectToken("kind"))
+                        {
+                            case "BankAccountService":
+                                bankProduct = new BankAccountService(jBankProduct);
+                                break;
+                            case "Credit":
+                                bankProduct = new Credit(jBankProduct);
+                                break;
+                            case "Deposit":
+                                bankProduct = new Deposit(jBankProduct);
+                                break;
+                        }
+
+                        if (bankProduct != null) db.AddBankProduct(bankProduct);
+                    }
+
+                }
+
+                // Банковские счета
+                jToken = dbJson["BankAccounts"];
+                if (jToken.HasValues)
+                {
+                    JArray jBankAccounts = (JArray)jToken;
+                    for (int i = 0; i < jBankAccounts.Count; i++)
+                    {
+                        JObject jBankAccount = (JObject)jBankAccounts[i];
+                        
+                        Client accountOwner = db.clients.Find(x => x.ID == (Guid)jBankAccount.SelectToken("OwnerID"));
+                        List<BankProduct> accountBankProducts = new List<BankProduct>();
+                        JToken jBankProducts = jBankAccount["ProductIDs"];
+                        if (jBankProducts.HasValues)
+                        {
+                            JArray productIDS = (JArray)jBankProducts;
+                            for (int j = 0; j < productIDS.Count; j++)
+                            {
+                                BankProduct bankProduct = db.bankProducts.Find(x => x.ID == (Guid)productIDS[j]);
+                                if (bankProduct != null) accountBankProducts.Add(bankProduct);
+                            }
+                        }
+
+                        BankAccount bankAccount = new BankAccount((string)jBankAccount.SelectToken("Number"),
+                            accountOwner ,accountBankProducts);
+                        db.AddBankAccount(bankAccount);
+                    }
+                }
+
+                // Балансы банковских счетов
+                jToken = dbJson["AccountBalances"];
+                if (jToken.HasValues)
+                {
+
+                    // В балансах и операциях встречаются перекрёстные ссылки -
+                    // балансы содержат историю операций, а оперции содержат ссылки на балансы,
+                    // в которых они участвуют.
+                    //
+                    // Для корректного чтения и заполнения данных базы сначала читаем балансы
+                    // не заполняя историю операций.
+                    // Затем читаем все операции и заполняем в них ссылки на балансы.
+                    // Наконец в балансах заполняем историю операций.
+                    
+                    JArray jAccountBalances = (JArray)jToken;
+
+                    for (int i = 0; i < jAccountBalances.Count; i++)
+                    {
+                        JObject jAccountBalance = (JObject)jAccountBalances[i];
+                        BankAccount bankAccount = db.bankAccounts.Find(x => x.Number == (string)jAccountBalance.SelectToken("BankAccountNumber"));
+                        BankAccountBalance bankAccountBalance = new BankAccountBalance(jAccountBalance, bankAccount);
+                        db.accountBalances.Add(bankAccountBalance);
+                    }
+
+                    // Все банковские операции - временная коллекция для последующего заполнения банковских балансов
+                    List<BankOperations.BankOperation> bankOperations = new List<BankOperations.BankOperation>();
+                    JToken jAllBankOperationsToken = dbJson["AllBankOperations"];
+                    if (jAllBankOperationsToken.HasValues)
+                    {
+                        
+                        // Первичное заполнение всех банковских операций данными из файла
+                        JArray jAllBankOperations = (JArray)jAllBankOperationsToken;
+                        for (int j = 0; j < jAllBankOperations.Count; j++)
+                        {
+                            JObject jBankOperation = (JObject)jAllBankOperations[j];
+
+                            Assembly assembly = typeof(BankOperations.BankOperation).Assembly;
+                            BankOperations.BankOperation bankOperation = 
+                                (BankOperations.BankOperation)assembly.CreateInstance((string)jBankOperation.SelectToken("FullTypeName"));
+
+                            bankOperation.SetDetails(jBankOperation);
+
+                            bankOperations.Add(bankOperation);
+
+                        }
+
+                        // заполнение прочими данными: ссылки на банковские балансы, сторно-операции
+                        foreach (BankOperations.BankOperation curBankOperation in bankOperations)
+                        {
+                            foreach (Guid accountBalanceId in curBankOperation.AccountBalancesIds)
+                                curBankOperation.AddAccountBalance(db.accountBalances.Find(x => x.ID == accountBalanceId));
+                            if (curBankOperation.IsStorno)
+                                curBankOperation.StornoOperation = bankOperations.Find(x => x.ID == curBankOperation.StornoOperationID);
+                        }
+
+                    }
+
+                    // заполняем истории банковских операций в балансах
+                    for (int i = 0; i < jAccountBalances.Count; i++)
+                    {
+                        JObject jAccountBalance = (JObject)jAccountBalances[i];
+                        BankAccountBalance bankAccountBalance = db.accountBalances.Find(x => x.ID == (Guid)jAccountBalance.SelectToken("id"));
+                        if (bankAccountBalance == null) continue;
+                        
+                        JArray jOperationHistory = (JArray)jAccountBalance["OperationHistory"];
+                        if (jOperationHistory.HasValues)
+                        {
+                            for (int j = jOperationHistory.Count - 1; j >= 0; j--)
+                            {
+                                BankOperations.BankOperation bankOperation = bankOperations.Find(x => x.ID == (Guid)jOperationHistory[j].SelectToken("id"));
+                                double bankOperationResult = (double)jOperationHistory[j].SelectToken("Result");
+                                bankAccountBalance.AddBankOperation(bankOperation, bankOperationResult);
+                            }
+                        }
+
+                    }
+
+                }
+
                 return true;
             }
 
-            #endregion Переопределённые методы базового класаа серилизации / десериализации
+            #endregion Переопределённые методы базового класcа серилизации / десериализации
+
+
 
         }
 

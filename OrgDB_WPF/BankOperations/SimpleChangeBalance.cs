@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -65,6 +66,8 @@ namespace OrgDB_WPF.BankOperations
 
         protected SimpleChangeBalance(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
 
+        protected SimpleChangeBalance() { }
+
         #endregion Конструкторы
 
         #region API
@@ -81,12 +84,18 @@ namespace OrgDB_WPF.BankOperations
 
         #region Запись в JSON
 
-        public override void WriteJsonSpecifyedProperties(JsonWriter writer)
+        public override void WriteJsonParticularProperties(JsonWriter writer)
         {
             writer.WritePropertyName("Sum"); writer.WriteValue(Sum);
         }
 
         #endregion Запись в JSON
+
+        public override void SetDetails(JObject jBankOperation)
+        {
+            base.SetDetails(jBankOperation);
+            sum = (double)jBankOperation.SelectToken("Sum");
+        }
 
         #endregion API
 

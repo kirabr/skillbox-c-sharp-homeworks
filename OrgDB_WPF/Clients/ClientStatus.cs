@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
@@ -89,6 +89,17 @@ namespace OrgDB_WPF.Clients
         public ClientStatus(XmlReader reader)
         {
             ReadXmlBasicProperties(reader);
+        }
+
+        public ClientStatus(JObject jClientStatus)
+        {
+            id = new Guid((string)jClientStatus.SelectToken("id"));
+            name = (string)jClientStatus.SelectToken("Name");
+            previousClientStatusId = new Guid((string)jClientStatus.SelectToken("PreviousClientStatusId"));
+            nextClientStatusId = new Guid((string)jClientStatus.SelectToken("NextClientStatusId"));
+            creditDiscountPercent = (double)jClientStatus.SelectToken("CreditDiscountPercent");
+            depositAdditionalPercent = (double)jClientStatus.SelectToken("DepositAdditionalPercent");
+
         }
 
         #endregion Конструкторы

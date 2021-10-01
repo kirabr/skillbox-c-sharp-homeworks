@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
     // Пополненение баланса счёта
     public class Refill : SimpleChangeBalance
     {
-
 
         #region Поля
 
@@ -30,6 +30,8 @@ namespace OrgDB_WPF.BankOperations
             : this(new List<BankAccounts.BankAccountBalance>() { operationAccountBalances }, changingSum) { }
 
         public Refill(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        public Refill() { }
 
         #endregion Конструкторы
 

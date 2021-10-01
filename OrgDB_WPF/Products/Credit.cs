@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
@@ -18,7 +20,6 @@ namespace OrgDB_WPF.Products
 
         #endregion Свойства
 
-
         #region Конструкторы
 
         public Credit(string productName, double productPercentPerYear = 0, double productPricePerYear = 0) 
@@ -27,6 +28,8 @@ namespace OrgDB_WPF.Products
         }
 
         public Credit(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        public Credit(JObject jBankProduct) : base(jBankProduct) { }
 
         #endregion Конструкторы
 
@@ -41,8 +44,13 @@ namespace OrgDB_WPF.Products
             writer.WriteEndElement();
 
         }
-        
+
         #endregion Запись в XML
+
+        #region Запись в JSON
+        public override void WriteJsonParticularProperties(JsonWriter writer){}
+
+        #endregion Запись в JSON
 
     }
 }

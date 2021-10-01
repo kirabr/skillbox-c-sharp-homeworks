@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankOperations
 {
@@ -43,6 +44,10 @@ namespace OrgDB_WPF.BankOperations
         }
 
         public ChargeForInterest(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
+
+        //public ChargeForInterest(JObject jBankOperation) : base(jBankOperation) { }
+
+        public ChargeForInterest() { }
 
         #endregion Конструкторы
 
@@ -101,6 +106,11 @@ namespace OrgDB_WPF.BankOperations
             AccountBalances[0].AddBankOperation(this);
         }
 
+        new public void SetDetails(JObject jBankOperation)
+        {
+
+        }
+
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)
@@ -114,7 +124,7 @@ namespace OrgDB_WPF.BankOperations
 
         #region Запись в JSON
 
-        public override void WriteJsonSpecifyedProperties(JsonWriter writer)
+        public override void WriteJsonParticularProperties(JsonWriter writer)
         {
 
         }

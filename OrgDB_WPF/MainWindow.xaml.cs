@@ -22,12 +22,16 @@ namespace OrgDB_WPF
         // Текущее приложение
         App currApp = (App)App.Current;
 
-        DataBase DB { get; }
-
         CollectionViewSource DepartmentsViewSource;
         CollectionViewSource EmployeesViewSource;
 
         #endregion Поля
+
+        #region Свойства
+        
+        DataBase DB { get; }
+
+        #endregion Свойства
 
         #region Главный метод
         public MainWindow()
@@ -377,7 +381,7 @@ namespace OrgDB_WPF
         private void TestsDB()
         {
             // проверка иерархии департаментов
-
+            
             Department d_1 = new Department("d_1", "Podolsk", Guid.Empty); DB.AddDepartment(d_1);
             Department d_2 = new Department("d_2", "Podolsk", Guid.Empty); DB.AddDepartment(d_2);
 
@@ -418,9 +422,16 @@ namespace OrgDB_WPF
             Thread.Sleep(1);
             BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
 
-            try { bankOperation1.Apply(); }
+            try 
+            {
+                bankOperation1.Apply();
+                //bankAccountBalance1.AddBankOperation(bankOperation1, 100);
+            }
             catch {}
-            try { bankOperation2.Apply(); }
+            try {
+                bankOperation2.Apply(); 
+                //bankAccountBalance1.AddBankOperation(bankOperation2, 55);
+            }
             catch { }
 
             Clients.ClientStatus clientStatus = new Clients.IndividualStatus("Начинающий");
@@ -525,13 +536,16 @@ namespace OrgDB_WPF
             DB.SetClientStatus(legalEntity1, legalEntityStatus1);
             legalEntity1.ClientManager = s_1;
 
-            DB.BankProducts.Add(deposit);
-            DB.BankProducts.Add(bankAccountService);
-            DB.Clients.Add(individual1);
-            DB.Clients.Add(individual2);
-            DB.Clients.Add(legalEntity1);
-
-            
+            //DB.BankProducts.Add(deposit);
+            //DB.BankProducts.Add(bankAccountService);
+            DB.AddBankProduct(deposit);
+            DB.AddBankProduct(bankAccountService);
+            //DB.Clients.Add(individual1);
+            //DB.Clients.Add(individual2);
+            //DB.Clients.Add(legalEntity1);
+            DB.AddClient(individual1);
+            DB.AddClient(individual2);
+            DB.AddClient(legalEntity1);
             
             DB.AddAccountBalance(bankAccountBalance1);
             DB.AddAccountBalance(bankAccountBalance2);

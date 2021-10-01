@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Xml;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
@@ -38,13 +40,6 @@ namespace OrgDB_WPF.Clients
         public override ClientStatus ClientStatus 
         {
             get { return clientStatus; }
-            //set
-            //{
-            //    if (value.GetType() != typeof(LegalEntityStatus))
-            //        throw new Exception("Для юридического лица допускается установка статуса только юридического лица.");
-            //    clientStatus = value;
-            //    clientStatusId = value.ID;
-            //}
         }
 
         #endregion Свойства
@@ -75,6 +70,14 @@ namespace OrgDB_WPF.Clients
 
         }
 
+        public LegalEntity(JObject jClient):base(jClient)
+        {
+            fullName = (string)jClient.SelectToken("FullName");
+            inn = (string)jClient.SelectToken("INN");
+            kpp = (string)jClient.SelectToken("KPP");
+            isCorporate = (bool)jClient.SelectToken("IsCorporate");
+        }
+
         #endregion Конструкторы
 
         #region Запись в XML
@@ -96,6 +99,19 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в XML
+
+        #region Запись в JSON
+
+        public override void WriteJsonParticularProperties(JsonWriter writer)
+        {
+            writer.WritePropertyName("FullName"); writer.WriteValue(FullName);
+            writer.WritePropertyName("INN"); writer.WriteValue(INN);
+            writer.WritePropertyName("KPP"); writer.WriteValue(KPP);
+            writer.WritePropertyName("IsCorporate"); writer.WriteValue(IsCorporate);
+        }
+
+        #endregion Запись в JSON
+
     }
 
 

@@ -62,6 +62,7 @@
     <Compile Include="BankAccounts\BankAccount.cs" />
     <Compile Include="BankAccounts\BankAccountBalance.cs" />
     <Compile Include="BankAccounts\BankAccountBalanceJsonConverter.cs" />
+    <Compile Include="BankAccounts\BankAccountJsonConverter.cs" />
     <Compile Include="BankOperations\AccrualInterestLoan.cs" />
     <Compile Include="BankOperations\BankOperation.cs" />
     <Compile Include="BankOperations\BankOperationJsonConverter.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Employees\Manager.cs" />
     <Compile Include="Products\BankAccountService.cs" />
     <Compile Include="Products\BankProduct.cs" />
+    <Compile Include="Products\BankProductJsonConverter.cs" />
     <Compile Include="Products\Credit.cs" />
     <Compile Include="Products\Deposit.cs" />
     <Compile Include="Sorting\SortingSettings.xaml.cs">

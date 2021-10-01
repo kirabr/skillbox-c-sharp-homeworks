@@ -68,6 +68,14 @@ namespace OrgDB_WPF
             writer.WriteEndElement();
         }
 
+        /// <summary>
+        /// Записывает коллекцию List элементов произвольного типа (T1), при условии реализации интерфейса IXmlServices
+        /// </summary>
+        /// <typeparam name="T">Тип - Коллекция List элементов типа T1</typeparam>
+        /// <typeparam name="T1">Тип - класс, реализующий интерфейс IXmlServices</typeparam>
+        /// <param name="writer">запись XML</param>
+        /// <param name="listT1">Коллекция List элементов типа T1</param>
+        /// <param name="NodeName">имя узла XML, в который требуется записать коллекцию</param>
         public static void WriteXmlList<T, T1>(XmlWriter writer, T listT1, string NodeName) where T:List<T1> where T1 : IXmlServices
         {
 
@@ -78,6 +86,14 @@ namespace OrgDB_WPF
             writer.WriteEndElement();
         }
 
+        /// <summary>
+        /// Записывает ReadOnlyCollection произвольного типа (T1), при условии реализации интерфейса IXmlServices
+        /// </summary>
+        /// <typeparam name="T">Тип - ReadOnlyCollection элементов типа T1</typeparam>
+        /// <typeparam name="T1">Тип - класс, реализующий интерфейс IXmlServices</typeparam>
+        /// <param name="writer">запись XML</param>
+        /// <param name="readOnlyListT1">ReadOnlyCollection элементов типа T1</param>
+        /// <param name="NodeName">имя узла XML, в который требуется записать коллекцию</param>
         public static void WriteXmlReadOnlyList<T, T1>(XmlWriter writer, T readOnlyListT1, string NodeName) where T : ReadOnlyCollection<T1> where T1 : IXmlServices
         {
             if (readOnlyListT1 == null || readOnlyListT1.Count == 0) return;
@@ -87,6 +103,18 @@ namespace OrgDB_WPF
             writer.WriteEndElement();
         }
 
+        /// <summary>
+        /// Преобразует ReadOnlyCollection в List
+        /// </summary>
+        /// <typeparam name="T">Тип элемента ReadOnlyCollection</typeparam>
+        /// <param name="ro">экземпляр ReadOnlyCollection</param>
+        /// <returns></returns>
+        public static List<T> ListFromReadOnlyCollection<T>(ReadOnlyCollection<T> ro)
+        {
+            List<T> result = new List<T>();
+            foreach (T elem in ro) result.Add(elem);
+            return result;
+        }
 
         /// <summary>
         /// Возвращает "00000000-0000-0000-0000-000000000000" - строковое представление пустого GUID'а

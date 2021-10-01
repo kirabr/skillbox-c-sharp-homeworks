@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
@@ -88,7 +90,7 @@ namespace OrgDB_WPF.Clients
             isResident = clientIsResident;
         }
         
-        public Client (XPathNavigator xPathNavigator)
+        public Client(XPathNavigator xPathNavigator)
         {
             XPathNavigator selectedNode = xPathNavigator.SelectSingleNode("//@id");
             if (selectedNode != null) id = new Guid(selectedNode.Value);
@@ -106,6 +108,14 @@ namespace OrgDB_WPF.Clients
             if (selectedNode != null) clientStatusId = new Guid(selectedNode.Value);
         }
 
+        public Client(JObject jClient)
+        {
+            id = new Guid((string)jClient.SelectToken("id"));
+            name = (string)jClient.SelectToken("Name");
+            clientManagerId = new Guid((string)jClient.SelectToken("ClientManagerId"));
+            IsResident = (bool)jClient.SelectToken("IsResident");
+            clientStatusId = new Guid((string)jClient.SelectToken("ClientStatusId"));
+        }
         #endregion Конструкторы
 
         #region Запись в XML
@@ -125,6 +135,14 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в XML
+
+
+        #region Запись в JSON
+
+        public abstract void WriteJsonParticularProperties(JsonWriter writer);
+
+        #endregion Запись в JSON
+
 
         #region Чтение из XML
 
@@ -169,6 +187,6 @@ namespace OrgDB_WPF.Clients
 
         #endregion Чтение из XML
 
-     }
+    }
 
 }
