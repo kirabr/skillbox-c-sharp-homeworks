@@ -64,7 +64,7 @@ namespace OrgDB_WPF
         /// <summary>
         /// Конструктор по умолчанию
         /// </summary>
-        public Intern() : this("InternName", "InternSurname", 20, 200, Guid.Empty) { }
+        public Intern() { }
 
         #endregion Конструкторы 
 

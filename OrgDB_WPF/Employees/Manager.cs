@@ -61,6 +61,8 @@ namespace OrgDB_WPF
         /// <param name="jManager"></param>
         public Manager(JObject jManager) : base(jManager) { }
 
+        public Manager() { }
+
         #endregion Конструкторы
 
         #region Запись в XML

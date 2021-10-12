@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using OrgDB_WPF.Clients;
 using OrgDB_WPF.Products;
 using System.Xml;
+using System.Xml.XPath;
 using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.BankAccounts
@@ -74,7 +75,7 @@ namespace OrgDB_WPF.BankAccounts
                 writer.WriteElementString("ProductID", product.ID.ToString());
             writer.WriteEndElement();
         }
-
+        
         #endregion Запись в XML
 
         #endregion API

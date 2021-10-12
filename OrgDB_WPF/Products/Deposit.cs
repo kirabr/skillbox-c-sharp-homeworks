@@ -40,10 +40,12 @@ namespace OrgDB_WPF.Products
             if (selectedNode != null) hasCapitalization = selectedNode.ValueAsBoolean;
         }
 
-        public Deposit(JObject jBankProduct) : base(jBankProduct)
-        {
-            hasCapitalization = (bool)jBankProduct.SelectToken("HasCapitalization");
-        }
+        //public Deposit(JObject jBankProduct) : base(jBankProduct)
+        //{
+        //    hasCapitalization = (bool)jBankProduct.SelectToken("HasCapitalization");
+        //}
+
+        public Deposit() { }
 
         #endregion Конструкторы
 
@@ -68,6 +70,18 @@ namespace OrgDB_WPF.Products
         }
 
         #endregion Запись в JSON
+
+
+        #region Реализация интерфейса IJsonServices
+
+        public override void SetDetails(JObject jBankProduct)
+        {
+            base.SetDetails(jBankProduct);
+            hasCapitalization = (bool)jBankProduct.SelectToken("HasCapitalization");
+        }
+
+        #endregion Реализация интерфейса IJsonServices
+
 
     }
 }

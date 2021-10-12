@@ -70,13 +70,15 @@ namespace OrgDB_WPF.Clients
 
         }
 
-        public LegalEntity(JObject jClient):base(jClient)
-        {
-            fullName = (string)jClient.SelectToken("FullName");
-            inn = (string)jClient.SelectToken("INN");
-            kpp = (string)jClient.SelectToken("KPP");
-            isCorporate = (bool)jClient.SelectToken("IsCorporate");
-        }
+        //public LegalEntity(JObject jClient):base(jClient)
+        //{
+        //    fullName = (string)jClient.SelectToken("FullName");
+        //    inn = (string)jClient.SelectToken("INN");
+        //    kpp = (string)jClient.SelectToken("KPP");
+        //    isCorporate = (bool)jClient.SelectToken("IsCorporate");
+        //}
+
+        public LegalEntity() { }
 
         #endregion Конструкторы
 
@@ -111,6 +113,20 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в JSON
+
+        #region Реализация интерфеса IJsonServices
+
+        public override void SetDetails(JObject jClient)
+        {
+            base.SetDetails(jClient);
+            fullName = (string)jClient.SelectToken("FullName");
+            inn = (string)jClient.SelectToken("INN");
+            kpp = (string)jClient.SelectToken("KPP");
+            isCorporate = (bool)jClient.SelectToken("IsCorporate");
+
+        }
+
+        #endregion Реализация интерфеса IJsonServices
 
     }
 

@@ -217,7 +217,7 @@ namespace OrgDB_WPF.BankAccounts
             operationsHistory.Add(bankOperation, OperationResult);
         }
 
-        #region Запись в XML
+        #region Реализация интерфейcа IXmlServices
 
         public void WriteXml(XmlWriter writer)
         {
@@ -237,13 +237,14 @@ namespace OrgDB_WPF.BankAccounts
             {
                 writer.WriteStartElement("OperationHistoryElement");
                 OpHistoryElement.Key.WriteXml(writer);
+                //Common.WriteXMLElement(writer, "OperationId", OpHistoryElement.Key.ID.ToString());
                 Common.WriteXMLElement(writer, "OperationResult", OpHistoryElement.Value);
                 writer.WriteEndElement();
             }
             writer.WriteEndElement();
         }
 
-        #endregion Запись в XML
+        #endregion Реализация интерфейcа IXmlServices
 
 
         #endregion API

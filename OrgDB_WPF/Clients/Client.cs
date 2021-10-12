@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace OrgDB_WPF.Clients
 {
     
-    public abstract class Client : OrgDB_WPF.IXmlServices
+    public abstract class Client : IXmlServices, IJsonServices
     {
 
         #region Поля
@@ -55,7 +55,7 @@ namespace OrgDB_WPF.Clients
             set 
             { 
                 clientManager = value;
-                clientManagerId = value.id;
+                clientManagerId = value.Id;
             } 
         }
 
@@ -108,14 +108,17 @@ namespace OrgDB_WPF.Clients
             if (selectedNode != null) clientStatusId = new Guid(selectedNode.Value);
         }
 
-        public Client(JObject jClient)
-        {
-            id = new Guid((string)jClient.SelectToken("id"));
-            name = (string)jClient.SelectToken("Name");
-            clientManagerId = new Guid((string)jClient.SelectToken("ClientManagerId"));
-            IsResident = (bool)jClient.SelectToken("IsResident");
-            clientStatusId = new Guid((string)jClient.SelectToken("ClientStatusId"));
-        }
+        //public Client(JObject jClient)
+        //{
+        //    id = new Guid((string)jClient.SelectToken("id"));
+        //    name = (string)jClient.SelectToken("Name");
+        //    clientManagerId = new Guid((string)jClient.SelectToken("ClientManagerId"));
+        //    IsResident = (bool)jClient.SelectToken("IsResident");
+        //    clientStatusId = new Guid((string)jClient.SelectToken("ClientStatusId"));
+        //}
+
+        public Client() { }
+
         #endregion Конструкторы
 
         #region Запись в XML
@@ -129,7 +132,7 @@ namespace OrgDB_WPF.Clients
             
             writer.WriteAttributeString("id", ID.ToString());
             writer.WriteElementString("Name", Name);
-            writer.WriteElementString("ClientManagerID", ClientManager == null ? EmptyID : ClientManager.id.ToString());
+            writer.WriteElementString("ClientManagerID", ClientManager == null ? EmptyID : ClientManager.Id.ToString());
             Common.WriteXMLElement(writer, "IsResident", IsResident);
             writer.WriteElementString("ClientStatusID", ClientStatus == null ? EmptyID : ClientStatus.ID.ToString());
         }
@@ -186,6 +189,21 @@ namespace OrgDB_WPF.Clients
         //}
 
         #endregion Чтение из XML
+
+
+        #region Реализация интерфейса IJsonServices
+
+        public virtual void SetDetails(JObject jClient)
+        {
+            id = new Guid((string)jClient.SelectToken("id"));
+            name = (string)jClient.SelectToken("Name");
+            clientManagerId = new Guid((string)jClient.SelectToken("ClientManagerId"));
+            IsResident = (bool)jClient.SelectToken("IsResident");
+            clientStatusId = new Guid((string)jClient.SelectToken("ClientStatusId"));
+        }
+
+        #endregion Реализация интерфейса IJsonServices
+
 
     }
 

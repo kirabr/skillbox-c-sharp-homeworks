@@ -21,7 +21,9 @@ namespace OrgDB_WPF.Products
 
         public BankAccountService(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
 
-        public BankAccountService(JObject jBankProduct) : base(jBankProduct) { }
+        //public BankAccountService(JObject jBankProduct) : base(jBankProduct) { }
+
+        public BankAccountService() { }
 
         #region Запись в XML
 

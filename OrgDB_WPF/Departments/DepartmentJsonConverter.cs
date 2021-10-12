@@ -24,6 +24,7 @@ namespace OrgDB_WPF
         public override Department ReadJson(JsonReader reader, Type objectType, Department existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             throw new NotImplementedException();
+
         }
 
         /// <summary>

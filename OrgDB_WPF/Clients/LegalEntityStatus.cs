@@ -13,6 +13,8 @@ namespace OrgDB_WPF.Clients
 
         public LegalEntityStatus(JObject jClientStatus) : base(jClientStatus) { }
 
+        public LegalEntityStatus() { }
+
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)

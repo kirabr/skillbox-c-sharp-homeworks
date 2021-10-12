@@ -35,13 +35,17 @@ namespace OrgDB_WPF
         {
             writer.WriteStartObject();
 
-            writer.WritePropertyName("id"); writer.WriteValue(value.id);
+            // имя класса для определения при загрузке
+            writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
+            
+            // свойства
+            writer.WritePropertyName("id"); writer.WriteValue(value.Id);
             writer.WritePropertyName("Name"); writer.WriteValue(value.Name);
             writer.WritePropertyName("Surname"); writer.WriteValue(value.Surname);
             writer.WritePropertyName("Age"); writer.WriteValue(value.Age);
             writer.WritePropertyName("Salary"); writer.WriteValue(value.Salary);
             writer.WritePropertyName("DepartmentID"); writer.WriteValue(value.DepartmentID);
-            writer.WritePropertyName("Post"); writer.WriteValue(value.post_Enum);
+            writer.WritePropertyName("Post"); writer.WriteValue((int)value.post_Enum);
 
             writer.WriteEndObject();
         }

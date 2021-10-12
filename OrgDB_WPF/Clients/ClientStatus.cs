@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
-    public abstract class ClientStatus : OrgDB_WPF.IXmlServices
+    public abstract class ClientStatus : IXmlServices, IJsonServices
     {
 
         #region Поля
@@ -102,6 +102,8 @@ namespace OrgDB_WPF.Clients
 
         }
 
+        protected ClientStatus() { }
+
         #endregion Конструкторы
 
         #region Запись в XML
@@ -167,7 +169,23 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Чтение из XML
-        
+
+
+        #region Реализация IJsonServices
+
+        public virtual void SetDetails(JObject jClientStatus)
+        {
+            id = new Guid((string)jClientStatus.SelectToken("id"));
+            name = (string)jClientStatus.SelectToken("Name");
+            previousClientStatusId = new Guid((string)jClientStatus.SelectToken("PreviousClientStatusId"));
+            nextClientStatusId = new Guid((string)jClientStatus.SelectToken("NextClientStatusId"));
+            creditDiscountPercent = (double)jClientStatus.SelectToken("CreditDiscountPercent");
+            depositAdditionalPercent = (double)jClientStatus.SelectToken("DepositAdditionalPercent");
+        }
+
+        #endregion Реализация IJsonServices
+
+
     }
 
 }

@@ -81,14 +81,14 @@ namespace OrgDB_WPF
         public ReadOnlyCollection<BankAccount> BankAccounts { get { return bankAccounts.AsReadOnly(); } }
 
         // Все банковские операции
-        public ReadOnlyCollection<BankOperations.BankOperation> AllBankOperations
+        public ReadOnlyCollection<BankOperation> AllBankOperations
         {
             get
             {
-                List<BankOperations.BankOperation> bankOperations = new List<BankOperations.BankOperation>();
+                List<BankOperation> bankOperations = new List<BankOperation>();
                 foreach (BankAccountBalance bankAccountBalance in accountBalances)
                 {
-                    foreach (KeyValuePair<BankOperations.BankOperation, double> kv_bankOperation in bankAccountBalance.OperationsHistory) bankOperations.Add(kv_bankOperation.Key);
+                    foreach (KeyValuePair<BankOperation, double> kv_bankOperation in bankAccountBalance.OperationsHistory) bankOperations.Add(kv_bankOperation.Key);
                 }
 
                 return bankOperations.AsReadOnly();
@@ -297,7 +297,7 @@ namespace OrgDB_WPF
             if (employees == null) employees = new List<Employee>();
 
             // Проверяем уникальность id
-            if (employees.Exists(x => x.id == Emp.id))
+            if (employees.Exists(x => x.Id == Emp.Id))
                 throw new Exception("Попытка добавления элемента с дублирующимся ключом!");
 
             // Установим уникальное имя сотрудника
@@ -575,6 +575,10 @@ namespace OrgDB_WPF
 
         }
 
+        /// <summary>
+        /// Удаляет банковский баланс из базы
+        /// </summary>
+        /// <param name="bankAccountBalance">Банковский баланс</param>
         public void RemoveAccountBalance(BankAccountBalance bankAccountBalance)
         {
             bankAccounts.Remove(bankAccountBalance.BankAccount);
@@ -670,8 +674,8 @@ namespace OrgDB_WPF
             foreach (BankAccountBalance curBalance in AccountBalances)
             {
                 if (curBalance == accountBalance) continue;
-                List<BankOperations.BankOperation> operations = new List<BankOperations.BankOperation>();
-                foreach (BankOperations.BankOperation bankOperation in curBalance.OperationsHistory.Keys) operations.Add(bankOperation);
+                List<BankOperation> operations = new List<BankOperation>();
+                foreach (BankOperation bankOperation in curBalance.OperationsHistory.Keys) operations.Add(bankOperation);
                 if (operations.Exists(x => x.AccountBalancesIds.Contains(accountBalance.ID))) return true;
 
             }
@@ -747,6 +751,12 @@ namespace OrgDB_WPF
         public class DBSerializer
         {
             public DataBase db;
+
+            // для авто-парсинга имён производных классов (сотрудников, клиентов, банковских операций...)
+            protected Assembly assembly;
+
+            // имя производного класса (сотрудников, клиентов, банковских операций...)
+            protected string fullTypeName;
 
             // Список ошибок
             protected List<string> errorList = new List<string>();
@@ -877,7 +887,7 @@ namespace OrgDB_WPF
             #region Служебные методы
 
             /// <summary>
-            /// Читает часть XML
+            /// Читает часть (узел) XML
             /// </summary>
             /// <param name="reader">
             /// Читалка XML
@@ -885,9 +895,13 @@ namespace OrgDB_WPF
             void ReadDBPart(XmlReader reader)
             {
 
+                // Чтение узла XML
+                XmlReader nodeReader;
+
+
                 if (reader.Name == "DBSettings" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     db.dbSettings.ReadXml(nodeReader);
 
                     // Оповестим об изменениях свойств
@@ -897,14 +911,13 @@ namespace OrgDB_WPF
 
                 if (reader.Name == "Organization" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     db.organization.ReadXml(nodeReader);
                 }
 
                 if (reader.Name == "Departments" && reader.NodeType == XmlNodeType.Element)
                 {
-                    // В отдельном XML-чтении считаем департаменты
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadDepartments(nodeReader);
 
                 }
@@ -912,33 +925,32 @@ namespace OrgDB_WPF
                 if (reader.Name == "Employees" && reader.NodeType == XmlNodeType.Element)
                 {
 
-                    // В отдельном XML-чтении считаем сотрудников
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadEmployees(nodeReader);
 
                 }
 
                 if (reader.Name == "ClientStatuses" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadClientStatuses(nodeReader);
                 }
 
                 if (reader.Name == "Clients" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadClients(nodeReader);
                 }
 
                 if (reader.Name == "BankProducts" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadBankProducts(nodeReader);
                 }
 
                 if (reader.Name == "AccountBalances" && reader.NodeType == XmlNodeType.Element)
                 {
-                    XmlReader nodeReader = reader.ReadSubtree();
+                    nodeReader = reader.ReadSubtree();
                     ReadAccountBalances(nodeReader);
                 }
 
@@ -991,14 +1003,16 @@ namespace OrgDB_WPF
                 reader.Read();
                 // Перемещаемся к первому узлу сотрудника
                 reader.Read();
-                
+
                 // В цикле создаём XML-читалку сотрудника, анализируем должность,
                 // создаём соответствующего сотрудника и добавляем его в базу
                 while (!(reader.Name == "Employees" && reader.NodeType == XmlNodeType.EndElement))
                 {
 
                     XmlReader employeeReader = reader.ReadSubtree();
+
                     Employee emp = null;
+
                     switch (reader.Name)
                     {
                         case "Intern":
@@ -1012,7 +1026,7 @@ namespace OrgDB_WPF
                             break;
                     }
 
-                    if (emp!=null)
+                    if (emp != null)
                         db.employees.Add(emp);
                                         
                     reader.Skip();
@@ -1021,6 +1035,10 @@ namespace OrgDB_WPF
                 db.FillEmployeesDepartmentNames();
             }
 
+            /// <summary>
+            /// Читает статусы клиентов
+            /// </summary>
+            /// <param name="reader">XML-чтение статусов</param>
             private void ReadClientStatuses(XmlReader reader)
             {
                 // Очищаем список статусов
@@ -1064,6 +1082,10 @@ namespace OrgDB_WPF
                 }
             }
 
+            /// <summary>
+            /// Читает клиентов
+            /// </summary>
+            /// <param name="reader">XML-чтение клиентов</param>
             private void ReadClients(XmlReader reader)
             {
 
@@ -1110,13 +1132,17 @@ namespace OrgDB_WPF
                 foreach (Client currClient in db.clients)
                 {
                     if (currClient.ClientManagerId!=Guid.Empty)
-                        currClient.ClientManager = EmployeeSearcList.Find(x => x.id == currClient.ClientManagerId);
+                        currClient.ClientManager = EmployeeSearcList.Find(x => x.Id == currClient.ClientManagerId);
                     if (currClient.ClientStatusId!=Guid.Empty)
                         currClient.ClientStatus = ClientStatusesSearchList.Find(x => x.ID == currClient.ClientStatusId);
                 } 
 
             }
 
+            /// <summary>
+            /// Читает банковские продукты
+            /// </summary>
+            /// <param name="reader">XML-чтение банковских продуктов</param>
             private void ReadBankProducts(XmlReader reader)
             {
                 // Очищаем список банковских продуктов
@@ -1157,6 +1183,10 @@ namespace OrgDB_WPF
                 }
             }
 
+            /// <summary>
+            /// Читаает банковские балансы
+            /// </summary>
+            /// <param name="reader">XML-чтение банковских балансов</param>
             private void ReadAccountBalances(XmlReader reader)
             {
 
@@ -1212,10 +1242,10 @@ namespace OrgDB_WPF
 
                 foreach (BankAccountBalance bankAccountBalance in db.AccountBalances)
                 {
-                    foreach (KeyValuePair<BankOperations.BankOperation, double> historyElement in bankAccountBalance.OperationsHistory)
+                    foreach (KeyValuePair<BankOperation, double> historyElement in bankAccountBalance.OperationsHistory)
                     {
 
-                        BankOperations.BankOperation currentOperation = historyElement.Key;
+                        BankOperation currentOperation = historyElement.Key;
 
                         foreach (Guid balancId in currentOperation.AccountBalancesIds)
                         {
@@ -1246,6 +1276,14 @@ namespace OrgDB_WPF
                 WriteXmlBasicProperties(writer);
             }
 
+            #endregion Реализация IXmlSerializable
+
+            #region Реализация интерфейса IXmlServices
+
+            /// <summary>
+            /// Записывает основные свойства базы в узлы записи XML
+            /// </summary>
+            /// <param name="writer">запись XML</param>
             public void WriteXmlBasicProperties(XmlWriter writer)
             {
                 // Узел dbSettings
@@ -1259,7 +1297,7 @@ namespace OrgDB_WPF
 
                 // Узел Employees
                 Common.WriteXmlReadOnlyList<ReadOnlyCollection<Employee>, Employee>(writer, db.Employees, "Employees");
-                
+
                 // Узел ClienStatuses
                 Common.WriteXmlReadOnlyList<ReadOnlyCollection<ClientStatus>, ClientStatus>(writer, db.ClientStatuses, "ClientStatuses");
 
@@ -1274,12 +1312,19 @@ namespace OrgDB_WPF
 
             }
 
-            #endregion Реализация IXmlSerializable
+            #endregion Реализация интерфейса IXmlServices
 
         }
         class JSONDataBaseSerializer : DBSerializer
         {
-            
+
+            #region Поля            
+
+            // Токен Json-представления
+            JToken jToken;
+
+            #endregion Поля
+
             #region Конструкторы
 
             /// <summary>
@@ -1303,15 +1348,13 @@ namespace OrgDB_WPF
                 // чтобы управлять записью (записывать только нужные элементы)
 
                 string js = JsonConvert.SerializeObject(db, Newtonsoft.Json.Formatting.Indented
-                    //,new DBSettingsJsonConverter()
-                    //,new OrganizationJsonConverter()
                     , new DepartmentJsonConverter()
                     , new EmployeeJsonConverter()
                     , new ClientStatusJsonConverter()
                     , new ClientJsonConverter()
                     , new BankProductJsonConverter()
                     , new BankAccountJsonConverter()
-                    , new BankOperations.BankOperationJsonConverter()
+                    , new BankOperationJsonConverter()
                     , new BankAccountBalanceJsonConverter()
                     );
                 File.WriteAllText(db.DBFilePath, js);
@@ -1326,26 +1369,55 @@ namespace OrgDB_WPF
             override public bool Deserialize()
             {
 
+                string js = File.ReadAllText(db.DBFilePath);
+                                              
                 errorList.Clear();
 
                 // Очищаем базу перед загрузкой
                 db.Flush();
-
-                string js = File.ReadAllText(db.DBFilePath);
-
+                
                 // DTO - Data Transfer Object
 
                 // JSON - объект (DTO) базы в файле
                 JObject dbJson = JObject.Parse(js);
 
-                JToken jToken;
+                DeserializeDBSettings(dbJson);
+                DeserializeOrganizationParameters(dbJson);
+                DeserializeDepartments(dbJson);
+                DeserializeEmployees(dbJson);
+                DeserializeClientStatuses(dbJson);
+                DeserializeClients(dbJson);
+                DeserializeBankProducts(dbJson);
+                DeserializeBankAccounts(dbJson);
+                DeserializeAccountBalances(dbJson);
 
-                // Параметры настройки базы получаем по соответствующим ключам (токенам)
+                return true;
+            }
+
+            #endregion Переопределённые методы базового класcа серилизации / десериализации
+
+            #region Собственные (служебные) методы
+
+            /// <summary>
+            /// Заполняет настройки базы
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeDBSettings(JObject dbJson)
+            {
                 jToken = dbJson.SelectToken("dbSettings.DBFilePath");
                 if (jToken != null)
                     db.dbSettings.DBFilePath = (string)jToken;
                 else
                     errorList.Add("В указанном файле нет данных \"Путь к файлу базы\"");
+
+            }
+
+            /// <summary>
+            /// Заполняет параметры организации
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeOrganizationParameters(JObject dbJson)
+            {
 
                 jToken = dbJson.SelectToken("Organization.ManagerSalaryPercent");
                 if (jToken != null)
@@ -1371,11 +1443,14 @@ namespace OrgDB_WPF
                 else
                     errorList.Add("В указанном файле нет данных \"Минимальный уровень з/п интерна\"");
 
-                if (errorList.Count > 0) return false;
+            }
 
-                // Оповестим об изменениях свойств
-                db.NotifyDBSettingsPropertiesChanged();
-
+            /// <summary>
+            /// Заполняет департаменты
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeDepartments(JObject dbJson)
+            {
                 // JSON - массив департаментов
                 jToken = dbJson["Departments"];
                 if (jToken.HasValues)
@@ -1393,7 +1468,14 @@ namespace OrgDB_WPF
                     // Заполним имена головных департаментов
                     db.FillParentDepartmentNames();
                 }
+            }
 
+            /// <summary>
+            /// Заполняет сотрдуников
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeEmployees(JObject dbJson)
+            {
                 // JSON - массив сотрудников
                 jToken = dbJson["Employees"];
                 if (jToken.HasValues)
@@ -1401,34 +1483,27 @@ namespace OrgDB_WPF
                     JArray jEmployees = (JArray)jToken;
                     for (int i = 0; i < jEmployees.Count; i++)
                     {
-                        // получаем JSON - сотрудника (DTO), 
-                        // по соответствующему токену анализируем его должность,
-                        // в зависимости от должности создаём соответствующего сотрудника,
-                        // добавляем его в список
+                        // получаем JSON - сотрудника (DTO), конвертируем в объект "сотрудник",
+                        // заполняем, добавляем в базу
                         JObject jEmployee = (JObject)jEmployees[i];
-                        Employee.post_enum post_Enum = (Employee.post_enum)(int)jEmployee.SelectToken("Post");
+                        fullTypeName = (string)jEmployee.SelectToken("FullTypeName");
+                        assembly = typeof(Employee).Assembly;
 
-                        Employee emp;
-                        switch (post_Enum)
-                        {
-                            case Employee.post_enum.intern:
-                                emp = new Intern(jEmployee);
-                                db.employees.Add(emp);
-                                break;
-                            case Employee.post_enum.specialist:
-                                emp = new Specialist(jEmployee);
-                                db.employees.Add(emp);
-                                break;
-                            case Employee.post_enum.manager:
-                                emp = new Manager(jEmployee);
-                                db.employees.Add(emp);
-                                break;
-                        }
+                        Employee emp = (Employee)assembly.CreateInstance(fullTypeName);
+                        emp.SetDetails(jEmployee);
+                        db.employees.Add(emp);
                     }
 
                     db.FillEmployeesDepartmentNames();
                 }
+            }
 
+            /// <summary>
+            /// Заполняет статусы клиентов
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeClientStatuses(JObject dbJson)
+            {
                 // Статусы клиентов
                 jToken = dbJson["ClientStatuses"];
                 if (jToken.HasValues)
@@ -1436,30 +1511,22 @@ namespace OrgDB_WPF
                     JArray jClientStatuses = (JArray)jToken;
                     for (int i = 0; i < jClientStatuses.Count; i++)
                     {
-                        
+
                         // Получаем JSON статус-клиента, с помомщью токена "kind" анализируем,
                         // какой именно надо создать. Создаём, добавляем в базу
                         JObject jClientStatus = (JObject)jClientStatuses[i];
-                        string kind = (string)jClientStatus.SelectToken("kind");
-                        
-                        ClientStatus clientStatus = null;
+                        assembly = typeof(ClientStatus).Assembly;
+                        fullTypeName = (string)jClientStatus.SelectToken("FullTypeName");
 
-                        switch (kind)
-                        {
-                            case "IndividualStatus":
-                                clientStatus = new IndividualStatus(jClientStatus);
-                                break;
-                            case "LegalEntityStatus":
-                                clientStatus = new LegalEntityStatus(jClientStatus);
-                                break;
-                        }
+                        ClientStatus clientStatus = (ClientStatus)assembly.CreateInstance(fullTypeName);
+                        clientStatus.SetDetails(jClientStatus);
 
                         db.AddClientStatus(clientStatus);
 
                     }
 
                     // Заполняем цепочки статусов
-                    foreach(ClientStatus curClientStatus in db.clientStatuses)
+                    foreach (ClientStatus curClientStatus in db.clientStatuses)
                     {
                         if (curClientStatus.PreviousClientStatusId != Guid.Empty)
                             curClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.ID == curClientStatus.PreviousClientStatusId);
@@ -1468,37 +1535,44 @@ namespace OrgDB_WPF
 
                     }
                 }
+            }
 
+            /// <summary>
+            /// Заполняет клиентов
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeClients(JObject dbJson)
+            {
                 // Клиенты
                 jToken = dbJson["Clients"];
                 if (jToken.HasValues)
                 {
 
                     JArray jClients = (JArray)jToken;
-                    for (int i = 0; i<jClients.Count; i++)
+                    for (int i = 0; i < jClients.Count; i++)
                     {
                         JObject jClient = (JObject)jClients[i];
+                        assembly = typeof(Client).Assembly;
+                        fullTypeName = (string)jClient.SelectToken("FullTypeName");
 
-                        Client client = null;
+                        Client client = (Client)assembly.CreateInstance(fullTypeName);
+                        client.SetDetails(jClient);
 
-                        switch ((string)jClient.SelectToken("kind"))
-                        {
-                            case "Individual":
-                                client = new Individual(jClient);
-                                break;
-                            case "LegalEntity":
-                                client = new LegalEntity(jClient);
-                                break;
-                        }
-
-                        if (client.ClientStatusId!=Guid.Empty)
+                        if (client.ClientStatusId != Guid.Empty)
                             client.ClientStatus = db.clientStatuses.Find(x => x.ID == client.ClientStatusId);
 
-                        if (client!=null) db.AddClient(client);
+                        db.AddClient(client);
                     }
-                    
-                }
 
+                }
+            }
+
+            /// <summary>
+            /// Заполняет банковские продукты
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeBankProducts(JObject dbJson)
+            {
                 // Банковские продукты
                 jToken = dbJson["BankProducts"];
                 if (jToken.HasValues)
@@ -1507,27 +1581,23 @@ namespace OrgDB_WPF
                     for (int i = 0; i < jBankProducts.Count; i++)
                     {
                         JObject jBankProduct = (JObject)jBankProducts[i];
+                        fullTypeName = (string)jBankProduct.SelectToken("FullTypeName");
+                        assembly = typeof(BankProduct).Assembly;
+                        BankProduct bankProduct = (BankProduct)assembly.CreateInstance(fullTypeName);
+                        bankProduct.SetDetails(jBankProduct);
 
-                        BankProduct bankProduct = null;
-
-                        switch ((string)jBankProduct.SelectToken("kind"))
-                        {
-                            case "BankAccountService":
-                                bankProduct = new BankAccountService(jBankProduct);
-                                break;
-                            case "Credit":
-                                bankProduct = new Credit(jBankProduct);
-                                break;
-                            case "Deposit":
-                                bankProduct = new Deposit(jBankProduct);
-                                break;
-                        }
-
-                        if (bankProduct != null) db.AddBankProduct(bankProduct);
+                        db.AddBankProduct(bankProduct);
                     }
 
                 }
+            }
 
+            /// <summary>
+            /// Заполняет банковские счета
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeBankAccounts(JObject dbJson)
+            {
                 // Банковские счета
                 jToken = dbJson["BankAccounts"];
                 if (jToken.HasValues)
@@ -1536,7 +1606,7 @@ namespace OrgDB_WPF
                     for (int i = 0; i < jBankAccounts.Count; i++)
                     {
                         JObject jBankAccount = (JObject)jBankAccounts[i];
-                        
+
                         Client accountOwner = db.clients.Find(x => x.ID == (Guid)jBankAccount.SelectToken("OwnerID"));
                         List<BankProduct> accountBankProducts = new List<BankProduct>();
                         JToken jBankProducts = jBankAccount["ProductIDs"];
@@ -1551,11 +1621,18 @@ namespace OrgDB_WPF
                         }
 
                         BankAccount bankAccount = new BankAccount((string)jBankAccount.SelectToken("Number"),
-                            accountOwner ,accountBankProducts);
+                            accountOwner, accountBankProducts);
                         db.AddBankAccount(bankAccount);
                     }
                 }
+            }
 
+            /// <summary>
+            /// Заполняет балансы банковских счетов
+            /// </summary>
+            /// <param name="dbJson">объект (DTO) базы в файле</param>
+            void DeserializeAccountBalances(JObject dbJson)
+            {
                 // Балансы банковских счетов
                 jToken = dbJson["AccountBalances"];
                 if (jToken.HasValues)
@@ -1569,7 +1646,7 @@ namespace OrgDB_WPF
                     // не заполняя историю операций.
                     // Затем читаем все операции и заполняем в них ссылки на балансы.
                     // Наконец в балансах заполняем историю операций.
-                    
+
                     JArray jAccountBalances = (JArray)jToken;
 
                     for (int i = 0; i < jAccountBalances.Count; i++)
@@ -1581,20 +1658,21 @@ namespace OrgDB_WPF
                     }
 
                     // Все банковские операции - временная коллекция для последующего заполнения банковских балансов
-                    List<BankOperations.BankOperation> bankOperations = new List<BankOperations.BankOperation>();
+                    List<BankOperation> bankOperations = new List<BankOperation>();
                     JToken jAllBankOperationsToken = dbJson["AllBankOperations"];
                     if (jAllBankOperationsToken.HasValues)
                     {
-                        
+
                         // Первичное заполнение всех банковских операций данными из файла
                         JArray jAllBankOperations = (JArray)jAllBankOperationsToken;
                         for (int j = 0; j < jAllBankOperations.Count; j++)
                         {
                             JObject jBankOperation = (JObject)jAllBankOperations[j];
 
-                            Assembly assembly = typeof(BankOperations.BankOperation).Assembly;
-                            BankOperations.BankOperation bankOperation = 
-                                (BankOperations.BankOperation)assembly.CreateInstance((string)jBankOperation.SelectToken("FullTypeName"));
+                            assembly = typeof(BankOperation).Assembly;
+                            fullTypeName = (string)jBankOperation.SelectToken("FullTypeName");
+                            BankOperation bankOperation =
+                                (BankOperation)assembly.CreateInstance(fullTypeName);
 
                             bankOperation.SetDetails(jBankOperation);
 
@@ -1603,7 +1681,7 @@ namespace OrgDB_WPF
                         }
 
                         // заполнение прочими данными: ссылки на банковские балансы, сторно-операции
-                        foreach (BankOperations.BankOperation curBankOperation in bankOperations)
+                        foreach (BankOperation curBankOperation in bankOperations)
                         {
                             foreach (Guid accountBalanceId in curBankOperation.AccountBalancesIds)
                                 curBankOperation.AddAccountBalance(db.accountBalances.Find(x => x.ID == accountBalanceId));
@@ -1619,13 +1697,13 @@ namespace OrgDB_WPF
                         JObject jAccountBalance = (JObject)jAccountBalances[i];
                         BankAccountBalance bankAccountBalance = db.accountBalances.Find(x => x.ID == (Guid)jAccountBalance.SelectToken("id"));
                         if (bankAccountBalance == null) continue;
-                        
+
                         JArray jOperationHistory = (JArray)jAccountBalance["OperationHistory"];
                         if (jOperationHistory.HasValues)
                         {
                             for (int j = jOperationHistory.Count - 1; j >= 0; j--)
                             {
-                                BankOperations.BankOperation bankOperation = bankOperations.Find(x => x.ID == (Guid)jOperationHistory[j].SelectToken("id"));
+                                BankOperation bankOperation = bankOperations.Find(x => x.ID == (Guid)jOperationHistory[j].SelectToken("id"));
                                 double bankOperationResult = (double)jOperationHistory[j].SelectToken("Result");
                                 bankAccountBalance.AddBankOperation(bankOperation, bankOperationResult);
                             }
@@ -1634,13 +1712,9 @@ namespace OrgDB_WPF
                     }
 
                 }
-
-                return true;
             }
 
-            #endregion Переопределённые методы базового класcа серилизации / десериализации
-
-
+            #endregion Собственные (служебные) методы
 
         }
 

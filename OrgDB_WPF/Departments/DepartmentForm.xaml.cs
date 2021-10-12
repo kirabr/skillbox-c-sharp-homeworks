@@ -11,6 +11,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Newtonsoft.Json;
+using Microsoft.Win32;
+using System.IO;
+
 
 namespace OrgDB_WPF
 {
@@ -163,6 +167,38 @@ namespace OrgDB_WPF
             ClearParentDepartment();
         }
 
+        private void Test_JsonSerialize_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "JSON files (*.json)|*.json";
+            fileDialog.CheckFileExists = false;
+            fileDialog.Multiselect = false;
+
+            if ((bool)fileDialog.ShowDialog() == true)
+            {
+                string js = JsonConvert.SerializeObject(Dep, Formatting.Indented, new DepartmentJsonConverter());
+                File.WriteAllText(fileDialog.FileName, js);
+            }            
+
+        }
+
+        private void Test_JsonDeserialize_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "JSON files (*.json)|*.json";
+            fileDialog.CheckFileExists = false;
+            fileDialog.Multiselect = false;
+
+            if ((bool)fileDialog.ShowDialog() == true)
+            {
+                string js = File.ReadAllText(fileDialog.FileName);
+                Department testDep = JsonConvert.DeserializeObject<Department>(js, new DepartmentJsonConverter());
+            }
+
+        }
+
         #endregion Обработчики команд
 
         #region Доступность команд
@@ -192,6 +228,16 @@ namespace OrgDB_WPF
             e.CanExecute = true;
         }
 
+        private void Test_JsonSerialize_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void Test_JsonDeserialize_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
         #endregion Доступность команд
 
     }
@@ -207,6 +253,9 @@ namespace OrgDB_WPF
         public static RoutedCommand OpenParentDepartment;
         public static RoutedCommand ClearParentDepartment;
 
+        public static RoutedCommand Test_JsonSerialize;
+        public static RoutedCommand Test_JsonDeserialize;
+
         static DepartmentWindowCommands()
         {
 
@@ -218,6 +267,9 @@ namespace OrgDB_WPF
             StartParentDepartmentChoise = new RoutedCommand("Command_StartParentDepartmentChoise", typeThisWindow);
             OpenParentDepartment = new RoutedCommand("Command_OpenParentDepartment", typeThisWindow);
             ClearParentDepartment = new RoutedCommand("Command_ClearParentDepartment", typeThisWindow);
+
+            Test_JsonSerialize = new RoutedCommand("Command_Test_JsonSerialize", typeThisWindow);
+            Test_JsonDeserialize = new RoutedCommand("Command_Test_JsonDeserialize", typeThisWindow);
 
         }
     } 

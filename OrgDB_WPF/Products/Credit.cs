@@ -29,7 +29,9 @@ namespace OrgDB_WPF.Products
 
         public Credit(XPathNavigator xPathNavigator) : base(xPathNavigator) { }
 
-        public Credit(JObject jBankProduct) : base(jBankProduct) { }
+        //public Credit(JObject jBankProduct) : base(jBankProduct) { }
+
+        public Credit() { }
 
         #endregion Конструкторы
 

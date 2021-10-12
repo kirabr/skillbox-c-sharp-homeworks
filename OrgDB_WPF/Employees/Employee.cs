@@ -15,7 +15,7 @@ namespace OrgDB_WPF
     /// <summary>
     /// Базовый абстрактный класс "Сотрудники"
     /// </summary>
-    public abstract class Employee : INotifyPropertyChanged, IXmlServices
+    public abstract class Employee : INotifyPropertyChanged, IXmlServices, IJsonServices
     {
 
         #region Поля
@@ -24,7 +24,7 @@ namespace OrgDB_WPF
         protected static List<string> employeeNames;
 
         // Идентификатор
-        public readonly Guid id;
+        Guid id;
 
         // Имя сотрудника
         protected string name;
@@ -57,6 +57,8 @@ namespace OrgDB_WPF
 
         #region Свойства
 
+        // Идентификатор
+        public Guid Id { get { return id; } }
         // Имя
         public abstract string Name { get; set; }
         // Фамилия
@@ -252,6 +254,8 @@ namespace OrgDB_WPF
 
         }
 
+        public Employee() { }
+
         #endregion Конструкторы
 
         #region Публичные методы
@@ -289,6 +293,25 @@ namespace OrgDB_WPF
             Common.WriteXMLElement(writer, "Salary", Salary);
             writer.WriteElementString("DepartmentId", DepartmentID.ToString());
             
+        }
+
+        public virtual void SetDetails(XmlReader xmlReader)
+        {
+
+        }
+
+        public virtual void SetDetails(JObject jEmployee) 
+        {
+            // по соответствующим токенам заполняем значения полей
+
+            id = (Guid)jEmployee.SelectToken("id");
+            name = (string)jEmployee.SelectToken("Name");
+            surname = (string)jEmployee.SelectToken("Surname");
+            age = (int)jEmployee.SelectToken("Age");
+            salary = (int)jEmployee.SelectToken("Salary");
+            post_Enum = (post_enum)(int)jEmployee.SelectToken("Post");
+            post = EmployeePostDescriptionConverter.GetEnumDescription(post_Enum);
+            departmentID = new Guid((string)jEmployee.SelectToken("DepartmentID"));
         }
 
         #endregion Публичные методы

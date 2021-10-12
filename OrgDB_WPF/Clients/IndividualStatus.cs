@@ -13,6 +13,8 @@ namespace OrgDB_WPF.Clients
 
         public IndividualStatus(JObject jClientStatus) : base(jClientStatus) { }
 
+        public IndividualStatus() { }
+
         #region Запись в XML
 
         public override void WriteXml(XmlWriter writer)

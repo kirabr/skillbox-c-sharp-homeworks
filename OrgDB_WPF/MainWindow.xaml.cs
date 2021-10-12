@@ -418,9 +418,9 @@ namespace OrgDB_WPF
             BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit, bankAccountService });
             BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
 
-            BankOperations.BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
+            BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
             Thread.Sleep(1);
-            BankOperations.BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
+            BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
 
             try 
             {
@@ -461,7 +461,7 @@ namespace OrgDB_WPF
 
             Thread.Sleep(1);
 
-            BankOperations.BankOperation bankOperationTransfer =
+            BankOperation bankOperationTransfer =
                 new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
 
             try
@@ -476,7 +476,7 @@ namespace OrgDB_WPF
 
             Thread.Sleep(1);
 
-            BankOperations.BankOperation bankOperationTransferStorno = new BankOperations.TransferBetweenAccounts(bankOperationTransfer);
+            BankOperation bankOperationTransferStorno = new BankOperations.TransferBetweenAccounts(bankOperationTransfer);
             bankOperationTransferStorno.Apply();
 
             for (int i = 1; i<5; i++)

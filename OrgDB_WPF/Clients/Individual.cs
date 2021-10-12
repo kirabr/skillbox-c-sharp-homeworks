@@ -61,13 +61,15 @@ namespace OrgDB_WPF.Clients
 
         }
 
-        public Individual(JObject jClient) : base(jClient)
-        {
-            firstName = (string)jClient.SelectToken("FirstName");
-            surName = (string)jClient.SelectToken("SurName");
-            patronymic = (string)jClient.SelectToken("Patronymic");
-            isVIP = (bool)jClient.SelectToken("IsVIP");
-        }
+        //public Individual(JObject jClient) : base(jClient)
+        //{
+        //    firstName = (string)jClient.SelectToken("FirstName");
+        //    surName = (string)jClient.SelectToken("SurName");
+        //    patronymic = (string)jClient.SelectToken("Patronymic");
+        //    isVIP = (bool)jClient.SelectToken("IsVIP");
+        //}
+
+        public Individual() { }
 
         #endregion Конструкторы
 
@@ -106,6 +108,21 @@ namespace OrgDB_WPF.Clients
         }
 
         #endregion Запись в JSON
+
+
+        #region Реализация интерфейса IJsonServices
+
+        public override void SetDetails(JObject jClient)
+        {
+            base.SetDetails(jClient);
+            firstName = (string)jClient.SelectToken("FirstName");
+            surName = (string)jClient.SelectToken("SurName");
+            patronymic = (string)jClient.SelectToken("Patronymic");
+            isVIP = (bool)jClient.SelectToken("IsVIP");
+
+        }
+
+        #endregion Реализация интерфейса IJsonServices
 
     }
 

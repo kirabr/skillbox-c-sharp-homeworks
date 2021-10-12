@@ -59,7 +59,7 @@ namespace OrgDB_WPF
         /// <summary>
         /// Конструктор по умолчанию
         /// </summary>
-        public Specialist() : this("SpecName", "SpecSurName", 25, 1500, Guid.Empty) { }
+        public Specialist() { }
 
         #endregion Конструкторы
 

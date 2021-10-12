@@ -27,7 +27,7 @@ namespace OrgDB_WPF.BankAccounts
 
             writer.WriteStartArray();
                         
-            foreach (KeyValuePair<BankOperations.BankOperation, double> keyValuePair in value.OperationsHistory)
+            foreach (KeyValuePair<BankOperation, double> keyValuePair in value.OperationsHistory)
             {
 
                 writer.WriteStartObject();

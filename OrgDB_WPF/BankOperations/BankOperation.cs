@@ -9,10 +9,10 @@ using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace OrgDB_WPF.BankOperations
+namespace OrgDB_WPF
 {
     // Банковская операция
-    public abstract class BankOperation : IXmlServices
+    public abstract class BankOperation : IXmlServices, IJsonServices
     {
 
         #region Поля
@@ -21,7 +21,7 @@ namespace OrgDB_WPF.BankOperations
         Guid id;
 
         // Отметка времени
-        Int64 ticks;
+        long ticks;
 
         // Обслуживаемые операцией балансы счетов
         protected List<BankAccounts.BankAccountBalance> accountBalances = new List<BankAccounts.BankAccountBalance>();
@@ -31,7 +31,7 @@ namespace OrgDB_WPF.BankOperations
 
         // Признак сторно операции
         bool isStorno;
-        
+
         // Сторнируемая операция
         BankOperation stornoOperation;
 
@@ -44,20 +44,20 @@ namespace OrgDB_WPF.BankOperations
 
         // Идентификатор
         public Guid ID { get { return id; } }
-        
+
         // Отметка времени
-        public Int64 Ticks { get { return ticks; } }
+        public long Ticks { get { return ticks; } }
 
         // Обслуживаемые операцией балансы счетов
         protected ReadOnlyCollection<BankAccounts.BankAccountBalance> AccountBalances { get { return accountBalances.AsReadOnly(); } }
 
         // Идентификаторы обслуживаемых операцией балансов счетов
-        public ReadOnlyCollection<Guid> AccountBalancesIds 
-        { 
-            get 
+        public ReadOnlyCollection<Guid> AccountBalancesIds
+        {
+            get
             {
                 // при первом обращении к свойству заполняем его
-                if (accountBalancesIds.Count==0)
+                if (accountBalancesIds.Count == 0)
                     foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) accountBalancesIds.Add(bankAccountBalance.ID);
 
                 return accountBalancesIds.AsReadOnly();
@@ -69,8 +69,8 @@ namespace OrgDB_WPF.BankOperations
         public bool IsStorno { get { return isStorno; } }
 
         // Сторнируемая операция
-        public BankOperation StornoOperation 
-        { 
+        public BankOperation StornoOperation
+        {
             get { return stornoOperation; }
             set
             {
@@ -80,7 +80,7 @@ namespace OrgDB_WPF.BankOperations
         }
 
         // Идентификатор сторнируемой операции
-        public Guid StornoOperationID 
+        public Guid StornoOperationID
         { get { return stornoOperationId; } }
 
         #endregion Свойства
@@ -90,7 +90,7 @@ namespace OrgDB_WPF.BankOperations
         /// <summary>
         /// Конструктор по банковским балансам
         /// </summary>
-        public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances) : this(operationAccountBalances, DateTime.Now) 
+        public BankOperation(List<BankAccounts.BankAccountBalance> operationAccountBalances) : this(operationAccountBalances, DateTime.Now)
         { }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace OrgDB_WPF.BankOperations
         /// Конструктор сторно-операции
         /// </summary>
         /// <param name="operationStorno">Сторнируеамая операция</param>
-        public BankOperation(BankOperation operationStorno):this(DateTime.Now, operationStorno) { }
+        public BankOperation(BankOperation operationStorno) : this(DateTime.Now, operationStorno) { }
 
         /// <summary>
         /// Конструктор сторно-операции по дате / времени и сторнируемой операции
@@ -142,9 +142,9 @@ namespace OrgDB_WPF.BankOperations
                 ticks = selectedNode.ValueAsLong;
 
             }
-            
+
             selectedNode = xPathNavigator.SelectSingleNode("//AccountBalancesIds");
-            if (selectedNode!=null && selectedNode.MoveToFirstChild())
+            if (selectedNode != null && selectedNode.MoveToFirstChild())
             {
                 accountBalancesIds = new List<Guid>();
                 do
@@ -164,7 +164,7 @@ namespace OrgDB_WPF.BankOperations
         /// Конструктор по умолчанию. НЕ УДАЛЯТЬ!
         /// На него может не быть явных ссылок, применяется при загрузке из файлов через Assembly.CreateInstance
         /// </summary>
-        public BankOperation() {}
+        public BankOperation() { }
 
         #endregion Конструкторы
 
@@ -229,6 +229,8 @@ namespace OrgDB_WPF.BankOperations
 
         }
 
+        #region Реализация интерфейса ISerializeServices
+
         /// <summary>
         /// Заполняет детали операции по JSON DTO представлению.
         /// </summary>
@@ -248,8 +250,10 @@ namespace OrgDB_WPF.BankOperations
             }
         }
 
+        #endregion Реализация интерфейса ISerializeServices
+
         #region Запись в XML
-        
+
         /// <summary>
         /// Записывает операцию в XML запись 
         /// </summary>
@@ -288,9 +292,6 @@ namespace OrgDB_WPF.BankOperations
 
         #endregion API
 
-        #region Собственные методы
-
-        #endregion Собственные методы
 
     }
 

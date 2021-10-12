@@ -80,6 +80,7 @@
     <Compile Include="Clients\IndividualStatus.cs" />
     <Compile Include="Clients\LegalEntity.cs" />
     <Compile Include="Clients\LegalEntityStatus.cs" />
+    <Compile Include="Common\IJsonServices.cs" />
     <Compile Include="Common\IXmlServices.cs" />
     <Compile Include="DataBase\DBSettingsJsonConverter.cs" />
     <Compile Include="Common\Common.cs" />

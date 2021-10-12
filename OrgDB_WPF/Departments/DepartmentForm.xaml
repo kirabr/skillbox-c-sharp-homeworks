@@ -37,6 +37,14 @@
             Command="local:DepartmentWindowCommands.ClearParentDepartment"
             Executed="ClearParentDepartment_Executed"
             CanExecute="ClearParentDepartment_CanExecute"/>
+        <CommandBinding
+            Command="local:DepartmentWindowCommands.Test_JsonSerialize"
+            Executed="Test_JsonSerialize_Executed"
+            CanExecute="Test_JsonSerialize_CanExecute"/>
+        <CommandBinding
+            Command="local:DepartmentWindowCommands.Test_JsonDeserialize"
+            Executed="Test_JsonDeserialize_Executed"
+            CanExecute="Test_JsonDeserialize_CanExecute"/>
     </Window.CommandBindings>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -112,5 +120,21 @@
             Margin="5"
             Content="Отмена" 
             Command="local:DepartmentWindowCommands.Cancel"/>
+        <Button
+            x:Name="btnTest_JsonSerialize"
+            Grid.Column="3"
+            Grid.Row="3"
+            Content="TjS"
+            Command="local:DepartmentWindowCommands.Test_JsonSerialize"
+            Visibility="Hidden"
+            />
+        <Button
+            x:Name="btnTest_JsonDeserialize"
+            Grid.Column="4"
+            Grid.Row="3"
+            Content="TjDs"
+            Command="local:DepartmentWindowCommands.Test_JsonDeserialize"
+            Visibility="Hidden"
+            />
     </Grid>
 </Window>

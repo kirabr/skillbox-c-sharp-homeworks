@@ -18,7 +18,7 @@ namespace OrgDB_WPF.Clients
         {
             writer.WriteStartObject();
 
-            writer.WritePropertyName("kind"); writer.WriteValue(value.GetType().Name);
+            writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
             writer.WritePropertyName("id"); writer.WriteValue(value.ID);
             writer.WritePropertyName("Name"); writer.WriteValue(value.Name);
             writer.WritePropertyName("PreviousClientStatusId"); writer.WriteValue(value.PreviousClientStatusId);

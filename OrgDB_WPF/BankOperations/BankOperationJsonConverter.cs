@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace OrgDB_WPF.BankOperations
+namespace OrgDB_WPF
 {
     class BankOperationJsonConverter : JsonConverter<BankOperation>
     {
@@ -20,7 +20,6 @@ namespace OrgDB_WPF.BankOperations
             writer.WriteStartObject();
 
             // запишем тип операции
-            writer.WritePropertyName("Kind"); writer.WriteValue(value.GetType().Name);
             writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
 
             // запишем общие для всех операций свойства

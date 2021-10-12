@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
-    public abstract class BankProduct : IXmlServices
+    public abstract class BankProduct : IXmlServices, IJsonServices
     {
         #region Поля
 
@@ -80,15 +80,17 @@ namespace OrgDB_WPF.Products
 
         }
 
-        public BankProduct(JObject jBankProduct)
-        {
-            id = (Guid)jBankProduct.SelectToken("id");
-            name = (string)jBankProduct.SelectToken("Name");
-            description = (string)jBankProduct.SelectToken("Description");
-            basicPercentPerYear = (double)jBankProduct.SelectToken("BasicPercentPerYear");
-            basicPricePerYear = (double)jBankProduct.SelectToken("BasicPrice");
+        //public BankProduct(JObject jBankProduct)
+        //{
+        //    id = (Guid)jBankProduct.SelectToken("id");
+        //    name = (string)jBankProduct.SelectToken("Name");
+        //    description = (string)jBankProduct.SelectToken("Description");
+        //    basicPercentPerYear = (double)jBankProduct.SelectToken("BasicPercentPerYear");
+        //    basicPricePerYear = (double)jBankProduct.SelectToken("BasicPrice");
 
-        }
+        //}
+
+        public BankProduct() { }
 
         #endregion Конструкторы
 
@@ -121,6 +123,21 @@ namespace OrgDB_WPF.Products
         #region Собственные методы
 
         #endregion Собственные методы
+
+
+        #region Реализация интерфейса IJsonServices
+
+        public virtual void SetDetails(JObject jBankProduct)
+        {
+            id = (Guid)jBankProduct.SelectToken("id");
+            name = (string)jBankProduct.SelectToken("Name");
+            description = (string)jBankProduct.SelectToken("Description");
+            basicPercentPerYear = (double)jBankProduct.SelectToken("BasicPercentPerYear");
+            basicPricePerYear = (double)jBankProduct.SelectToken("BasicPrice");
+        }
+
+        #endregion Реализация интерфейса IJsonServices
+
 
     }
 }
