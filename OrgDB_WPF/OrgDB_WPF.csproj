@@ -109,6 +109,7 @@
     <Compile Include="Sorting\SortingSettings.xaml.cs">
       <DependentUpon>SortingSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\DataSection.cs" />
     <Page Include="Departments\DepartmentChoiseForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

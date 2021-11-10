@@ -58,12 +58,25 @@
                 <MenuItem Header="Сохранить как..." Command="ApplicationCommands.SaveAs"/>
                 <MenuItem Header="Выход" Command="local:WindowCommands.Exit"/>
             </MenuItem>
+            <MenuItem x:Name ="TabsVisibility"  Header="Вкладки">
+                <MenuItem x:Name="TabItemDepartmentsVisibility"  Header="Департаменты"
+                    IsCheckable="True" Checked="TabItemDepartmentsVisibility_Checked"
+                    Unchecked="TabItemDepartmentsVisibility_Unchecked"/>
+                <MenuItem x:Name ="TabItemEmployeesVisibility"  Header="Сотрудники"
+                    IsCheckable="True" Checked="TabItemEmployeesVisibility_Checked" 
+                    Unchecked="TabItemEmployeesVisibility_Unchecked"/>
+                <MenuItem x:Name="TabItemClientStatusesVisibility" Header="Статусы клиентов"
+                          IsCheckable="True" Checked="TabItemClientStatusesVisibility_Checked" Unchecked="TabItemClientStatusesVisibility_Unchecked"/>
+                <MenuItem x:Name="TabItemdbSettingsVisibility" Header="Настройки"
+                    IsCheckable="True" Checked="TabItemdbSettingsVisibility_Checked"
+                    Unchecked="TabItemdbSettingsVisibility_Unchecked"/>
+            </MenuItem>
         </Menu>
-
-        <TabControl
+        <TextBlock Grid.Row="1" Text="Для отображения данных включайте Вкладки" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="35" FontStyle="Italic" Foreground="Gray"/>
+        <TabControl x:Name="tcDataTabs"
             Grid.Row="1">
             <TabItem x:Name="TabItemDepartments" Header="Департаменты">
-                <Grid>
+                <Grid x:Name="GridDepartments">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="137*"/>
                         <ColumnDefinition Width="165*"/>
@@ -114,6 +127,10 @@
                                 <MenuItem
                                     Header="Удалить"
                                     Command="local:WindowCommands.DeleteDepartment"/>
+                                <Separator/>
+                                <MenuItem
+                                    Header="Сортировать"
+                                    Command="local:WindowCommands.SortDepartments"/>
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.View>
@@ -140,9 +157,8 @@
                     </ListView>
                 </Grid>
             </TabItem>
-            <TabItem 
-                x:Name="TabItemEmployees" Header="Сотрудники">
-                <Grid>
+            <TabItem x:Name="TabItemEmployees" Header="Сотрудники">
+                <Grid x:Name="GridEmployees">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="27*"/>
                         <ColumnDefinition Width="110*"/>
@@ -194,6 +210,10 @@
                                 <MenuItem
                                     Header="Удалить"
                                     Command="local:WindowCommands.DeleteEmployee"/>
+                                <Separator/>
+                                <MenuItem
+                                    Header="Сортировать"
+                                    Command="local:WindowCommands.SortEmployees"/>
                             </ContextMenu>
                         </ListView.ContextMenu>
                         <ListView.View>
@@ -239,11 +259,54 @@
                     </ListView>
                 </Grid>
             </TabItem>
-            <TabItem
-                x:Name="TabItemdbSettings" 
-                Header="Настройки">
+            <TabItem x:Name="TabItemClientStatuses" Header="Статусы клиентов">
+                <Grid x:Name="gridStatusKind">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <TabControl x:Name="tcStatusKind"
+                        Grid.Row="0">
+                        <TabItem x:Name="tiIndividualStatuses" Header="Статусы физических лиц">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="29*"/>
+                                    <RowDefinition Height="284*"/>
+                                </Grid.RowDefinitions>                                
+                                <ListView x:Name="IndividualStatusesListView" Grid.Row="1">
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn
+                                                x:Name="clmnIndividualStatusName"
+                                                Header="Статус"
+                                                DisplayMemberBinding="{Binding Name}"
+                                                Width="300">
+                                            </GridViewColumn>
+                                            <GridViewColumn
+                                                x:Name="clmnIndividualStatusCreditDiscountPercent"
+                                                Header="Процент скидки по кредиту"
+                                                DisplayMemberBinding="{Binding CreditDiscountPercent}"
+                                                Width="200">                                                
+                                            </GridViewColumn>
+                                            <GridViewColumn
+                                                x:Name="clmnDepositAdditionalPercent"
+                                                Header="Доп. процент по депозиту"
+                                                DisplayMemberBinding="{Binding DepositAdditionalPercent}"
+                                                Width="200">                                                
+                                            </GridViewColumn>
+                                        </GridView>    
+                                    </ListView.View>
+                                    
+                                </ListView>
+                            </Grid>
+                        </TabItem>
+                        <TabItem x:Name="tiLegalEntityStatuses" Header="Статусы юридических лиц">
 
-                <Grid x:Name="SettingsStackPanels">
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabItemdbSettings" Header="Настройки">
+                <Grid x:Name="GridSettings">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="72*"/>
                         <RowDefinition Height="269*"/>
@@ -354,7 +417,6 @@
                                 Text="{Binding MinInternSalary}"/>
                         </Grid>
                     </StackPanel>
-
                 </Grid>
 
             </TabItem>

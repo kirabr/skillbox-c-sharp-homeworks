@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Threading;
+using System.Windows.Controls;
 
 namespace OrgDB_WPF
 {
@@ -22,8 +23,13 @@ namespace OrgDB_WPF
         // Текущее приложение
         App currApp = (App)App.Current;
 
+        // Наборы представлений данных
         CollectionViewSource DepartmentsViewSource;
         CollectionViewSource EmployeesViewSource;
+        CollectionViewSource IndividualStatusesViewSource;
+
+        // Наборы элементов интерфейса, изменяемых совместно
+        UI.DataSections dataSections = new UI.DataSections();
 
         #endregion Поля
 
@@ -43,20 +49,35 @@ namespace OrgDB_WPF
 
             InitializeComponent();
 
-            this.DataContext = DB;
+            DataContext = DB;
             sp_OrgSettings.DataContext = DB.Organization;
+
+            tcDataTabs.Visibility = Visibility.Collapsed;
             
             TestsDB();
 
             DepartmentsViewSource = new CollectionViewSource();
             DepartmentsViewSource.Source = DB.Departments;
-            
+                        
             EmployeesViewSource = new CollectionViewSource();
             EmployeesViewSource.Source = DB.Employees;
 
+            IndividualStatusesViewSource = new CollectionViewSource();
+            IndividualStatusesViewSource.Source = DB.ClientStatuses;
+
             DepListView.ItemsSource = DepartmentsViewSource.View;
             EmpListView.ItemsSource = EmployeesViewSource.View;
+            IndividualStatusesListView.ItemsSource = IndividualStatusesViewSource.View;
+            IndividualStatusesViewSource.Filter += IndividualStatusesViewSource_Filter;
 
+            InitializeDataSections();
+            SetDataSectionsVisibility();
+
+        }
+
+        private void IndividualStatusesViewSource_Filter(object sender, FilterEventArgs e)
+        {
+            e.Accepted = (e.Item.GetType() == typeof(Clients.IndividualStatus));
         }
 
         #endregion Главный метод
@@ -72,8 +93,52 @@ namespace OrgDB_WPF
 
         #region Обработчики событий элементов формы
 
+        #region Элементы меню "Вкладки"
+
+        private void TabItemDepartmentsVisibility_Checked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemDepartmentsVisibility_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemEmployeesVisibility_Checked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemEmployeesVisibility_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemClientStatusesVisibility_Checked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemClientStatusesVisibility_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemdbSettingsVisibility_Checked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        private void TabItemdbSettingsVisibility_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetDataSectionVisibility(dataSections[(MenuItem)sender]);
+        }
+
+        #endregion Элементы меню "Вкладки"
+
         #region Закладка Департаменты
-                
+
         private void DepListView_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && ChangeDepartmentCanExecute()) ChangeDepartment((Department)DepListView.SelectedItem);
@@ -375,7 +440,117 @@ namespace OrgDB_WPF
         }
 
         #endregion Вспомогательные методы
-                
+
+        #region Настройка внешнего вида
+
+        /// <summary>
+        /// Заполняет указатели на коллекции (секции) отображаемых данных - вкладки "Департаменты", "Сотрудники" и т.д.
+        /// и связанные с ними элементы меню и прочие элементы.
+        /// </summary>
+        void InitializeDataSections()
+        {
+
+            // Общая секция со всеми вкладками. Не привязана к пункту меню
+            dataSections["DataTabs"] = new UI.DataSection()
+            {
+                name = "DataTabs",
+                elements = new List<FrameworkElement> { tcDataTabs }
+            };
+            
+            // Секция "Департаменты"
+            dataSections["Departments"] = new UI.DataSection()
+            {
+                name = "Departments",
+                menuItem = TabItemDepartmentsVisibility,
+                elements = new List<FrameworkElement> { TabItemDepartments, GridDepartments }
+            };
+
+            // Секция "Сотрудники"
+            dataSections["Employees"] = new UI.DataSection()
+            {
+                name = "Employees",
+                menuItem = TabItemEmployeesVisibility,
+                elements = new List<FrameworkElement> { TabItemEmployees, GridEmployees }
+            };
+
+            // Секция "Статусы клиентов
+            dataSections["ClientStauses"] = new UI.DataSection()
+            {
+                name = "ClientStauses",
+                menuItem = TabItemClientStatusesVisibility,
+                elements = new List<FrameworkElement> 
+                { 
+                    TabItemClientStatuses, tiIndividualStatuses, tiLegalEntityStatuses,
+                    gridStatusKind
+                }
+            };
+
+            // Секция "Настройки"
+            dataSections["Settings"] = new UI.DataSection()
+            {
+                name = "Settings",
+                menuItem = TabItemdbSettingsVisibility,
+                elements = new List<FrameworkElement> { TabItemdbSettings, GridSettings }
+            };
+            
+        }
+
+        /// <summary>
+        /// Настраивает видимость всех секций данных
+        /// </summary>
+        void SetDataSectionsVisibility()
+        {
+            SetDataSectionVisibility(dataSections["Departments"]);
+            SetDataSectionVisibility(dataSections["Employees"]);
+            SetDataSectionVisibility(dataSections["ClientStauses"]);
+            SetDataSectionVisibility(dataSections["Settings"]);
+        }
+
+        /// <summary>
+        /// Настраивает видимость секции данных
+        /// </summary>
+        /// <param name="dataSection">Секция данных</param>
+        void SetDataSectionVisibility(UI.DataSection dataSection)
+        {
+            
+            // Видимость секции по умолчанию - свёрнуто
+            Visibility visibility = Visibility.Collapsed;
+
+            // Определяем пункт меню, связанный с секцией.
+            MenuItem menuItem = dataSection.menuItem;
+
+            // По наличию своего пункта меню определяем, с какой секцией мы работаем - с частной или общей.
+            // У общей нет своего пункта меню.
+            if (menuItem != null)
+            {
+                // Определяем видимость текущей секции
+                visibility = menuItem.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+                // Устанавливаем видимость общей секции всех вкладок
+                SetDataSectionVisibility(dataSections["DataTabs"]);
+            }                
+            else
+            {
+                // Определяем видимость общей секции - если хотя бы одна частная секция
+                // должна быть видимой, то и общая должна быть видимой.
+                foreach (UI.DataSection curDataSection in dataSections)
+                {
+                    // У общей секции нет своего пункта меню, по этому признаку пропускаем её проверку
+                    if (curDataSection.menuItem != null && curDataSection.menuItem.IsChecked)
+                    {
+                        visibility = Visibility.Visible;
+                        break;
+                    }
+                }
+            }
+            
+            // Устанавливаем видимость всех элементов секции
+            foreach (System.Windows.FrameworkElement frameworkElement in dataSection.elements)
+                frameworkElement.Visibility = visibility;
+
+        }
+
+        #endregion Настройка внешнего вида
+
         #region Тесты
 
         private void TestsDB()
@@ -809,6 +984,16 @@ namespace OrgDB_WPF
         public static RoutedCommand DeleteEmployee { get; set; }
         public static RoutedCommand SortDepartments { get; set; }
         public static RoutedCommand SortEmployees { get; set; }
+        public static RoutedCommand AddIndividualClientStatus { get; set; }
+        public static RoutedCommand InsertIndividualClientStatus { get; set; }
+        public static RoutedCommand MoveUpIndividualClientStatus { get; set; }
+        public static RoutedCommand MoveDownIndividualClientStatus { get; set; }
+        public static RoutedCommand DeleteIndividualClientStatus { get; set; }
+        public static RoutedCommand AddLegalEntitylClientStatus { get; set; }
+        public static RoutedCommand InsertLegalEntitylClientStatus { get; set; }
+        public static RoutedCommand MoveUpLegalEntitylClientStatus { get; set; }
+        public static RoutedCommand MoveDownLegalEntitylClientStatus { get; set; }
+        public static RoutedCommand DeleteLegalEntityllClientStatus { get; set; }
         public static RoutedCommand Exit { get; set; }
 
         #endregion Поля (объявление команд)
@@ -831,6 +1016,18 @@ namespace OrgDB_WPF
             ChangeEmployee = new RoutedCommand("ChangeEmployee", typeThisWindow);
             DeleteEmployee = new RoutedCommand("DeleteEmployee", typeThisWindow);
             SortEmployees = new RoutedCommand("SortEmployees", typeThisWindow);
+
+            AddIndividualClientStatus = new RoutedCommand("AddIndividualClientStatus", typeThisWindow);
+            InsertIndividualClientStatus = new RoutedCommand("InsertIndividualClientStatus", typeThisWindow);
+            MoveUpIndividualClientStatus = new RoutedCommand("MoveUpIndividualClientStatus", typeThisWindow);
+            MoveDownIndividualClientStatus = new RoutedCommand("MoveDownIndividualClientStatus", typeThisWindow);
+            DeleteIndividualClientStatus = new RoutedCommand("DeleteIndividualClientStatus", typeThisWindow);
+
+            AddLegalEntitylClientStatus = new RoutedCommand("AddLegalEntitylClientStatus", typeThisWindow);
+            InsertLegalEntitylClientStatus = new RoutedCommand("InsertLegalEntitylClientStatus", typeThisWindow);
+            MoveUpLegalEntitylClientStatus = new RoutedCommand("MoveUpLegalEntitylClientStatus", typeThisWindow);
+            MoveDownLegalEntitylClientStatus = new RoutedCommand("MoveDownLegalEntitylClientStatus", typeThisWindow);
+            DeleteLegalEntityllClientStatus = new RoutedCommand("DeleteLegalEntityllClientStatus", typeThisWindow);
 
         }
 

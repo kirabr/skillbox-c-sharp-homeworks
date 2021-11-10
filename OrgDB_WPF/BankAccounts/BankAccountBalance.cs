@@ -237,7 +237,6 @@ namespace OrgDB_WPF.BankAccounts
             {
                 writer.WriteStartElement("OperationHistoryElement");
                 OpHistoryElement.Key.WriteXml(writer);
-                //Common.WriteXMLElement(writer, "OperationId", OpHistoryElement.Key.ID.ToString());
                 Common.WriteXMLElement(writer, "OperationResult", OpHistoryElement.Value);
                 writer.WriteEndElement();
             }
