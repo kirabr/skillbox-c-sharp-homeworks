@@ -282,6 +282,29 @@ namespace OrgDB_WPF
             if (dep == null) return "";
             else return dep.Name;
         }
+        
+        /// <summary>
+        /// Возвращает уровень текущего департамента в иерархии
+        /// </summary>
+        /// <param name="Dep">
+        /// Департамент, для которого надо определить уровень
+        /// </param>
+        /// <returns>
+        /// Число - уровень департамента. 0 - департамент на верхнем уровне (не подчиняется никому), 1 - подчиняется департаменту верхнего уровня и т.д.
+        /// </returns>
+        public int DepartmentLevel(Department Dep)
+        {
+            int level = 0;
+
+            Department parent = ParentDepartment(Dep);
+            while (parent != null)
+            {
+                level++;
+                parent = ParentDepartment(parent);
+            }
+
+            return level;
+        }
 
         #endregion Департаменты
 
