@@ -102,7 +102,10 @@ namespace OrgDB_WPF.Clients
 
         }
 
-        protected ClientStatus() { }
+        protected ClientStatus() 
+        {
+            id = Guid.NewGuid();
+        }
 
         #endregion Конструкторы
 

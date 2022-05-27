@@ -75,6 +75,9 @@
     <Compile Include="Clients\Client.cs" />
     <Compile Include="Clients\ClientJsonConverter.cs" />
     <Compile Include="Clients\ClientStatus.cs" />
+    <Compile Include="Clients\ClientStatusForm.xaml.cs">
+      <DependentUpon>ClientStatusForm.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Clients\ClientStatusJsonConverter.cs" />
     <Compile Include="Clients\Individual.cs" />
     <Compile Include="Clients\IndividualStatus.cs" />
@@ -109,7 +112,12 @@
     <Compile Include="Sorting\SortingSettings.xaml.cs">
       <DependentUpon>SortingSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Tests\Tests.cs" />
     <Compile Include="UI\DataSection.cs" />
+    <Page Include="Clients\ClientStatusForm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Departments\DepartmentChoiseForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

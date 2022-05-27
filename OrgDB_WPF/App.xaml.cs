@@ -87,6 +87,28 @@ namespace OrgDB_WPF
             departmentChoiseForm.Show();
         }
 
+        /// <summary>
+        /// Возвращает форму статуса клиента
+        /// </summary>
+        /// <returns></returns>
+        public Clients.ClientStatusForm GetClientStatusForm()
+        {
+            Clients.ClientStatusForm clientStatusForm = new Clients.ClientStatusForm();
+            return clientStatusForm;
+        }
+
+        public Clients.ClientStatusForm GetClientStatusForm(Clients.ClientStatus clientStatus)
+        {
+            foreach (Window curWindow in Windows)
+            {
+                if (curWindow.GetType() == typeof(Clients.ClientStatusForm) && ((Clients.ClientStatusForm)curWindow).ClientStatus == clientStatus)
+                    return (Clients.ClientStatusForm)curWindow;
+            }
+
+            return GetClientStatusForm();
+
+        }
+
 
     }
 }

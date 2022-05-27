@@ -10,18 +10,35 @@
         Width="1000" 
         Closed="Window_Closed">
     <Window.CommandBindings>
+        <!-- Команды приложения -->
         <CommandBinding Command="ApplicationCommands.Open" Executed="Open_Executed"/>
         <CommandBinding Command="ApplicationCommands.Save" Executed="Save_Executed"/>
         <CommandBinding Command="ApplicationCommands.SaveAs" Executed="SaveAs_Executed"/>
         <CommandBinding Command="local:WindowCommands.Exit" Executed="Exit_Executed"/>
+        <!-- Команды секции департаментов -->
         <CommandBinding Command="local:WindowCommands.AddDepartment" Executed="AddDepartment_Executed" CanExecute="AddDepartment_CanExecute"/>
         <CommandBinding Command="local:WindowCommands.ChangeDepartment" Executed="ChangeDepartment_Executed" CanExecute="ChangeDepartment_CanExecute"/>
         <CommandBinding Command="local:WindowCommands.DeleteDepartment" Executed="DeleteDepartment_Executed" CanExecute="DeleteDepartment_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.SortDepartments" Executed="SortDepartments_Executed" CanExecute="SortDepartments_CanExecute"/>
+        <!-- Команды секции сотрудников -->
         <CommandBinding Command="local:WindowCommands.AddEmployee" Executed="AddEmployee_Executed" CanExecute="AddEmployee_CanExecute"/>
         <CommandBinding Command="local:WindowCommands.ChangeEmployee" Executed="ChangeEmployee_Executed" CanExecute="ChangeEmployee_CanExecute"/>
-        <CommandBinding Command="local:WindowCommands.DeleteEmployee" Executed="DeleteEmployee_Executed" CanExecute="DeleteEmployee_CanExecute"/>
-        <CommandBinding Command="local:WindowCommands.SortDepartments" Executed="SortDepartments_Executed" CanExecute="SortDepartments_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.DeleteEmployee" Executed="DeleteEmployee_Executed" CanExecute="DeleteEmployee_CanExecute"/>        
         <CommandBinding Command="local:WindowCommands.SortEmployees" Executed="SortEmployees_Executed" CanExecute="SortEmployees_CanExecute"/>
+        <!-- Команды секции статусов клиентов -->
+        <CommandBinding Command="local:WindowCommands.AddIndividualClientStatus" Executed="AddIndividualClientStatus_Executed" CanExecute="AddIndividualClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.InsertIndividualClientStatus" Executed="InsertIndividualClientStatus_Executed" CanExecute="InsertIndividualClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.ChangeIndividualClientStatus" Executed="ChangeIndividualClientStatus_Executed" CanExecute="ChangeIndividualClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.MoveUpIndividualClientStatus" Executed="MoveUpIndividualClientStatus_Executed" CanExecute="MoveUpIndividualClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.MoveDownIndividualClientStatus" Executed="MoveDownIndividualClientStatus_Executed" CanExecute="MoveDownIndividualClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.DeleteIndividualClientStatus" Executed="DeleteIndividualClientStatus_Executed" CanExecute="DeleteIndividualClientStatus_CanExecute"/>
+
+        <CommandBinding Command="local:WindowCommands.AddLegalEntitylClientStatus" Executed="AddLegalEntitylClientStatus_Executed" CanExecute="AddLegalEntitylClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.InsertLegalEntitylClientStatus" Executed="InsertLegalEntitylClientStatus_Executed" CanExecute="InsertLegalEntitylClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.ChangeLegalEntitylClientStatus" Executed="ChangeLegalEntitylClientStatus_Executed" CanExecute="ChangeLegalEntitylClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.MoveUpLegalEntitylClientStatus" Executed="MoveUpLegalEntitylClientStatus_Executed" CanExecute="MoveUpLegalEntitylClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.MoveDownLegalEntitylClientStatus" Executed="MoveDownLegalEntitylClientStatus_Executed" CanExecute="MoveDownLegalEntitylClientStatus_CanExecute"/>
+        <CommandBinding Command="local:WindowCommands.DeleteLegalEntityllClientStatus" Executed="DeleteLegalEntityllClientStatus_Executed" CanExecute="DeleteLegalEntityllClientStatus_CanExecute"/>
     </Window.CommandBindings>
     <Window.Resources>
         <Style x:Key="tbCaption" TargetType="TextBlock">
@@ -271,8 +288,26 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="29*"/>
                                     <RowDefinition Height="284*"/>
-                                </Grid.RowDefinitions>                                
-                                <ListView x:Name="IndividualStatusesListView" Grid.Row="1">
+                                </Grid.RowDefinitions>
+                                <Menu x:Name="menuIndividualStatuses">
+                                    <MenuItem Header="Добавить" Command="local:WindowCommands.AddIndividualClientStatus"/>
+                                    <MenuItem Header="Вставить" Command="local:WindowCommands.InsertIndividualClientStatus"/>
+                                    <MenuItem Header="Изменить" Command="local:WindowCommands.ChangeIndividualClientStatus"/>
+                                    <MenuItem Header="Сдвинуть вверх" Command="local:WindowCommands.MoveUpIndividualClientStatus"/>
+                                    <MenuItem Header="Сдвинуть вниз" Command="local:WindowCommands.MoveDownIndividualClientStatus"/>
+                                    <MenuItem Header="Удалить" Command="local:WindowCommands.DeleteIndividualClientStatus"/>
+                                </Menu>
+                                <ListView x:Name="IndividualStatusesListView" Grid.Row="1" KeyDown="IndividualStatusesListView_KeyDown" MouseDoubleClick="IndividualStatusesListView_MouseDoubleClick">
+                                    <ListView.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Добавить" Command="local:WindowCommands.AddIndividualClientStatus"/>
+                                            <MenuItem Header="Вставить" Command="local:WindowCommands.InsertIndividualClientStatus"/>
+                                            <MenuItem Header="Изменить" Command="local:WindowCommands.ChangeIndividualClientStatus"/>
+                                            <MenuItem Header="Сдвинуть вверх" Command="local:WindowCommands.MoveUpIndividualClientStatus"/>
+                                            <MenuItem Header="Сдвинуть вниз" Command="local:WindowCommands.MoveDownIndividualClientStatus"/>
+                                            <MenuItem Header="Удалить" Command="local:WindowCommands.DeleteIndividualClientStatus"/>
+                                        </ContextMenu>                                        
+                                    </ListView.ContextMenu>
                                     <ListView.View>
                                         <GridView>
                                             <GridViewColumn

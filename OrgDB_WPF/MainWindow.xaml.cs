@@ -67,17 +67,12 @@ namespace OrgDB_WPF
 
             DepListView.ItemsSource = DepartmentsViewSource.View;
             EmpListView.ItemsSource = EmployeesViewSource.View;
-            IndividualStatusesListView.ItemsSource = IndividualStatusesViewSource.View;
             IndividualStatusesViewSource.Filter += IndividualStatusesViewSource_Filter;
-
+            IndividualStatusesListView.ItemsSource = IndividualStatusesViewSource.View;
+            
             InitializeDataSections();
             SetDataSectionsVisibility();
 
-        }
-
-        private void IndividualStatusesViewSource_Filter(object sender, FilterEventArgs e)
-        {
-            e.Accepted = (e.Item.GetType() == typeof(Clients.IndividualStatus));
         }
 
         #endregion Главный метод
@@ -156,14 +151,34 @@ namespace OrgDB_WPF
 
         private void EmpListView_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && ChangeEmployeeCanExecute()) ChangeEmployee((Employee)EmpListView.SelectedItem);
-            if (e.Key == Key.Delete && DeleteEmployeeCanExecute()) DeleteEmployee((Employee)EmpListView.SelectedItem);
+            if (e.Key == Key.Enter && ChangeEmployeeCanExecute()) 
+                ChangeEmployee((Employee)EmpListView.SelectedItem);
+            if (e.Key == Key.Delete && DeleteEmployeeCanExecute()) 
+                DeleteEmployee((Employee)EmpListView.SelectedItem);
         }
 
         private void EmpListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (ChangeEmployeeCanExecute()) ChangeEmployee((Employee)EmpListView.SelectedItem);
-        }        
+        }
+
+        #region Закладка Статусы клиентов
+
+        private void IndividualStatusesListView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && OneOfIndividualClientStatusSelected()) 
+                ChangeClientStatus((Clients.IndividualStatus)IndividualStatusesListView.SelectedItem);
+            if (e.Key == Key.Delete && DeleteIndividualClientStatusCanExecute())
+                DeleteClientStatus((Clients.IndividualStatus)IndividualStatusesListView.SelectedItem);
+        }
+
+        private void IndividualStatusesListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (OneOfIndividualClientStatusSelected())
+                ChangeClientStatus((Clients.IndividualStatus)IndividualStatusesListView.SelectedItem);
+        }
+        
+        #endregion Закладка Статусы клиентов
 
         #endregion Закладка Сотрудники
 
@@ -241,13 +256,21 @@ namespace OrgDB_WPF
                 MessageBox.Show("База не загружена");
                 LogEvent("Сбой загрузки базы из " + DB.dbSettings.DBFilePath);
             }
-            
-            DepListView.ItemsSource = DB.Departments;
-            DepListView.Items.Refresh();
 
-            EmpListView.ItemsSource = DB.Employees;
-            EmpListView.Items.Refresh();
+            DepartmentsViewSource.Source = DB.Departments;
+            DepListView.ItemsSource = DepartmentsViewSource.View;
+            DepListView.Items.Refresh();
             
+            EmployeesViewSource.Source = DB.Employees;
+            EmpListView.ItemsSource = EmployeesViewSource.View;            
+            EmpListView.Items.Refresh();
+
+            IndividualStatusesViewSource.Source = DB.ClientStatuses;
+            IndividualStatusesListView.ItemsSource = IndividualStatusesViewSource.View;
+            IndividualStatusesViewSource.Filter -= IndividualStatusesViewSource_Filter;
+            IndividualStatusesViewSource.Filter += IndividualStatusesViewSource_Filter;
+            IndividualStatusesListView.Items.Refresh();
+
         }
 
         /// <summary>
@@ -363,6 +386,112 @@ namespace OrgDB_WPF
         }
 
         /// <summary>
+        /// Добавляет статус клиента в базу
+        /// </summary>
+        /// <param name="type">Тип (статуса клиента)</param>
+        private void AddClientStatus(Type type)
+        {
+
+            // новый статус
+            Clients.ClientStatus newStatus;
+
+            // определяем тип нового статуса (физ. или юр. лица) и создаём новый статус            
+            if (type == typeof(Clients.IndividualStatus))
+                newStatus = new Clients.IndividualStatus();
+            else newStatus = new Clients.LegalEntityStatus();
+
+            // ищем последний статус нужного типа, новый добавляем после него
+            Clients.ClientStatus lastClientStatus = null;
+            foreach (Clients.ClientStatus clientStatus in DB.ClientStatuses)
+            {
+                if (clientStatus.GetType() == type && clientStatus.NextClientStatus == null)
+                {
+                    lastClientStatus = clientStatus;
+                    break;
+                }
+            }
+            newStatus.PreviousClientStatus = lastClientStatus;
+
+            // подготавливаем и открываем форму
+            Clients.ClientStatusForm clientStatusForm = currApp.GetClientStatusForm();
+            clientStatusForm.Owner = this;
+            clientStatusForm.ClientStatus = newStatus;
+            clientStatusForm.finishEdit += OnClientStatusAdding;
+            clientStatusForm.Show();
+
+        }
+
+        /// <summary>
+        /// Вставляет статус клиента перед указанным статусом
+        /// </summary>
+        /// <param name="statusAfter"></param>
+        private void InsertClientStatus(Clients.ClientStatus statusAfter)
+        {
+            // Новый статус
+            Clients.ClientStatus newStatus;
+
+            // определяем тип нового статуса (физ. или юр. лица) и создаём новый статус
+            if (statusAfter.GetType()==typeof(Clients.IndividualStatus))
+                newStatus = new Clients.IndividualStatus();
+            else newStatus = new Clients.LegalEntityStatus();
+
+            newStatus.PreviousClientStatus = statusAfter.PreviousClientStatus;
+            newStatus.NextClientStatus = statusAfter;
+            statusAfter.PreviousClientStatus = newStatus;
+
+            // подготавливаем и открываем форму
+            Clients.ClientStatusForm clientStatusForm = currApp.GetClientStatusForm();
+            clientStatusForm.Owner = this;
+            clientStatusForm.ClientStatus = newStatus;
+            clientStatusForm.finishEdit += OnClientStatusAdding;
+            clientStatusForm.cancelEdit += OnCancelStatusEdit;
+            clientStatusForm.Show();
+
+        }
+
+        /// <summary>
+        /// Изменяет статус клиента
+        /// </summary>
+        /// <param name="clientStatus">Статус клиента</param>
+        private void ChangeClientStatus(Clients.ClientStatus clientStatus)
+        {
+            Clients.ClientStatusForm clientStatusForm = currApp.GetClientStatusForm();
+            clientStatusForm.Owner = this;
+            clientStatusForm.ClientStatus = clientStatus;
+            clientStatusForm.finishEdit += OnClientStatusFinishEditing;
+            clientStatusForm.Show();
+        }
+
+        /// <summary>
+        /// Удаляет статус клиента
+        /// </summary>
+        /// <param name="clientStatus">Удаляемый статус</param>
+        private void DeleteClientStatus(Clients.ClientStatus clientStatus)
+        {
+            MessageBoxResult UserAnswer = MessageBox.Show($"Удалить {clientStatus.Name}?",
+                "Подтверждение удаления статуса клиента",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No);
+
+            if (UserAnswer != MessageBoxResult.Yes) return;
+
+            try
+            {
+                DB.RemoveClientStatus(clientStatus);
+                LogEvent($"Удалён статус клиента {clientStatus.Name}");
+                ListView listView = ClientStatusListView(clientStatus);
+                IndividualStatusesViewSource.Filter -= IndividualStatusesViewSource_Filter;
+                IndividualStatusesViewSource.Filter += IndividualStatusesViewSource_Filter;
+                listView.Items.Refresh();
+            }
+            catch (Exception excp)
+            {
+                string text = $"Не удалось удалить статус клиента {clientStatus.Name}, причина: \n{excp.Message}";
+            }
+        }
+
+        /// <summary>
         /// Записывает событие в лог
         /// </summary>
         /// <param name="Event">
@@ -437,6 +566,71 @@ namespace OrgDB_WPF
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Определяет, что клиентских статусов указанного типа в базе более одного
+        /// </summary>
+        /// <param name="clientStatusType">Тип клиентского статуса</param>
+        /// <returns></returns>
+        private bool ClienStatusesTypeOfMoreThenOne(Type clientStatusType)
+        {
+            int count = 0;
+            foreach (Clients.ClientStatus clientStatus in DB.ClientStatuses)
+            {
+                if (clientStatus.GetType() == clientStatusType) count++;
+                if (count > 1) break;
+            }
+
+            return count > 1;
+        }
+
+        /// <summary>
+        /// Определяет, существует ли в базе хотя бы один клиентский статус указанного типа
+        /// </summary>
+        /// <param name="clientStatusType"></param>
+        /// <returns></returns>
+        private bool ClienStatusesTypeOfExists(Type clientStatusType)
+        {
+            foreach (Clients.ClientStatus clientStatus in DB.ClientStatuses)
+            {
+                if (clientStatus.GetType() == clientStatusType) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Определяет ListView, отображающий статусы того же типа, что и нужный статус
+        /// </summary>
+        /// <param name="clientStatus">Статус клиента</param>
+        /// <returns></returns>
+        private ListView ClientStatusListView(Clients.ClientStatus clientStatus)
+        {
+            if (clientStatus.GetType() == typeof(Clients.IndividualStatus))
+                return IndividualStatusesListView;
+            return IndividualStatusesListView;//LegalEntityStatusesListView
+
+        }
+
+        /// <summary>
+        /// Фильтр статусов клиентов-физ. лиц
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void IndividualStatusesViewSource_Filter(object sender, FilterEventArgs e)
+        {
+            e.Accepted = (e.Item.GetType() == typeof(Clients.IndividualStatus));
+        }
+
+        /// <summary>
+        /// Проверяет, что в текущий момент выделен один из статусов физ. лиц.
+        /// </summary>
+        /// <returns></returns>
+        private bool OneOfIndividualClientStatusSelected()
+        {
+            return IndividualStatusesListView != null
+                && IndividualStatusesListView.SelectedItems.Count == 1;
         }
 
         #endregion Вспомогательные методы
@@ -555,176 +749,182 @@ namespace OrgDB_WPF
 
         private void TestsDB()
         {
-            // проверка иерархии департаментов
+
+            Tests tests = new Tests(DB);
             
-            Department d_1 = new Department("d_1", "Podolsk", Guid.Empty); DB.AddDepartment(d_1);
-            Department d_2 = new Department("d_2", "Podolsk", Guid.Empty); DB.AddDepartment(d_2);
+            tests.AddTestDepartments();
+            tests.AddTestEmployees();
+            tests.AddClientStatuses();
 
-            Department d_1_1 = new Department("d_1_1", "Orehovo", d_1.id); DB.AddDepartment(d_1_1);
-            Department d_1_2 = new Department("d_1_2", "Borisovo", d_1.id); DB.AddDepartment(d_1_2);
+            //// проверка иерархии департаментов
 
-            Department d_1_1_1 = new Department("d_1_1_1", "Kukuevo", d_1_1.id); DB.AddDepartment(d_1_1_1);
-            Department d_1_1_2 = new Department("d_1_1_2", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_2);
-            Department d_1_1_3 = new Department("d_1_1_3", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_3);
+            //Department d_1 = new Department("d_1", "Podolsk", Guid.Empty); DB.AddDepartment(d_1);
+            //Department d_2 = new Department("d_2", "Podolsk", Guid.Empty); DB.AddDepartment(d_2);
 
-            Department d_1_1_1_1 = new Department("d_1_1_1_1", "Zvezduevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_1);
-            Department d_1_1_1_2 = new Department("d_1_1_1_2", "Yasenevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_2);
+            //Department d_1_1 = new Department("d_1_1", "Orehovo", d_1.id); DB.AddDepartment(d_1_1);
+            //Department d_1_2 = new Department("d_1_2", "Borisovo", d_1.id); DB.AddDepartment(d_1_2);
 
-            Intern i_1 = new Intern("Name_i_1", "Surname_i_1", 20, 200, d_1.id); DB.AddEmployee(i_1);
-            Specialist s_1 = new Specialist("Name_s_1", "Surname_s_1", 23, 300, d_1.id); DB.AddEmployee(s_1);
-            Manager m_1 = new Manager("Manager_m_1", "Surname_m_1", 30, 500, d_1.id); DB.AddEmployee(m_1);
+            //Department d_1_1_1 = new Department("d_1_1_1", "Kukuevo", d_1_1.id); DB.AddDepartment(d_1_1_1);
+            //Department d_1_1_2 = new Department("d_1_1_2", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_2);
+            //Department d_1_1_3 = new Department("d_1_1_3", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_3);
 
-            List<Department> sub_d_1 = DB.GetSubDepartments(d_1);
+            //Department d_1_1_1_1 = new Department("d_1_1_1_1", "Zvezduevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_1);
+            //Department d_1_1_1_2 = new Department("d_1_1_1_2", "Yasenevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_2);
 
-            string pdn = DB.ParentDepartmentName(d_1);
-            string pdn1 = DB.ParentDepartmentName(d_1_1);
+            //Intern i_1 = new Intern("Name_i_1", "Surname_i_1", 20, 200, d_1.id); DB.AddEmployee(i_1);
+            //Specialist s_1 = new Specialist("Name_s_1", "Surname_s_1", 23, 300, d_1.id); DB.AddEmployee(s_1);
+            //Manager m_1 = new Manager("Manager_m_1", "Surname_m_1", 30, 500, d_1.id); DB.AddEmployee(m_1);
 
-            Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
-            Products.BankAccountService bankAccountService = new Products.BankAccountService("Обслуживание счета", 0, 15);
+            //List<Department> sub_d_1 = DB.GetSubDepartments(d_1);
+
+            //string pdn = DB.ParentDepartmentName(d_1);
+            //string pdn1 = DB.ParentDepartmentName(d_1_1);
+
+            //Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
+            //Products.BankAccountService bankAccountService = new Products.BankAccountService("Обслуживание счета", 0, 15);
             
-            Clients.Individual individual1 = new Clients.Individual("Иван Петрович");
+            //Clients.Individual individual1 = new Clients.Individual("Иван Петрович");
             
-            individual1.FirstName = "Иван";
-            individual1.SurName = "Голиков";
-            individual1.Patronymic = "Петрович";
+            //individual1.FirstName = "Иван";
+            //individual1.SurName = "Голиков";
+            //individual1.Patronymic = "Петрович";
 
-            individual1.ClientManager = i_1;
+            //individual1.ClientManager = i_1;
             
-            BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit, bankAccountService });
-            BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
+            //BankAccounts.BankAccount bankAccount1 = new BankAccounts.BankAccount("000001", individual1, new List<Products.BankProduct>() { deposit, bankAccountService });
+            //BankAccounts.BankAccountBalance bankAccountBalance1 = new BankAccounts.BankAccountBalance(bankAccount1);
 
-            BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
-            Thread.Sleep(1);
-            BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
+            //BankOperation bankOperation1 = new BankOperations.Refill(bankAccountBalance1, 100);
+            //Thread.Sleep(1);
+            //BankOperation bankOperation2 = new BankOperations.Withdrawing(bankAccountBalance1, 45);
 
-            try 
-            {
-                bankOperation1.Apply();
-                //bankAccountBalance1.AddBankOperation(bankOperation1, 100);
-            }
-            catch {}
-            try {
-                bankOperation2.Apply(); 
-                //bankAccountBalance1.AddBankOperation(bankOperation2, 55);
-            }
-            catch { }
+            //try 
+            //{
+            //    bankOperation1.Apply();
+            //    //bankAccountBalance1.AddBankOperation(bankOperation1, 100);
+            //}
+            //catch {}
+            //try {
+            //    bankOperation2.Apply(); 
+            //    //bankAccountBalance1.AddBankOperation(bankOperation2, 55);
+            //}
+            //catch { }
 
-            Clients.ClientStatus clientStatus = new Clients.IndividualStatus("Начинающий");
-            DB.AddClientStatus(clientStatus);
+            //Clients.ClientStatus clientStatus = new Clients.IndividualStatus("Начинающий");
+            //DB.AddClientStatus(clientStatus);
 
-            Clients.ClientStatus clientStatus1 = new Clients.IndividualStatus("Средний");
-            clientStatus1.PreviousClientStatus = clientStatus;
-            clientStatus.NextClientStatus = clientStatus1;
-            DB.AddClientStatus(clientStatus1);
+            //Clients.ClientStatus clientStatus1 = new Clients.IndividualStatus("Средний");
+            //clientStatus1.PreviousClientStatus = clientStatus;
+            //clientStatus.NextClientStatus = clientStatus1;
+            //DB.AddClientStatus(clientStatus1);
 
-            Clients.ClientStatus clientStatus2 = new Clients.IndividualStatus("Опытный");
-            clientStatus2.PreviousClientStatus = clientStatus1;
-            clientStatus1.NextClientStatus = clientStatus2;
-            DB.AddClientStatus(clientStatus2);
+            //Clients.ClientStatus clientStatus2 = new Clients.IndividualStatus("Опытный");
+            //clientStatus2.PreviousClientStatus = clientStatus1;
+            //clientStatus1.NextClientStatus = clientStatus2;
+            //DB.AddClientStatus(clientStatus2);
 
-            //DB.RemoveClientStatus(clientStatus);
+            ////DB.RemoveClientStatus(clientStatus);
 
-            Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
-            //individual2.ClientStatus = clientStatus;
-            DB.SetClientStatus(individual2, clientStatus);
-            individual2.FirstName = "Петр";
-            individual2.SurName = "Шнурков";
-            individual2.Patronymic = "Сергеевич";
+            //Clients.Individual individual2 = new Clients.Individual("Петр Сергеевич");
+            ////individual2.ClientStatus = clientStatus;
+            //DB.SetClientStatus(individual2, clientStatus);
+            //individual2.FirstName = "Петр";
+            //individual2.SurName = "Шнурков";
+            //individual2.Patronymic = "Сергеевич";
 
-            BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000002", individual2, new List<Products.BankProduct>() { deposit });
-            BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount2);
+            //BankAccounts.BankAccount bankAccount2 = new BankAccounts.BankAccount("000002", individual2, new List<Products.BankProduct>() { deposit });
+            //BankAccounts.BankAccountBalance bankAccountBalance2 = new BankAccounts.BankAccountBalance(bankAccount2);
 
-            Thread.Sleep(1);
-
-            BankOperation bankOperationTransfer =
-                new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
-
-            try
-            {
-                bankOperationTransfer.Apply();
-
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Отказ в выполненении операции: " + e.Message);
-            }
-
-            Thread.Sleep(1);
-
-            BankOperation bankOperationTransferStorno = new BankOperations.TransferBetweenAccounts(bankOperationTransfer);
-            bankOperationTransferStorno.Apply();
-
-            for (int i = 1; i<5; i++)
-            {
-                Thread.Sleep(1);
-
-                BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
-                chargeForInterest1.Apply();
-            }
-
-            Thread.Sleep(1);
-            BankOperations.Withdrawing withdrawing1 = new BankOperations.Withdrawing(bankAccountBalance1, 10);
-            try
-            {
-                withdrawing1.Apply();
-            }
-            catch(Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-
-            BankOperations.ChargeForInterest LastChargeForInterest = null;
-            BankOperations.ChargeForInterest MiddleChargeForInterest = null;
-
-            for (int i = 1; i < 5; i++)
-            {
-                Thread.Sleep(1);
-
-                BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
-                chargeForInterest1.Apply();
-
-                Thread.Sleep(1);
-
-                if (i == 3) MiddleChargeForInterest = chargeForInterest1;
-
-                LastChargeForInterest = chargeForInterest1;
-            }
-
-            BankOperations.ChargeForInterest StornoLast = new BankOperations.ChargeForInterest(LastChargeForInterest);
-            StornoLast.Apply();
-
-            // Сработает исключение добавления сторно-операции к непоследней операции.
             //Thread.Sleep(1);
 
-            //BankOperations.ChargeForInterest StornoMiddle = new BankOperations.ChargeForInterest(MiddleChargeForInterest);
-            //StornoMiddle.Apply();
+            //BankOperation bankOperationTransfer =
+            //    new BankOperations.TransferBetweenAccounts(new List<BankAccounts.BankAccountBalance>() { bankAccountBalance1, bankAccountBalance2 }, 12);
 
-            Clients.LegalEntityStatus legalEntityStatus1 = new Clients.LegalEntityStatus("Начинающий партнёр");
-            DB.AddClientStatus(legalEntityStatus1);
+            //try
+            //{
+            //    bankOperationTransfer.Apply();
 
-            Clients.LegalEntity legalEntity1 = new Clients.LegalEntity("ООО 'Копа и рогыта'");
-            legalEntity1.FullName = "Общество с неограниченной безответственностью 'Копа и рогыта'";
-            legalEntity1.INN = "000111";
-            legalEntity1.KPP = "12345";
-            legalEntity1.IsCorporate = true;
-            //legalEntity1.ClientStatus = legalEntityStatus1;
-            DB.SetClientStatus(legalEntity1, legalEntityStatus1);
-            legalEntity1.ClientManager = s_1;
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("Отказ в выполненении операции: " + e.Message);
+            //}
 
-            //DB.BankProducts.Add(deposit);
-            //DB.BankProducts.Add(bankAccountService);
-            DB.AddBankProduct(deposit);
-            DB.AddBankProduct(bankAccountService);
-            //DB.Clients.Add(individual1);
-            //DB.Clients.Add(individual2);
-            //DB.Clients.Add(legalEntity1);
-            DB.AddClient(individual1);
-            DB.AddClient(individual2);
-            DB.AddClient(legalEntity1);
+            //Thread.Sleep(1);
+
+            //BankOperation bankOperationTransferStorno = new BankOperations.TransferBetweenAccounts(bankOperationTransfer);
+            //bankOperationTransferStorno.Apply();
+
+            //for (int i = 1; i<5; i++)
+            //{
+            //    Thread.Sleep(1);
+
+            //    BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
+            //    chargeForInterest1.Apply();
+            //}
+
+            //Thread.Sleep(1);
+            //BankOperations.Withdrawing withdrawing1 = new BankOperations.Withdrawing(bankAccountBalance1, 10);
+            //try
+            //{
+            //    withdrawing1.Apply();
+            //}
+            //catch(Exception e)
+            //{
+            //    MessageBox.Show(e.Message);
+            //}
+
+            //BankOperations.ChargeForInterest LastChargeForInterest = null;
+            //BankOperations.ChargeForInterest MiddleChargeForInterest = null;
+
+            //for (int i = 1; i < 5; i++)
+            //{
+            //    Thread.Sleep(1);
+
+            //    BankOperations.ChargeForInterest chargeForInterest1 = new BankOperations.ChargeForInterest(bankAccountBalance1);
+            //    chargeForInterest1.Apply();
+
+            //    Thread.Sleep(1);
+
+            //    if (i == 3) MiddleChargeForInterest = chargeForInterest1;
+
+            //    LastChargeForInterest = chargeForInterest1;
+            //}
+
+            //BankOperations.ChargeForInterest StornoLast = new BankOperations.ChargeForInterest(LastChargeForInterest);
+            //StornoLast.Apply();
+
+            //// Сработает исключение добавления сторно-операции к непоследней операции.
+            ////Thread.Sleep(1);
+
+            ////BankOperations.ChargeForInterest StornoMiddle = new BankOperations.ChargeForInterest(MiddleChargeForInterest);
+            ////StornoMiddle.Apply();
+
+            //Clients.LegalEntityStatus legalEntityStatus1 = new Clients.LegalEntityStatus("Начинающий партнёр");
+            //DB.AddClientStatus(legalEntityStatus1);
+
+            //Clients.LegalEntity legalEntity1 = new Clients.LegalEntity("ООО 'Копа и рогыта'");
+            //legalEntity1.FullName = "Общество с неограниченной безответственностью 'Копа и рогыта'";
+            //legalEntity1.INN = "000111";
+            //legalEntity1.KPP = "12345";
+            //legalEntity1.IsCorporate = true;
+            ////legalEntity1.ClientStatus = legalEntityStatus1;
+            //DB.SetClientStatus(legalEntity1, legalEntityStatus1);
+            //legalEntity1.ClientManager = s_1;
+
+            ////DB.BankProducts.Add(deposit);
+            ////DB.BankProducts.Add(bankAccountService);
+            //DB.AddBankProduct(deposit);
+            //DB.AddBankProduct(bankAccountService);
+            ////DB.Clients.Add(individual1);
+            ////DB.Clients.Add(individual2);
+            ////DB.Clients.Add(legalEntity1);
+            //DB.AddClient(individual1);
+            //DB.AddClient(individual2);
+            //DB.AddClient(legalEntity1);
             
-            DB.AddAccountBalance(bankAccountBalance1);
-            DB.AddAccountBalance(bankAccountBalance2);
-
+            //DB.AddAccountBalance(bankAccountBalance1);
+            //DB.AddAccountBalance(bankAccountBalance2);
 
         }
 
@@ -802,6 +1002,66 @@ namespace OrgDB_WPF
         private void DeleteEmployee_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             DeleteEmployee((Employee)EmpListView.SelectedItem);
+        }
+
+        private void AddIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            AddClientStatus(typeof(Clients.IndividualStatus));
+        }
+
+        private void InsertIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            InsertClientStatus((Clients.ClientStatus)IndividualStatusesListView.SelectedItem);     
+        }
+
+        private void ChangeIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ChangeClientStatus((Clients.IndividualStatus)IndividualStatusesListView.SelectedItem);
+        }
+
+        private void MoveUpIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void MoveDownIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void DeleteIndividualClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            DeleteClientStatus((Clients.ClientStatus)IndividualStatusesListView.SelectedItem);
+        }
+
+        private void AddLegalEntitylClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void InsertLegalEntitylClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void ChangeLegalEntitylClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void MoveUpLegalEntitylClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void MoveDownLegalEntitylClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
+        }
+
+        private void DeleteLegalEntityllClientStatus_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+
         }
 
         #endregion Обработчики команд данных базы
@@ -907,6 +1167,74 @@ namespace OrgDB_WPF
             e.CanExecute = DB.Employees.Count > 1;
         }
 
+        private void AddIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void InsertIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = OneOfIndividualClientStatusSelected();
+        }
+
+        private void ChangeIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = OneOfIndividualClientStatusSelected();
+        }
+
+        
+        private void MoveUpIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ClienStatusesTypeOfMoreThenOne(typeof(Clients.IndividualStatus));
+        }
+                
+        private void MoveDownIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ClienStatusesTypeOfMoreThenOne(typeof(Clients.IndividualStatus));
+        }
+
+        private void DeleteIndividualClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = DeleteIndividualClientStatusCanExecute();
+        }
+
+        private bool DeleteIndividualClientStatusCanExecute()
+        {
+            return IndividualStatusesListView != null
+                && IndividualStatusesListView.SelectedItems.Count == 1
+                && !DB.LinksExists((Clients.ClientStatus)IndividualStatusesListView.SelectedItem);
+        }
+
+        private void AddLegalEntitylClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void InsertLegalEntitylClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void ChangeLegalEntitylClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            //e.CanExecute = true;
+        }
+
+        private void MoveUpLegalEntitylClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ClienStatusesTypeOfMoreThenOne(typeof(Clients.LegalEntityStatus));
+        }
+
+        private void MoveDownLegalEntitylClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ClienStatusesTypeOfMoreThenOne(typeof(Clients.LegalEntityStatus));
+        }
+
+        private void DeleteLegalEntityllClientStatus_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ClienStatusesTypeOfExists(typeof(Clients.LegalEntityStatus));
+        }
+
         #endregion Доступность команд
 
         #region Обработчики внешних событий
@@ -948,6 +1276,34 @@ namespace OrgDB_WPF
 
         }
 
+        private void OnClientStatusAdding(Clients.ClientStatus clientStatus)
+        {
+            DB.AddClientStatus(clientStatus);
+            clientStatus.PreviousClientStatus.NextClientStatus = clientStatus;
+            
+            LogEvent($"Добавлен статус клиента {clientStatus.Name}");
+            
+            ListView listView = ClientStatusListView(clientStatus);
+            listView.ItemsSource = DB.ClientStatuses;
+            listView.Items.Refresh();
+        }
+
+        private void OnClientStatusFinishEditing(Clients.ClientStatus clientStatus)
+        {
+
+            ListView listView = ClientStatusListView(clientStatus);
+            
+            LogEvent($"Изменён статус {clientStatus.Name}");
+
+            listView.Items.Refresh();
+        }
+         
+        private void OnCancelStatusEdit(Clients.ClientStatus clientStatus)
+        {
+            // восстанавливаем цепочку статусов
+            clientStatus.NextClientStatus.PreviousClientStatus = clientStatus.PreviousClientStatus;
+        }
+
         public void OnFinishEditDepartmentsSortingSettings(List<SortDescription> sortDescriptions)
         {
             DepartmentsViewSource.SortDescriptions.Clear();
@@ -962,8 +1318,9 @@ namespace OrgDB_WPF
                 EmployeesViewSource.SortDescriptions.Add(sortDescription);
         }
 
-        #endregion Обработчики внешних событий
 
+        #endregion Обработчики внешних событий
+                
     }
 
     #region Класс - описатель собственных команд
@@ -986,11 +1343,13 @@ namespace OrgDB_WPF
         public static RoutedCommand SortEmployees { get; set; }
         public static RoutedCommand AddIndividualClientStatus { get; set; }
         public static RoutedCommand InsertIndividualClientStatus { get; set; }
+        public static RoutedCommand ChangeIndividualClientStatus { get; set; }
         public static RoutedCommand MoveUpIndividualClientStatus { get; set; }
         public static RoutedCommand MoveDownIndividualClientStatus { get; set; }
         public static RoutedCommand DeleteIndividualClientStatus { get; set; }
         public static RoutedCommand AddLegalEntitylClientStatus { get; set; }
         public static RoutedCommand InsertLegalEntitylClientStatus { get; set; }
+        public static RoutedCommand ChangeLegalEntitylClientStatus { get; set; }
         public static RoutedCommand MoveUpLegalEntitylClientStatus { get; set; }
         public static RoutedCommand MoveDownLegalEntitylClientStatus { get; set; }
         public static RoutedCommand DeleteLegalEntityllClientStatus { get; set; }
@@ -1019,12 +1378,14 @@ namespace OrgDB_WPF
 
             AddIndividualClientStatus = new RoutedCommand("AddIndividualClientStatus", typeThisWindow);
             InsertIndividualClientStatus = new RoutedCommand("InsertIndividualClientStatus", typeThisWindow);
+            ChangeIndividualClientStatus = new RoutedCommand("ChangeIndividualClientStatus", typeThisWindow);
             MoveUpIndividualClientStatus = new RoutedCommand("MoveUpIndividualClientStatus", typeThisWindow);
             MoveDownIndividualClientStatus = new RoutedCommand("MoveDownIndividualClientStatus", typeThisWindow);
             DeleteIndividualClientStatus = new RoutedCommand("DeleteIndividualClientStatus", typeThisWindow);
 
             AddLegalEntitylClientStatus = new RoutedCommand("AddLegalEntitylClientStatus", typeThisWindow);
             InsertLegalEntitylClientStatus = new RoutedCommand("InsertLegalEntitylClientStatus", typeThisWindow);
+            ChangeLegalEntitylClientStatus = new RoutedCommand("ChangeLegalEntitylClientStatus", typeThisWindow);
             MoveUpLegalEntitylClientStatus = new RoutedCommand("MoveUpLegalEntitylClientStatus", typeThisWindow);
             MoveDownLegalEntitylClientStatus = new RoutedCommand("MoveDownLegalEntitylClientStatus", typeThisWindow);
             DeleteLegalEntityllClientStatus = new RoutedCommand("DeleteLegalEntityllClientStatus", typeThisWindow);
