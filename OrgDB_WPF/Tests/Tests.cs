@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace OrgDB_WPF
 {
@@ -9,6 +10,8 @@ namespace OrgDB_WPF
         #region Поля
 
         DataBase db;
+        Random random = new Random();
+        Dictionary<string, Guid> testObjects = new Dictionary<string, Guid>();
 
         #endregion Поля
 
@@ -35,18 +38,18 @@ namespace OrgDB_WPF
         public void AddTestDepartments() 
         {
 
-            Department d_1 = new Department("d_1", "Podolsk", Guid.Empty); DB.AddDepartment(d_1);
-            Department d_2 = new Department("d_2", "Podolsk", Guid.Empty); DB.AddDepartment(d_2);
+            Department d_1 = new Department("d_1", "Podolsk", Guid.Empty); DB.AddDepartment(d_1); testObjects.Add("Departments.d_1", d_1.id);
+            Department d_2 = new Department("d_2", "Podolsk", Guid.Empty); DB.AddDepartment(d_2); testObjects.Add("Departments.d_2", d_2.id);
 
-            Department d_1_1 = new Department("d_1_1", "Orehovo", d_1.id); DB.AddDepartment(d_1_1);
-            Department d_1_2 = new Department("d_1_2", "Borisovo", d_1.id); DB.AddDepartment(d_1_2);
+            Department d_1_1 = new Department("d_1_1", "Orehovo", d_1.id); DB.AddDepartment(d_1_1); testObjects.Add("Departments.d_1_1", d_1_1.id);
+            Department d_1_2 = new Department("d_1_2", "Borisovo", d_1.id); DB.AddDepartment(d_1_2); testObjects.Add("Departments.d_1_2", d_1_2.id);
 
-            Department d_1_1_1 = new Department("d_1_1_1", "Kukuevo", d_1_1.id); DB.AddDepartment(d_1_1_1);
-            Department d_1_1_2 = new Department("d_1_1_2", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_2);
-            Department d_1_1_3 = new Department("d_1_1_3", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_3);
+            Department d_1_1_1 = new Department("d_1_1_1", "Kukuevo", d_1_1.id); DB.AddDepartment(d_1_1_1); testObjects.Add("Departments.d_1_1_1", d_1_1_1.id);
+            Department d_1_1_2 = new Department("d_1_1_2", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_2); testObjects.Add("Departments.d_1_1_2", d_1_1_2.id);
+            Department d_1_1_3 = new Department("d_1_1_3", "Shuruevo", d_1_1.id); DB.AddDepartment(d_1_1_3); testObjects.Add("Departments.d_1_1_3", d_1_1_3.id);
 
-            Department d_1_1_1_1 = new Department("d_1_1_1_1", "Zvezduevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_1);
-            Department d_1_1_1_2 = new Department("d_1_1_1_2", "Yasenevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_2);
+            Department d_1_1_1_1 = new Department("d_1_1_1_1", "Zvezduevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_1); testObjects.Add("Departments.d_1_1_1_1", d_1_1_1_1.id);
+            Department d_1_1_1_2 = new Department("d_1_1_1_2", "Yasenevo", d_1_1_1.id); DB.AddDepartment(d_1_1_1_2); testObjects.Add("Departments.d_1_1_1_2", d_1_1_1_2.id);
 
         }        
 
@@ -77,37 +80,183 @@ namespace OrgDB_WPF
                 List<depLevel> curDepartmentsLevel = depLevels.FindAll(x => x.Level == i);
                 foreach(depLevel DepLevel in curDepartmentsLevel)
                 {
-                    Random random = new Random();
+                    string[] NameSurname = GenerateHumanFullName().Split(' ');
 
                     Intern intern = new Intern(
-                        $"Intern of {DepLevel.Department.Name}",
-                        "",
+                        NameSurname[1],
+                        NameSurname[0],
                         random.Next(18, 30),
                         random.Next(100, 300),
                         DepLevel.Department.id);
                     db.AddEmployee(intern);
+                    testObjects.Add($"Employees.InternOf.{DepLevel.Department.Name}", intern.Id);
+
+                    NameSurname = GenerateHumanFullName().Split(' ');
 
                     Specialist specialist = new Specialist(
-                        $"Specialist of {DepLevel.Department.Name}",
-                        "",
+                        NameSurname[1],
+                        NameSurname[0],
                         random.Next(20, 60),
                         random.Next(intern.Salary + 100, intern.Salary + 300),
                         DepLevel.Department.id);
                     db.AddEmployee(specialist);
+                    testObjects.Add($"Employees.SpecialistOf.{DepLevel.Department.Name}", intern.Id);
+
+                    NameSurname = GenerateHumanFullName().Split(' ');
 
                     int managerSalary = db.CalculateManagerSalary(DepLevel.Department);
                     Manager manager = new Manager(
-                        $"Manager of {DepLevel.Department.Name}", 
-                        "", 
+                        NameSurname[1],
+                        NameSurname[0],
                         random.Next(18, 60), 
                         managerSalary, 
                         DepLevel.Department.id);
-                    db.AddEmployee(manager);                    
+                    db.AddEmployee(manager);
+                    testObjects.Add($"Employees.ManagerOf.{DepLevel.Department.Name}", intern.Id);
 
                 }
             }
         
         }
+                
+        /// <summary>
+        /// Добавляет цепочки статусов (Начинающий [партнёр] - постоянный [партнёр] - опытный [партнёр])
+        /// клиентов - юридических и физических лиц
+        /// </summary>
+        public void AddClientStatuses()
+        {
+            Clients.ClientStatus individualBeginer = new Clients.IndividualStatus("Начинающий");
+            individualBeginer.CreditDiscountPercent = 0;
+            individualBeginer.DepositAdditionalPercent = 0;
+            db.AddClientStatus(individualBeginer);
+            testObjects.Add("ClientStatuses.individualBeginer", individualBeginer.ID);
+
+            Clients.ClientStatus individualRegular = new Clients.IndividualStatus("Постоянный");
+            individualRegular.PreviousClientStatus = individualBeginer;
+            individualBeginer.NextClientStatus = individualRegular;
+            individualRegular.CreditDiscountPercent = 3;
+            individualRegular.DepositAdditionalPercent = 3;
+            db.AddClientStatus(individualRegular);
+            testObjects.Add("ClientStatuses.individualRegular", individualRegular.ID);
+
+            Clients.ClientStatus individualMaster = new Clients.IndividualStatus("Опытный");
+            individualMaster.PreviousClientStatus = individualRegular;
+            individualRegular.NextClientStatus = individualMaster;
+            individualMaster.CreditDiscountPercent = 5;
+            individualMaster.DepositAdditionalPercent = 5;
+            db.AddClientStatus(individualMaster);
+            testObjects.Add("ClientStatuses.individualMaster", individualMaster.ID);
+
+            Clients.LegalEntityStatus legalEntityBeginer = new Clients.LegalEntityStatus("Начинающий партнёр");
+            legalEntityBeginer.CreditDiscountPercent = 2;
+            legalEntityBeginer.DepositAdditionalPercent = 2;
+            db.AddClientStatus(legalEntityBeginer);
+            testObjects.Add("ClientStatuses.legalEntityBeginer", legalEntityBeginer.ID);
+
+            Clients.LegalEntityStatus legalEntityRegular = new Clients.LegalEntityStatus("Постоянный партнёр");
+            legalEntityRegular.PreviousClientStatus=legalEntityBeginer;
+            legalEntityBeginer.NextClientStatus = legalEntityRegular;
+            legalEntityRegular.CreditDiscountPercent = 4;
+            legalEntityRegular.DepositAdditionalPercent = 4;
+            db.AddClientStatus(legalEntityRegular);
+            testObjects.Add("ClientStatuses.legalEntityRegular", legalEntityRegular.ID);
+
+            Clients.LegalEntityStatus legalEntityMaster = new Clients.LegalEntityStatus("Опытный партнёр");
+            legalEntityMaster.PreviousClientStatus = legalEntityRegular;
+            legalEntityRegular.NextClientStatus = legalEntityMaster;
+            legalEntityMaster.CreditDiscountPercent = 6;
+            legalEntityMaster.DepositAdditionalPercent = 6;
+            db.AddClientStatus(legalEntityMaster);
+            testObjects.Add("ClientStatuses.legalEntityMaster", legalEntityMaster.ID);
+        
+        }
+
+        /// <summary>
+        /// Добавляет банковские продукты - депозиты (без и с капитализацией), кредит, обслуживание счёта
+        /// </summary>
+        public void AddBankProducts()
+        {
+            Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
+            Products.Deposit capDeposit = new Products.Deposit("Повышенный доход", 5, 10, true);
+            Products.Credit credit = new Products.Credit("Не отказывай себе", 10, 15);
+            Products.BankAccountService bankAccountService = new Products.BankAccountService("Обслуживание счета", 0, 15);
+
+            db.AddBankProduct(deposit);
+            db.AddBankProduct(capDeposit);
+            db.AddBankProduct(credit);
+            db.AddBankProduct(bankAccountService);
+
+            testObjects.Add("Products.deposit", deposit.ID);
+            testObjects.Add("Products.capDeposit", capDeposit.ID);
+            testObjects.Add("Products.credit", credit.ID);
+            testObjects.Add("Products.bankAccountService", bankAccountService.ID);
+
+        }
+
+        /// <summary>
+        /// Добавляет клиентов в базу
+        /// </summary>
+        public void AddClients()
+        {
+
+            bool[] bools = new bool[] {false, true};
+
+            foreach(Clients.ClientStatus clientStatus in db.ClientStatuses)
+            {
+                if (clientStatus is Clients.IndividualStatus)
+                {
+
+                    foreach (bool isVip in bools)
+                    {
+
+                        string fullName = GenerateHumanFullName();
+                        string[] partsOfName = fullName.Split(' ');
+
+                        Clients.Individual individual = new Clients.Individual(fullName);
+                        individual.ClientStatus = clientStatus;
+                        individual.ClientManager = db.Employees[random.Next(0, db.Employees.Count)];
+                        individual.SurName = partsOfName[0];
+                        individual.FirstName = partsOfName[1];
+                        individual.Patronymic = partsOfName[2];
+                        individual.IsVIP = isVip;
+                        db.AddClient(individual);
+                        testObjects.Add($"Clients.Individuals.{clientStatus.Name}.{isVip}", individual.ID);
+
+                    }
+                }
+                else
+                {
+                    
+                    foreach(bool isResident in bools)
+                    {
+                        string[] INNKPP = GenerateINNKPP(typeof(Clients.LegalEntity)).Split('/');
+
+                        Clients.LegalEntity legalEntity = new Clients.LegalEntity(GenerateLegalEntityName());
+                        legalEntity.ClientStatus = clientStatus;
+                        legalEntity.ClientManager = db.Employees[random.Next(0, db.Employees.Count)];
+                        legalEntity.IsResident = isResident;
+                        legalEntity.IsCorporate = random.Next(0, 2)==0?false:true;
+                        legalEntity.INN = INNKPP[0];
+                        legalEntity.KPP = INNKPP[1];
+                        db.AddClient(legalEntity);
+                        testObjects.Add($"Clients.LegalEntityies.{clientStatus.Name}.{isResident}", legalEntity.ID);
+                    }
+
+                    
+                }
+            }    
+        }
+
+        public void AddBankAccounts()
+        {
+            
+            
+
+        }
+
+        #endregion Тестовые данные
+
+        #region Служебные методы, классы
 
         /// <summary>
         /// Вложенный класс - описатель уровня департамента
@@ -127,43 +276,142 @@ namespace OrgDB_WPF
         }
 
         /// <summary>
-        /// Добавляет цепочки статусов (Начинающий [партнёр] - постоянный [партнёр] - опытный [партнёр])
-        /// клиентов - юридических и физических лиц
+        /// Генерирует случайным образом мужское или женское сочетание 'Имя Фамилия'
         /// </summary>
-        public void AddClientStatuses()
+        /// <returns>
+        /// Строка
+        /// </returns>
+        private string GenerateHumanFullName()
         {
-            Clients.ClientStatus individualBeginer = new Clients.IndividualStatus("Начинающий");
-            db.AddClientStatus(individualBeginer);
+            // Массивы имён и фамилий. В каждом массиве количество имён должно равняться количеству фамилий (для простоты).
+            string[,] mans = new string[,] 
+                { 
+                    {"Комов", "Петров", "Гусев", "Редько", "Комлев" }, 
+                    {"Иван", "Фёдор", "Степан", "Евгений", "Андрей" },
+                    {"Евгеньевич", "Константинович", "Александрович", "Валерьевич", "Игнатьевич" }
+                    
+                };
+            string[,] womans = new string[,] 
+                { 
+                    { "Иванова", "Ульянова", "Колокольцева", "Громова", "Ляпчева"},
+                    { "Вера", "Анастасия", "Светлана", "Людмила", "Галина"},
+                    { "Леонидовна",  "Петровна", "Фёдровна", "Юрьевна", "Владимировна" }
+                     
+                };
 
-            Clients.ClientStatus individualRegular = new Clients.IndividualStatus("Постоянный");
-            individualRegular.PreviousClientStatus = individualBeginer;
-            individualBeginer.NextClientStatus = individualRegular;
-            db.AddClientStatus(individualRegular);
+            int i = random.Next(0, 2);
+            
+            string[,] names = (i == 0) ? names = mans : names = womans;
 
-            Clients.ClientStatus individualMaster = new Clients.IndividualStatus("Опытный");
-            individualMaster.PreviousClientStatus = individualRegular;
-            individualRegular.NextClientStatus = individualMaster;
-            db.AddClientStatus(individualMaster);
+            int upperBound = names.GetUpperBound(1) + 1;
 
-            Clients.LegalEntityStatus legalEntityBeginer = new Clients.LegalEntityStatus("Начинающий партнёр");
-            db.AddClientStatus(legalEntityBeginer);
-
-            Clients.LegalEntityStatus legalEntityRegular = new Clients.LegalEntityStatus("Постоянный партнёр");
-            legalEntityRegular.PreviousClientStatus=legalEntityBeginer;
-            legalEntityBeginer.NextClientStatus = legalEntityRegular;
-            db.AddClientStatus(legalEntityRegular);
-
-            Clients.LegalEntityStatus legalEntityMaster = new Clients.LegalEntityStatus("Опытный партнёр");
-            legalEntityMaster.PreviousClientStatus = legalEntityRegular;
-            legalEntityRegular.NextClientStatus = legalEntityMaster;
-            db.AddClientStatus(legalEntityMaster);
+            return names[0, random.Next(0, upperBound)] + " "  
+                + names[1, random.Next(0, upperBound)] + " "
+                + names[2, random.Next(0, upperBound)];
 
         }
 
+        /// <summary>
+        /// Генерирует случайным образом наименование организации
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateLegalEntityName()
+        {
+            string[,] names = new string[,]
+            {
+                { 
+                    "ООО",
+                    "ОАО",
+                    "ЗАО",
+                    "ПАО",
+                    "НКО"
+                },
 
+                {
+                    "\"Здоровье\"",
+                    "\"Кухни без проблем\"",
+                    "\"Комьюнити бездельников\"",
+                    "\"Лодки и селёдки\"",
+                    "\"Галопом по Европам\""
+                }
+            };
 
-        #endregion Тестовые данные
+            int upperBound = names.GetUpperBound(1) + 1;
 
+            return names[0, random.Next(0, upperBound)] + " " + names[1, random.Next(0, upperBound)];
+
+        }
+
+        /// <summary>
+        /// Генерирует "правильный" ИНН/КПП
+        /// </summary>
+        /// <param name="clientType">
+        /// Тип - какой клиет (Individual / LegalIntity)
+        /// </param>
+        /// <returns>
+        /// Строка. Для Individual - 12-значный ИНН (пример: "012345678912"),
+        /// для LegalEntity 10-значный ИНН, слэш, 9-значный КПП (пример: "0123456789/012345678")
+        /// </returns>
+        private string GenerateINNKPP(Type clientType)
+        {
+
+            string INNKPP = "";
+            
+            if (clientType == typeof(Clients.LegalEntity))
+            {
+
+                // Генерируем ИНН по правилам для юр. лиц (https://www.egrul.ru/test_inn.html)
+                for (int i = 0; i < 9; i++)
+                    INNKPP += random.Next(0, 10).ToString();
+                INNKPP += INNControlValue(INNKPP, new int[] { 2, 4, 10, 3, 5, 9, 4, 6, 8}).ToString();
+
+                // Добавляем КПП - первые 4 знака ИНН и "01001"
+                INNKPP += "/" + INNKPP.Substring(0, 4) + "01001";
+
+            }
+            else
+            {
+                // Генерируем ИНН по правилам для физ. лиц (https://www.egrul.ru/test_inn.html)
+                for (int i = 0; i < 10; i++)
+                    INNKPP += random.Next(0, 10).ToString();
+                INNKPP += INNControlValue(INNKPP, new int[] { 7, 2, 4, 10, 3, 5, 9, 4, 6, 8 }).ToString();
+                INNKPP += INNControlValue(INNKPP, new int[] { 3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8 }).ToString();
+
+                // КПП у физ. лиц нет, ничего не добавляем
+            }
+
+            return INNKPP;
+
+        }
+
+        /// <summary>
+        /// Вычисляет контрольную цифру ИНН
+        /// </summary>
+        /// <param name="leftPart">
+        /// Строка - левая часть ИНН до контрольной цифры
+        /// </param>
+        /// <param name="weights">
+        /// Массив - весовые коэффициенты для вычисления контрольной цифры 
+        /// </param>
+        /// <returns></returns>
+        private int INNControlValue(string leftPart, int[] weights)
+        {
+            int control = 0;
+            
+            for (int i = 0; i < leftPart.Length; i++) 
+                control += weights[i] * Convert.ToInt32((leftPart[i].ToString()));
+
+            int controlValue = control % 11;
+            if (controlValue > 9)
+                controlValue = control % 10;
+            
+            return controlValue;
+
+        }
+
+        
+
+        #endregion Служебные методы
 
     }
 }
