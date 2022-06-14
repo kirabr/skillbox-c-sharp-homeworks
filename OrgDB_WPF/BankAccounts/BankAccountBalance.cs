@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace OrgDB_WPF.BankAccounts
 {
     // Баланс банковского счёта
-    public class BankAccountBalance : IXmlServices
+    public class BankAccountBalance : IXmlServices, IIdentifyedObject
     {
 
         #region Поля
@@ -37,7 +37,7 @@ namespace OrgDB_WPF.BankAccounts
         #region Свойства
 
         // Идентификатор
-        public Guid ID { get { return id; } }
+        public Guid Id { get { return id; } }
 
         // Банковский счёт
         public BankAccount BankAccount { get { return bankAccount; } }
@@ -147,7 +147,7 @@ namespace OrgDB_WPF.BankAccounts
                 // Найдём все сторно-операции по признаку isStorno и заполним в них указатели на сторнируемые операции
                 List<BankOperation> stornoOperations = bankOperations.FindAll(x => x.IsStorno);
                 foreach (BankOperation stornoOperation in stornoOperations) 
-                    stornoOperation.StornoOperation = bankOperations.Find(x => x.ID == stornoOperation.StornoOperationID);
+                    stornoOperation.StornoOperation = bankOperations.Find(x => x.Id == stornoOperation.StornoOperationID);
 
             }
 
@@ -228,7 +228,7 @@ namespace OrgDB_WPF.BankAccounts
 
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
-            writer.WriteAttributeString("id", ID.ToString());
+            writer.WriteAttributeString("id", Id.ToString());
             BankAccount.WriteXml(writer);
             Common.WriteXMLElement(writer, "Balance", Balance);
             Common.WriteXMLElement(writer, "OverdraftPossible", OverdraftPossible);

@@ -15,7 +15,7 @@ namespace OrgDB_WPF
     /// <summary>
     /// Базовый абстрактный класс "Сотрудники"
     /// </summary>
-    public abstract class Employee : INotifyPropertyChanged, IXmlServices, IJsonServices
+    public abstract class Employee : INotifyPropertyChanged, IXmlServices, IJsonServices, IIdentifyedObject
     {
 
         #region Поля

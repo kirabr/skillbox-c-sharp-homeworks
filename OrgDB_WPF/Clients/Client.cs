@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace OrgDB_WPF.Clients
 {
     
-    public abstract class Client : IXmlServices, IJsonServices
+    public abstract class Client : IXmlServices, IJsonServices, IIdentifyedObject
     {
 
         #region Поля
@@ -46,7 +46,7 @@ namespace OrgDB_WPF.Clients
         public string Name { get { return name; } set { name = value; } }
 
         // Идентификатор клиента
-        public Guid ID { get { return id; } }
+        public Guid Id { get { return id; } }
 
         // Менеджер клиента
         public Employee ClientManager 
@@ -72,7 +72,7 @@ namespace OrgDB_WPF.Clients
             set
             {
                 clientStatus = value;
-                clientStatusId = value.ID;
+                clientStatusId = value.Id;
             }
         }
 
@@ -130,11 +130,11 @@ namespace OrgDB_WPF.Clients
 
             string EmptyID = Common.EmptyIDString();
             
-            writer.WriteAttributeString("id", ID.ToString());
+            writer.WriteAttributeString("id", Id.ToString());
             writer.WriteElementString("Name", Name);
             writer.WriteElementString("ClientManagerID", ClientManager == null ? EmptyID : ClientManager.Id.ToString());
             Common.WriteXMLElement(writer, "IsResident", IsResident);
-            writer.WriteElementString("ClientStatusID", ClientStatus == null ? EmptyID : ClientStatus.ID.ToString());
+            writer.WriteElementString("ClientStatusID", ClientStatus == null ? EmptyID : ClientStatus.Id.ToString());
         }
 
         #endregion Запись в XML

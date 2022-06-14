@@ -69,10 +69,10 @@ namespace OrgDB_WPF.BankAccounts
             string EmptyID = Common.EmptyIDString();
 
             writer.WriteAttributeString("Number", Number);
-            writer.WriteElementString("OwnerID", Owner == null ? EmptyID : Owner.ID.ToString());
+            writer.WriteElementString("OwnerID", Owner == null ? EmptyID : Owner.Id.ToString());
             writer.WriteStartElement("Products");
             foreach (BankProduct product in Products)
-                writer.WriteElementString("ProductID", product.ID.ToString());
+                writer.WriteElementString("ProductID", product.Id.ToString());
             writer.WriteEndElement();
         }
         

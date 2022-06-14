@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Clients
 {
-    public abstract class ClientStatus : IXmlServices, IJsonServices
+    public abstract class ClientStatus : IXmlServices, IJsonServices, IIdentifyedObject
     {
 
         #region Поля
@@ -35,7 +35,7 @@ namespace OrgDB_WPF.Clients
         #region Свойства
 
         // Идентификатор
-        public Guid ID { get { return id; } }
+        public Guid Id { get { return id; } }
 
         // Название статуса ("Gold", "Silver", "Basic", etc)
         public string Name { get { return name; } set { name = value; } }
@@ -50,7 +50,7 @@ namespace OrgDB_WPF.Clients
                 if (previousClientStatus == null)
                     previousClientStatusId = Guid.Empty;
                 else
-                    previousClientStatusId = previousClientStatus.ID;
+                    previousClientStatusId = previousClientStatus.Id;
             } 
         }
         public ClientStatus NextClientStatus 
@@ -62,7 +62,7 @@ namespace OrgDB_WPF.Clients
                 if (nextClientStatus == null)
                     nextClientStatusId = Guid.Empty;
                 else
-                    nextClientStatusId = nextClientStatus.ID;
+                    nextClientStatusId = nextClientStatus.Id;
             } 
         }
 
@@ -120,8 +120,8 @@ namespace OrgDB_WPF.Clients
 
             writer.WriteAttributeString("id", id.ToString());
             writer.WriteElementString("Name", Name);
-            writer.WriteElementString("PreviousClientStatusId", previousClientStatus == null ? EmptyID : previousClientStatus.ID.ToString());
-            writer.WriteElementString("NextClientStatusId", nextClientStatus == null ? EmptyID : nextClientStatus.ID.ToString());
+            writer.WriteElementString("PreviousClientStatusId", previousClientStatus == null ? EmptyID : previousClientStatus.Id.ToString());
+            writer.WriteElementString("NextClientStatusId", nextClientStatus == null ? EmptyID : nextClientStatus.Id.ToString());
             writer.WriteStartElement("CreditDiscountPercent"); writer.WriteValue(CreditDiscountPercent); writer.WriteEndElement();
             writer.WriteStartElement("DepositAdditionalPercent"); writer.WriteValue(DepositAdditionalPercent); writer.WriteEndElement();
 

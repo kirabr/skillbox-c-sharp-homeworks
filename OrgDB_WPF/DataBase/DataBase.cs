@@ -60,8 +60,6 @@ namespace OrgDB_WPF
         // Организация
         public Organization Organization { get { return organization; } set { organization = value; } }
 
-        // Свойства "Департаменты" и "Сотрудники" с доступом public нужны Json-сериализатору, иначе они игнорируются
-
         // Департаметны
         public ReadOnlyCollection<Department> Departments { get { return departments.AsReadOnly(); } }
 
@@ -132,7 +130,7 @@ namespace OrgDB_WPF
             }
         }
 
-        #endregion
+        #endregion Свойства
 
         #region Конструкторы
 
@@ -161,6 +159,20 @@ namespace OrgDB_WPF
         #endregion Конструкторы
 
         #region API
+
+        #region Общие методы данных базы
+
+        public void FindCollectionElementById<T>(ReadOnlyCollection<T> values, Guid ID, out T element)
+            where T : IIdentifyedObject
+        {
+            List<T> list = new List<T>();
+            foreach (T value in values)
+                list.Add(value);
+            element = list.Find((T t) => (t.Id == ID));
+
+        }
+
+        #endregion Общие методы данных базы
 
         #region Департаменты
 
@@ -428,7 +440,7 @@ namespace OrgDB_WPF
             if (clientStatuses == null) clientStatuses = new List<ClientStatus>();
 
             // проверим уникальность ключа
-            if (clientStatuses.Exists(x => x.ID == clientStatus.ID))
+            if (clientStatuses.Exists(x => x.Id == clientStatus.Id))
                 throw new Exception("Попытка добавления элемента с дублирующимся ключом!");
 
             // всё ок, добавляем статус
@@ -499,7 +511,7 @@ namespace OrgDB_WPF
             if (clients == null) clients = new List<Client>();
 
             // проверяем уникальность ID
-            if (clients.Exists(x => x.ID == client.ID))
+            if (clients.Exists(x => x.Id == client.Id))
                 throw new Exception("Попытка добавления клиента с неуникальным ID");
 
             clients.Add(client);
@@ -531,7 +543,7 @@ namespace OrgDB_WPF
         {
             if (bankProducts == null) bankProducts = new List<BankProduct>();
 
-            if (bankProducts.Exists(x => x.ID == bankProduct.ID))
+            if (bankProducts.Exists(x => x.Id == bankProduct.Id))
                 throw new Exception("Попытка добавления банковского продукта с неуникальным ID");
 
             bankProducts.Add(bankProduct);
@@ -699,7 +711,7 @@ namespace OrgDB_WPF
                 if (curBalance == accountBalance) continue;
                 List<BankOperation> operations = new List<BankOperation>();
                 foreach (BankOperation bankOperation in curBalance.OperationsHistory.Keys) operations.Add(bankOperation);
-                if (operations.Exists(x => x.AccountBalancesIds.Contains(accountBalance.ID))) return true;
+                if (operations.Exists(x => x.AccountBalancesIds.Contains(accountBalance.Id))) return true;
 
             }
 
@@ -717,7 +729,7 @@ namespace OrgDB_WPF
 
             // ссылки могут быть в банковских счетах
             if (bankAccounts != null)
-                return bankAccounts.Exists(x => x.Products.Exists(y => y.ID == bankProduct.ID));
+                return bankAccounts.Exists(x => x.Products.Exists(y => y.Id == bankProduct.Id));
 
             return false;
         }
@@ -1099,9 +1111,9 @@ namespace OrgDB_WPF
                 foreach (ClientStatus dbClientStatus in db.clientStatuses)
                 {
                     if (dbClientStatus.PreviousClientStatusId != Guid.Empty) 
-                        dbClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.ID == dbClientStatus.PreviousClientStatusId);
+                        dbClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.Id == dbClientStatus.PreviousClientStatusId);
                     if (dbClientStatus.NextClientStatusId != Guid.Empty)
-                        dbClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.ID == dbClientStatus.NextClientStatusId);
+                        dbClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.Id == dbClientStatus.NextClientStatusId);
                 }
             }
 
@@ -1157,7 +1169,7 @@ namespace OrgDB_WPF
                     if (currClient.ClientManagerId!=Guid.Empty)
                         currClient.ClientManager = EmployeeSearcList.Find(x => x.Id == currClient.ClientManagerId);
                     if (currClient.ClientStatusId!=Guid.Empty)
-                        currClient.ClientStatus = ClientStatusesSearchList.Find(x => x.ID == currClient.ClientStatusId);
+                        currClient.ClientStatus = ClientStatusesSearchList.Find(x => x.Id == currClient.ClientStatusId);
                 } 
 
             }
@@ -1235,14 +1247,14 @@ namespace OrgDB_WPF
                     if (selectedNode != null) AccountNumber = selectedNode.Value;
 
                     selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/OwnerID");
-                    if (selectedNode != null) AccountOwner = Common.ListFromReadOnlyCollection(db.Clients).Find(x => x.ID == new Guid(selectedNode.Value));
+                    if (selectedNode != null) AccountOwner = Common.ListFromReadOnlyCollection(db.Clients).Find(x => x.Id == new Guid(selectedNode.Value));
 
                     selectedNode = xPathNavigator.SelectSingleNode("//BankAccount/Products");
                     if (selectedNode != null && selectedNode.MoveToFirstChild())
                     {
                         do
                         {
-                            AccountProducts.Add(db.bankProducts.Find(x => x.ID == new Guid(selectedNode.Value)));
+                            AccountProducts.Add(db.bankProducts.Find(x => x.Id == new Guid(selectedNode.Value)));
                         } while (selectedNode.MoveToNext());
                     }
 
@@ -1272,7 +1284,7 @@ namespace OrgDB_WPF
 
                         foreach (Guid balancId in currentOperation.AccountBalancesIds)
                         {
-                            currentOperation.AddAccountBalance(accountBalances.Find(x=>x.ID== balancId));
+                            currentOperation.AddAccountBalance(accountBalances.Find(x=>x.Id== balancId));
                         }
                     }
                 }
@@ -1552,9 +1564,9 @@ namespace OrgDB_WPF
                     foreach (ClientStatus curClientStatus in db.clientStatuses)
                     {
                         if (curClientStatus.PreviousClientStatusId != Guid.Empty)
-                            curClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.ID == curClientStatus.PreviousClientStatusId);
+                            curClientStatus.PreviousClientStatus = db.clientStatuses.Find(x => x.Id == curClientStatus.PreviousClientStatusId);
                         if (curClientStatus.NextClientStatusId != Guid.Empty)
-                            curClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.ID == curClientStatus.NextClientStatusId);
+                            curClientStatus.NextClientStatus = db.clientStatuses.Find(x => x.Id == curClientStatus.NextClientStatusId);
 
                     }
                 }
@@ -1582,7 +1594,7 @@ namespace OrgDB_WPF
                         client.SetDetails(jClient);
 
                         if (client.ClientStatusId != Guid.Empty)
-                            client.ClientStatus = db.clientStatuses.Find(x => x.ID == client.ClientStatusId);
+                            client.ClientStatus = db.clientStatuses.Find(x => x.Id == client.ClientStatusId);
 
                         db.AddClient(client);
                     }
@@ -1630,7 +1642,7 @@ namespace OrgDB_WPF
                     {
                         JObject jBankAccount = (JObject)jBankAccounts[i];
 
-                        Client accountOwner = db.clients.Find(x => x.ID == (Guid)jBankAccount.SelectToken("OwnerID"));
+                        Client accountOwner = db.clients.Find(x => x.Id == (Guid)jBankAccount.SelectToken("OwnerID"));
                         List<BankProduct> accountBankProducts = new List<BankProduct>();
                         JToken jBankProducts = jBankAccount["ProductIDs"];
                         if (jBankProducts.HasValues)
@@ -1638,7 +1650,7 @@ namespace OrgDB_WPF
                             JArray productIDS = (JArray)jBankProducts;
                             for (int j = 0; j < productIDS.Count; j++)
                             {
-                                BankProduct bankProduct = db.bankProducts.Find(x => x.ID == (Guid)productIDS[j]);
+                                BankProduct bankProduct = db.bankProducts.Find(x => x.Id == (Guid)productIDS[j]);
                                 if (bankProduct != null) accountBankProducts.Add(bankProduct);
                             }
                         }
@@ -1707,9 +1719,9 @@ namespace OrgDB_WPF
                         foreach (BankOperation curBankOperation in bankOperations)
                         {
                             foreach (Guid accountBalanceId in curBankOperation.AccountBalancesIds)
-                                curBankOperation.AddAccountBalance(db.accountBalances.Find(x => x.ID == accountBalanceId));
+                                curBankOperation.AddAccountBalance(db.accountBalances.Find(x => x.Id == accountBalanceId));
                             if (curBankOperation.IsStorno)
-                                curBankOperation.StornoOperation = bankOperations.Find(x => x.ID == curBankOperation.StornoOperationID);
+                                curBankOperation.StornoOperation = bankOperations.Find(x => x.Id == curBankOperation.StornoOperationID);
                         }
 
                     }
@@ -1718,7 +1730,7 @@ namespace OrgDB_WPF
                     for (int i = 0; i < jAccountBalances.Count; i++)
                     {
                         JObject jAccountBalance = (JObject)jAccountBalances[i];
-                        BankAccountBalance bankAccountBalance = db.accountBalances.Find(x => x.ID == (Guid)jAccountBalance.SelectToken("id"));
+                        BankAccountBalance bankAccountBalance = db.accountBalances.Find(x => x.Id == (Guid)jAccountBalance.SelectToken("id"));
                         if (bankAccountBalance == null) continue;
 
                         JArray jOperationHistory = (JArray)jAccountBalance["OperationHistory"];
@@ -1726,7 +1738,7 @@ namespace OrgDB_WPF
                         {
                             for (int j = jOperationHistory.Count - 1; j >= 0; j--)
                             {
-                                BankOperation bankOperation = bankOperations.Find(x => x.ID == (Guid)jOperationHistory[j].SelectToken("id"));
+                                BankOperation bankOperation = bankOperations.Find(x => x.Id == (Guid)jOperationHistory[j].SelectToken("id"));
                                 double bankOperationResult = (double)jOperationHistory[j].SelectToken("Result");
                                 bankAccountBalance.AddBankOperation(bankOperation, bankOperationResult);
                             }

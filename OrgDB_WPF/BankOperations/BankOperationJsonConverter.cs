@@ -23,7 +23,7 @@ namespace OrgDB_WPF
             writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
 
             // запишем общие для всех операций свойства
-            writer.WritePropertyName("id"); writer.WriteValue(value.ID);
+            writer.WritePropertyName("id"); writer.WriteValue(value.Id);
             writer.WritePropertyName("Ticks"); writer.WriteValue(value.Ticks);
             writer.WritePropertyName("IsStorno"); writer.WriteValue(value.IsStorno);
             if (value.IsStorno)

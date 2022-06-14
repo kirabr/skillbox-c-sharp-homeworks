@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using OrgDB_WPF.Products;
 
 namespace OrgDB_WPF
 {
@@ -129,7 +129,7 @@ namespace OrgDB_WPF
             individualBeginer.CreditDiscountPercent = 0;
             individualBeginer.DepositAdditionalPercent = 0;
             db.AddClientStatus(individualBeginer);
-            testObjects.Add("ClientStatuses.individualBeginer", individualBeginer.ID);
+            testObjects.Add("ClientStatuses.individualBeginer", individualBeginer.Id);
 
             Clients.ClientStatus individualRegular = new Clients.IndividualStatus("Постоянный");
             individualRegular.PreviousClientStatus = individualBeginer;
@@ -137,7 +137,7 @@ namespace OrgDB_WPF
             individualRegular.CreditDiscountPercent = 3;
             individualRegular.DepositAdditionalPercent = 3;
             db.AddClientStatus(individualRegular);
-            testObjects.Add("ClientStatuses.individualRegular", individualRegular.ID);
+            testObjects.Add("ClientStatuses.individualRegular", individualRegular.Id);
 
             Clients.ClientStatus individualMaster = new Clients.IndividualStatus("Опытный");
             individualMaster.PreviousClientStatus = individualRegular;
@@ -145,13 +145,13 @@ namespace OrgDB_WPF
             individualMaster.CreditDiscountPercent = 5;
             individualMaster.DepositAdditionalPercent = 5;
             db.AddClientStatus(individualMaster);
-            testObjects.Add("ClientStatuses.individualMaster", individualMaster.ID);
+            testObjects.Add("ClientStatuses.individualMaster", individualMaster.Id);
 
             Clients.LegalEntityStatus legalEntityBeginer = new Clients.LegalEntityStatus("Начинающий партнёр");
             legalEntityBeginer.CreditDiscountPercent = 2;
             legalEntityBeginer.DepositAdditionalPercent = 2;
             db.AddClientStatus(legalEntityBeginer);
-            testObjects.Add("ClientStatuses.legalEntityBeginer", legalEntityBeginer.ID);
+            testObjects.Add("ClientStatuses.legalEntityBeginer", legalEntityBeginer.Id);
 
             Clients.LegalEntityStatus legalEntityRegular = new Clients.LegalEntityStatus("Постоянный партнёр");
             legalEntityRegular.PreviousClientStatus=legalEntityBeginer;
@@ -159,7 +159,7 @@ namespace OrgDB_WPF
             legalEntityRegular.CreditDiscountPercent = 4;
             legalEntityRegular.DepositAdditionalPercent = 4;
             db.AddClientStatus(legalEntityRegular);
-            testObjects.Add("ClientStatuses.legalEntityRegular", legalEntityRegular.ID);
+            testObjects.Add("ClientStatuses.legalEntityRegular", legalEntityRegular.Id);
 
             Clients.LegalEntityStatus legalEntityMaster = new Clients.LegalEntityStatus("Опытный партнёр");
             legalEntityMaster.PreviousClientStatus = legalEntityRegular;
@@ -167,7 +167,7 @@ namespace OrgDB_WPF
             legalEntityMaster.CreditDiscountPercent = 6;
             legalEntityMaster.DepositAdditionalPercent = 6;
             db.AddClientStatus(legalEntityMaster);
-            testObjects.Add("ClientStatuses.legalEntityMaster", legalEntityMaster.ID);
+            testObjects.Add("ClientStatuses.legalEntityMaster", legalEntityMaster.Id);
         
         }
 
@@ -176,20 +176,20 @@ namespace OrgDB_WPF
         /// </summary>
         public void AddBankProducts()
         {
-            Products.Deposit deposit = new Products.Deposit("Мастер годового дохода", 5, 10);
-            Products.Deposit capDeposit = new Products.Deposit("Повышенный доход", 5, 10, true);
-            Products.Credit credit = new Products.Credit("Не отказывай себе", 10, 15);
-            Products.BankAccountService bankAccountService = new Products.BankAccountService("Обслуживание счета", 0, 15);
+            Deposit deposit = new Deposit("Мастер годового дохода", 5, 10);
+            Deposit capDeposit = new Deposit("Повышенный доход", 5, 10, true);
+            Credit credit = new Credit("Не отказывай себе", 10, 15);
+            BankAccountService bankAccountService = new BankAccountService("Обслуживание счета", 0, 15);
 
             db.AddBankProduct(deposit);
             db.AddBankProduct(capDeposit);
             db.AddBankProduct(credit);
             db.AddBankProduct(bankAccountService);
 
-            testObjects.Add("Products.deposit", deposit.ID);
-            testObjects.Add("Products.capDeposit", capDeposit.ID);
-            testObjects.Add("Products.credit", credit.ID);
-            testObjects.Add("Products.bankAccountService", bankAccountService.ID);
+            testObjects.Add("Products.deposit", deposit.Id);
+            testObjects.Add("Products.capDeposit", capDeposit.Id);
+            testObjects.Add("Products.credit", credit.Id);
+            testObjects.Add("Products.bankAccountService", bankAccountService.Id);
 
         }
 
@@ -220,7 +220,7 @@ namespace OrgDB_WPF
                         individual.Patronymic = partsOfName[2];
                         individual.IsVIP = isVip;
                         db.AddClient(individual);
-                        testObjects.Add($"Clients.Individuals.{clientStatus.Name}.{isVip}", individual.ID);
+                        testObjects.Add($"Clients.Individuals.{clientStatus.Name}.{isVip}", individual.Id);
 
                     }
                 }
@@ -239,7 +239,7 @@ namespace OrgDB_WPF
                         legalEntity.INN = INNKPP[0];
                         legalEntity.KPP = INNKPP[1];
                         db.AddClient(legalEntity);
-                        testObjects.Add($"Clients.LegalEntityies.{clientStatus.Name}.{isResident}", legalEntity.ID);
+                        testObjects.Add($"Clients.LegalEntityies.{clientStatus.Name}.{isResident}", legalEntity.Id);
                     }
 
                     
@@ -250,7 +250,8 @@ namespace OrgDB_WPF
         public void AddBankAccounts()
         {
             
-            
+            //List<BankProduct> bankProducts = new List<BankProduct>();
+            //bankProducts.Add(db.BankProducts. testObjects[""]);
 
         }
 

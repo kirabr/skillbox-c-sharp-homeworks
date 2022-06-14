@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace OrgDB_WPF.Products
 {
-    public abstract class BankProduct : IXmlServices, IJsonServices
+    public abstract class BankProduct : IXmlServices, IJsonServices, IIdentifyedObject
     {
         #region Поля
 
@@ -35,7 +35,7 @@ namespace OrgDB_WPF.Products
         #region Свойства
 
         // Идентификатор
-        public Guid ID { get { return id; } }
+        public Guid Id { get { return id; } }
 
         // Наименование продукта
         public string Name { get { return name; } set { name = value; } }
@@ -103,7 +103,7 @@ namespace OrgDB_WPF.Products
 
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
-            writer.WriteAttributeString("id", ID.ToString());
+            writer.WriteAttributeString("id", Id.ToString());
             writer.WriteElementString("Name", Name);
             writer.WriteElementString("Description", Description);
             writer.WriteStartElement("BasicPercentPerYear"); writer.WriteValue(BasicPercentPerYear); writer.WriteEndElement();

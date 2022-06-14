@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace OrgDB_WPF
 {
-    public class Department : INotifyPropertyChanged, IXmlServices
+    public class Department : INotifyPropertyChanged, IXmlServices, IIdentifyedObject
     {
 
         #region Поля
@@ -29,6 +29,9 @@ namespace OrgDB_WPF
         #endregion Поля
 
         #region Свойства
+
+        // Id
+        public Guid Id { get { return id; } }
 
         // Наименование
         public string Name { get { return name; } set { name = value; OnPropertyChanged("Name"); } }

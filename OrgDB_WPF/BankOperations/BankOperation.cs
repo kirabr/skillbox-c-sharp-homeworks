@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 namespace OrgDB_WPF
 {
     // Банковская операция
-    public abstract class BankOperation : IXmlServices, IJsonServices
+    public abstract class BankOperation : IXmlServices, IJsonServices, IIdentifyedObject
     {
 
         #region Поля
@@ -43,7 +43,7 @@ namespace OrgDB_WPF
         #region Свойства
 
         // Идентификатор
-        public Guid ID { get { return id; } }
+        public Guid Id { get { return id; } }
 
         // Отметка времени
         public long Ticks { get { return ticks; } }
@@ -58,7 +58,7 @@ namespace OrgDB_WPF
             {
                 // при первом обращении к свойству заполняем его
                 if (accountBalancesIds.Count == 0)
-                    foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) accountBalancesIds.Add(bankAccountBalance.ID);
+                    foreach (BankAccounts.BankAccountBalance bankAccountBalance in accountBalances) accountBalancesIds.Add(bankAccountBalance.Id);
 
                 return accountBalancesIds.AsReadOnly();
 
@@ -121,7 +121,7 @@ namespace OrgDB_WPF
             id = Guid.NewGuid();
             isStorno = true;
             stornoOperation = operationStorno;
-            stornoOperationId = operationStorno.ID;
+            stornoOperationId = operationStorno.Id;
             ticks = operationDateTime.Ticks;
             accountBalances = operationStorno.accountBalances;
         }
@@ -266,15 +266,15 @@ namespace OrgDB_WPF
         /// <param name="writer"></param>
         public void WriteXmlBasicProperties(XmlWriter writer)
         {
-            writer.WriteAttributeString("id", ID.ToString());
+            writer.WriteAttributeString("id", Id.ToString());
             Common.WriteXMLElement(writer, "Ticks", ticks);
             writer.WriteStartElement("AccountBalancesIds");
             foreach (BankAccounts.BankAccountBalance bankAccountBalance in AccountBalances)
-                writer.WriteElementString("AccountBalanceId", bankAccountBalance.ID.ToString());
+                writer.WriteElementString("AccountBalanceId", bankAccountBalance.Id.ToString());
             writer.WriteEndElement();
             Common.WriteXMLElement(writer, "IsStorno", IsStorno);
             if (IsStorno)
-                writer.WriteElementString("StornoOperationID", StornoOperation.ID.ToString());
+                writer.WriteElementString("StornoOperationID", StornoOperation.Id.ToString());
 
         }
 

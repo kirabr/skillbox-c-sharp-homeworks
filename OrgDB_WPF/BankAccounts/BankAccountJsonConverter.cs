@@ -19,12 +19,12 @@ namespace OrgDB_WPF.BankAccounts
             writer.WriteStartObject();
 
             writer.WritePropertyName("Number"); writer.WriteValue(value.Number);
-            writer.WritePropertyName("OwnerID"); writer.WriteValue(value.Owner.ID);
+            writer.WritePropertyName("OwnerID"); writer.WriteValue(value.Owner.Id);
             writer.WritePropertyName("ProductIDs");
             writer.WriteStartArray();
             foreach (Products.BankProduct bankProduct in value.Products)
             {
-                writer.WriteValue(bankProduct.ID);
+                writer.WriteValue(bankProduct.Id);
             }
             writer.WriteEndArray();
 

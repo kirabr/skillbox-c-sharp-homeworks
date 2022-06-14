@@ -18,7 +18,7 @@ namespace OrgDB_WPF.BankAccounts
         {
             writer.WriteStartObject();
 
-            writer.WritePropertyName("id"); writer.WriteValue(value.ID);
+            writer.WritePropertyName("id"); writer.WriteValue(value.Id);
             writer.WritePropertyName("BankAccountNumber"); writer.WriteValue(value.BankAccount.Number);
             writer.WritePropertyName("Balance"); writer.WriteValue(value.Balance);
             writer.WritePropertyName("OverdraftPossible"); writer.WriteValue(value.OverdraftPossible);
@@ -32,7 +32,7 @@ namespace OrgDB_WPF.BankAccounts
 
                 writer.WriteStartObject();
 
-                writer.WritePropertyName("id"); writer.WriteValue(keyValuePair.Key.ID);
+                writer.WritePropertyName("id"); writer.WriteValue(keyValuePair.Key.Id);
                 writer.WritePropertyName("Result"); writer.WriteValue(keyValuePair.Value);
 
                 writer.WriteEndObject();

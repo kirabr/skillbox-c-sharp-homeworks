@@ -19,7 +19,7 @@ namespace OrgDB_WPF.Clients
             writer.WriteStartObject();
 
             writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
-            writer.WritePropertyName("id"); writer.WriteValue(value.ID);
+            writer.WritePropertyName("id"); writer.WriteValue(value.Id);
             writer.WritePropertyName("Name"); writer.WriteValue(value.Name);
             writer.WritePropertyName("ClientManagerId"); writer.WriteValue(value.ClientManagerId);
             writer.WritePropertyName("IsResident"); writer.WriteValue(value.IsResident);

@@ -20,7 +20,7 @@ namespace OrgDB_WPF.Products
             writer.WriteStartObject();
 
             writer.WritePropertyName("FullTypeName"); writer.WriteValue(value.GetType().FullName);
-            writer.WritePropertyName("id"); writer.WriteValue(value.ID);
+            writer.WritePropertyName("id"); writer.WriteValue(value.Id);
             writer.WritePropertyName("Name"); writer.WriteValue(value.Name);
             writer.WritePropertyName("Description"); writer.WriteValue(value.Description);
             writer.WritePropertyName("BasicPercentPerYear"); writer.WriteValue(value.BasicPercentPerYear);
