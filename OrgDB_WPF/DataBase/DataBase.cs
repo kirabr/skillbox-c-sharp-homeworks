@@ -162,13 +162,20 @@ namespace OrgDB_WPF
 
         #region Общие методы данных базы
 
-        public void FindCollectionElementById<T>(ReadOnlyCollection<T> values, Guid ID, out T element)
+        /// <summary>
+        /// Возвращает идентифицируемый элемент базы по его идентификатору
+        /// </summary>
+        /// <typeparam name="T">Тип, реализующий интерфейс IIdentifyedObject</typeparam>
+        /// <param name="values">Коллекция данных типа T</param>
+        /// <param name="ID">идентификатор</param>
+        /// <returns>Элемент коллекции с указанным идентификатором</returns>
+        public T FindCollectionElementById<T>(ReadOnlyCollection<T> values, Guid ID)
             where T : IIdentifyedObject
         {
             List<T> list = new List<T>();
             foreach (T value in values)
                 list.Add(value);
-            element = list.Find((T t) => (t.Id == ID));
+            return list.Find((T t) => (t.Id == ID));
 
         }
 
