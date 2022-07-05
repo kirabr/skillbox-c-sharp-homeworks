@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using OrgDB_WPF.Products;
+using OrgDB_WPF.Clients;
+using OrgDB_WPF.BankAccounts;
 
 namespace OrgDB_WPF
 {
     internal class Tests
     {
-
+        
         #region Поля
 
         DataBase db;
         Random random = new Random();
         Dictionary<string, Guid> testObjects = new Dictionary<string, Guid>();
+        Dictionary<string, BankAccount> testBankAccounts = new Dictionary<string, BankAccount>();
 
         #endregion Поля
 
@@ -125,13 +128,13 @@ namespace OrgDB_WPF
         /// </summary>
         public void AddClientStatuses()
         {
-            Clients.ClientStatus individualBeginer = new Clients.IndividualStatus("Начинающий");
+            ClientStatus individualBeginer = new IndividualStatus("Начинающий");
             individualBeginer.CreditDiscountPercent = 0;
             individualBeginer.DepositAdditionalPercent = 0;
             db.AddClientStatus(individualBeginer);
             testObjects.Add("ClientStatuses.individualBeginer", individualBeginer.Id);
 
-            Clients.ClientStatus individualRegular = new Clients.IndividualStatus("Постоянный");
+            ClientStatus individualRegular = new IndividualStatus("Постоянный");
             individualRegular.PreviousClientStatus = individualBeginer;
             individualBeginer.NextClientStatus = individualRegular;
             individualRegular.CreditDiscountPercent = 3;
@@ -139,7 +142,7 @@ namespace OrgDB_WPF
             db.AddClientStatus(individualRegular);
             testObjects.Add("ClientStatuses.individualRegular", individualRegular.Id);
 
-            Clients.ClientStatus individualMaster = new Clients.IndividualStatus("Опытный");
+            ClientStatus individualMaster = new IndividualStatus("Опытный");
             individualMaster.PreviousClientStatus = individualRegular;
             individualRegular.NextClientStatus = individualMaster;
             individualMaster.CreditDiscountPercent = 5;
@@ -147,13 +150,13 @@ namespace OrgDB_WPF
             db.AddClientStatus(individualMaster);
             testObjects.Add("ClientStatuses.individualMaster", individualMaster.Id);
 
-            Clients.LegalEntityStatus legalEntityBeginer = new Clients.LegalEntityStatus("Начинающий партнёр");
+            LegalEntityStatus legalEntityBeginer = new LegalEntityStatus("Начинающий партнёр");
             legalEntityBeginer.CreditDiscountPercent = 2;
             legalEntityBeginer.DepositAdditionalPercent = 2;
             db.AddClientStatus(legalEntityBeginer);
             testObjects.Add("ClientStatuses.legalEntityBeginer", legalEntityBeginer.Id);
 
-            Clients.LegalEntityStatus legalEntityRegular = new Clients.LegalEntityStatus("Постоянный партнёр");
+            LegalEntityStatus legalEntityRegular = new LegalEntityStatus("Постоянный партнёр");
             legalEntityRegular.PreviousClientStatus=legalEntityBeginer;
             legalEntityBeginer.NextClientStatus = legalEntityRegular;
             legalEntityRegular.CreditDiscountPercent = 4;
@@ -161,7 +164,7 @@ namespace OrgDB_WPF
             db.AddClientStatus(legalEntityRegular);
             testObjects.Add("ClientStatuses.legalEntityRegular", legalEntityRegular.Id);
 
-            Clients.LegalEntityStatus legalEntityMaster = new Clients.LegalEntityStatus("Опытный партнёр");
+            LegalEntityStatus legalEntityMaster = new LegalEntityStatus("Опытный партнёр");
             legalEntityMaster.PreviousClientStatus = legalEntityRegular;
             legalEntityRegular.NextClientStatus = legalEntityMaster;
             legalEntityMaster.CreditDiscountPercent = 6;
@@ -241,18 +244,70 @@ namespace OrgDB_WPF
                         db.AddClient(legalEntity);
                         testObjects.Add($"Clients.LegalEntityies.{clientStatus.Name}.{isResident}", legalEntity.Id);
                     }
-
-                    
                 }
             }    
         }
 
         public void AddBankAccounts()
         {
-            
-            //List<BankProduct> bankProducts = new List<BankProduct>();
-            //bankProducts.Add(db.BankProducts. testObjects[""]);
+            List<BankProduct> depositKit = new List<BankProduct>();
+            depositKit.Add(TestBankProduct("Products.deposit"));
+            depositKit.Add(TestBankProduct("Products.bankAccountService"));
 
+            List<BankProduct> creditKit = new List<BankProduct>();
+            creditKit.Add(TestBankProduct("Products.credit"));
+            creditKit.Add(TestBankProduct("Products.bankAccountService"));
+
+            List<BankProduct> capDepositKit = new List<BankProduct>();
+            capDepositKit.Add(TestBankProduct("Products.capDeposit"));
+            capDepositKit.Add(TestBankProduct("Products.bankAccountService"));            
+
+            BankAccount bankAccount = 
+                new BankAccount("0001", 
+                    TestClient("Clients.Individuals.Начинающий.False"), 
+                    depositKit);
+            db.AddBankAccount(bankAccount);
+            testBankAccounts.Add("BankAccounts.IndividualBeginerFalseDeposit", bankAccount);
+            
+            bankAccount =
+                new BankAccount("0002",
+                    TestClient("Clients.Individuals.Постоянный.False"),
+                    creditKit);
+            db.AddBankAccount(bankAccount);
+            testBankAccounts.Add("BankAccounts.IndividualRegularFalseDeposit", bankAccount);
+
+            bankAccount =
+                new BankAccount("0003",
+                    TestClient("Clients.Individuals.Опытный.False"),
+                    capDepositKit);
+            db.AddBankAccount(bankAccount);
+            testBankAccounts.Add("BankAccounts.IndividualMasterFalseDeposit", bankAccount);
+
+        }
+        
+        private Department TestDepartment(string key)
+        {
+            return db.FindCollectionElementById(db.Departments, testObjects[key]);
+        }
+
+        private Employee TestEmployee(string key)
+        {
+            return db.FindCollectionElementById(db.Employees, testObjects[key]);
+        }
+
+        private ClientStatus TestClientStatus(string key)
+        {
+            return db.FindCollectionElementById(db.ClientStatuses, testObjects[key]);
+        }
+
+        private BankProduct TestBankProduct(string key)
+        {
+            return db.FindCollectionElementById(db.BankProducts, testObjects[key]);
+        }
+
+        private Client TestClient(string key)
+        {
+            return db.FindCollectionElementById(db.Clients, testObjects[key]);
         }
 
         #endregion Тестовые данные
@@ -411,6 +466,64 @@ namespace OrgDB_WPF
         }
 
         
+
+
+
+        //class TestObject<T> 
+        //    where T : IIdentifyedObject
+        //{
+
+        //    private DataBase db;
+        //    private Dictionary<string, Guid> testObjects;
+
+        //    private Department department;
+        //    private Employee employee;
+
+        //    private T res;
+
+        //    public DataBase DB { set { db = value; } }
+        //    public Dictionary<string, Guid> TestObjects { set { testObjects = value; } }
+
+        //    public void DefineTestObject(string ObjectPath)
+        //    {
+
+        //        string head = ObjectPath.Split('.')[0];
+
+        //        switch (head.ToUpper())
+        //        {
+
+        //            case "DEPARTMENTS":
+        //                db.FindCollectionElementById(db.Departments,
+        //                    testObjects[ObjectPath], out department);
+        //                break;
+
+        //            case "EMPLOYEES":
+        //                db.FindCollectionElementById(db.Employees,
+        //                    testObjects[ObjectPath], out employee);
+        //                break;
+
+        //        }
+
+        //    }
+        //}
+
+        //private object TestObject(string TestPath)
+        //{
+        //    Department department;
+        //    db.FindCollectionElementById(db.Departments,
+        //        testObjects[TestPath], out department);
+
+        //    return department;
+        //}
+
+        //private Employee TestObject(string TestPath)
+        //{
+        //    Employee employee;
+        //    db.FindCollectionElementById(db.Employees,
+        //        testObjects[TestPath], out employee);
+
+        //    return employee;
+        //}
 
         #endregion Служебные методы
 

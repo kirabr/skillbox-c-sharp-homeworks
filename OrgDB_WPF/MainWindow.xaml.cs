@@ -757,6 +757,7 @@ namespace OrgDB_WPF
             tests.AddClientStatuses();
             tests.AddBankProducts();
             tests.AddClients();
+            tests.AddBankAccounts();
 
             //// проверка иерархии департаментов
 
