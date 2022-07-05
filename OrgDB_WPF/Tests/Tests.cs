@@ -96,6 +96,8 @@ namespace OrgDB_WPF
 
                     NameSurname = GenerateHumanFullName().Split(' ');
 
+                    NameSurname = GenerateHumanFullName().Split(' ');
+
                     Specialist specialist = new Specialist(
                         NameSurname[1],
                         NameSurname[0],
@@ -104,6 +106,8 @@ namespace OrgDB_WPF
                         DepLevel.Department.id);
                     db.AddEmployee(specialist);
                     testObjects.Add($"Employees.SpecialistOf.{DepLevel.Department.Name}", intern.Id);
+
+                    NameSurname = GenerateHumanFullName().Split(' ');
 
                     NameSurname = GenerateHumanFullName().Split(' ');
 
@@ -309,7 +313,7 @@ namespace OrgDB_WPF
         {
             return db.FindCollectionElementById(db.Clients, testObjects[key]);
         }
-
+        
         #endregion Тестовые данные
 
         #region Служебные методы, классы
