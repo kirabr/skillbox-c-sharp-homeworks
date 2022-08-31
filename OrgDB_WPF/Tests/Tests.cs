@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using OrgDB_WPF.Products;
 using OrgDB_WPF.Clients;
 using OrgDB_WPF.BankAccounts;
+using System.Net.NetworkInformation;
 
 namespace OrgDB_WPF
 {
@@ -252,63 +253,150 @@ namespace OrgDB_WPF
             }    
         }
 
+        /// <summary>
+        /// Добавляет банковские счета в базу
+        /// </summary>
         public void AddBankAccounts()
         {
+            
+            //List<List<BankProduct>> productKits = new List<List<BankProduct>>();
+            Dictionary<string, List<BankProduct>> productKits = new Dictionary<string, List<BankProduct>>();
+            
             List<BankProduct> depositKit = new List<BankProduct>();
             depositKit.Add(TestBankProduct("Products.deposit"));
             depositKit.Add(TestBankProduct("Products.bankAccountService"));
+            productKits.Add("depositKit", depositKit);
 
             List<BankProduct> creditKit = new List<BankProduct>();
             creditKit.Add(TestBankProduct("Products.credit"));
             creditKit.Add(TestBankProduct("Products.bankAccountService"));
+            productKits.Add("creditKit", creditKit);
 
             List<BankProduct> capDepositKit = new List<BankProduct>();
             capDepositKit.Add(TestBankProduct("Products.capDeposit"));
-            capDepositKit.Add(TestBankProduct("Products.bankAccountService"));            
+            capDepositKit.Add(TestBankProduct("Products.bankAccountService"));
+            productKits.Add("capDepositKit", capDepositKit);
 
-            BankAccount bankAccount = 
-                new BankAccount("0001", 
-                    TestClient("Clients.Individuals.Начинающий.False"), 
-                    depositKit);
-            db.AddBankAccount(bankAccount);
-            testBankAccounts.Add("BankAccounts.IndividualBeginerFalseDeposit", bankAccount);
-            
-            bankAccount =
-                new BankAccount("0002",
-                    TestClient("Clients.Individuals.Постоянный.False"),
-                    creditKit);
-            db.AddBankAccount(bankAccount);
-            testBankAccounts.Add("BankAccounts.IndividualRegularFalseDeposit", bankAccount);
+            int accNumber = 0;
 
-            bankAccount =
-                new BankAccount("0003",
-                    TestClient("Clients.Individuals.Опытный.False"),
-                    capDepositKit);
+            foreach (KeyValuePair<string, List<BankProduct>> productKit in productKits)
+            {
+                
+                bool[] bools = new bool[] { false, true };
+
+                foreach (Clients.ClientStatus clientStatus in db.ClientStatuses)
+                {
+                    if (clientStatus is Clients.IndividualStatus)
+                    {
+
+                        foreach (bool isVip in bools)
+                        {
+
+                            string clientKey = $"Clients.Individuals.{clientStatus.Name}.{isVip}";
+                            string accountKey = clientKey + $".{productKit.Key}";
+
+                            CreateAddTestBankAccount(ref accNumber, productKit.Value, accountKey, clientKey);
+
+                        } 
+                    }
+                    else
+                    {
+
+                        foreach (bool isResident in bools)
+                        {
+                            string clientKey = $"Clients.LegalEntityies.{clientStatus.Name}.{isResident}";
+                            string accountKey = clientKey + $".{productKit.Key}";
+
+                            CreateAddTestBankAccount(ref accNumber, productKit.Value, accountKey, clientKey);
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Создаёт и добавляет в базу тестовый банковский счёт
+        /// </summary>
+        /// <param name="previousAccNumber">
+        /// Число, номер предыдущего счёта. Новый счёт создаётся со следующим по порядку номером
+        /// </param>
+        /// <param name="productKit">
+        /// Набор банковских продуктов к счёту</param>
+        /// <param name="accountKey">
+        /// Строка, ключ счёта в тестовых счетах
+        /// </param>
+        /// <param name="clientKey">
+        /// Строка, ключ клиента в тестовых клиентах
+        /// </param>
+        private void CreateAddTestBankAccount(ref int previousAccNumber, List<BankProduct> productKit, string accountKey, string clientKey)
+        {
+            previousAccNumber++;
+
+            string accTextNumber = String.Format("{0:D6}", previousAccNumber);
+
+            BankAccount bankAccount = new BankAccount(accTextNumber, TestClient(clientKey), productKit);
             db.AddBankAccount(bankAccount);
-            testBankAccounts.Add("BankAccounts.IndividualMasterFalseDeposit", bankAccount);
+            testBankAccounts.Add(accountKey, bankAccount);
 
         }
         
+        /// <summary>
+        /// Возвращает тестовый департамент
+        /// </summary>
+        /// <param name="key">
+        /// Строка, ключ в коллекции тестовых объектов
+        /// </param>
+        /// <returns></returns>
         private Department TestDepartment(string key)
         {
             return db.FindCollectionElementById(db.Departments, testObjects[key]);
         }
 
+        /// <summary>
+        /// Возвращает тестового сотрудника
+        /// </summary>
+        /// <param name="key">
+        /// Строка, ключ в коллекции тестовых объектов
+        /// </param>
+        /// <returns></returns>
         private Employee TestEmployee(string key)
         {
             return db.FindCollectionElementById(db.Employees, testObjects[key]);
         }
 
+        /// <summary>
+        /// Возвращает тестовый статус клиента
+        /// </summary>
+        /// <param name="key">
+        /// Строка, ключ в коллекции тестовых объектов
+        /// </param>
+        /// <returns></returns>
         private ClientStatus TestClientStatus(string key)
         {
             return db.FindCollectionElementById(db.ClientStatuses, testObjects[key]);
         }
 
+        /// <summary>
+        /// Возвращает тестовый банковский продукт
+        /// </summary>
+        /// <param name="key">
+        /// Строка, ключ в коллекции тестовых объектов
+        /// </param>
+        /// <returns></returns>
         private BankProduct TestBankProduct(string key)
         {
             return db.FindCollectionElementById(db.BankProducts, testObjects[key]);
         }
 
+        /// <summary>
+        /// Возвращает тестового клиента
+        /// </summary>
+        /// <param name="key">
+        /// Строка, ключ в коллекции тестовых объектов
+        /// </param>
+        /// <returns></returns>
         private Client TestClient(string key)
         {
             return db.FindCollectionElementById(db.Clients, testObjects[key]);
@@ -468,66 +556,6 @@ namespace OrgDB_WPF
             return controlValue;
 
         }
-
-        
-
-
-
-        //class TestObject<T> 
-        //    where T : IIdentifyedObject
-        //{
-
-        //    private DataBase db;
-        //    private Dictionary<string, Guid> testObjects;
-
-        //    private Department department;
-        //    private Employee employee;
-
-        //    private T res;
-
-        //    public DataBase DB { set { db = value; } }
-        //    public Dictionary<string, Guid> TestObjects { set { testObjects = value; } }
-
-        //    public void DefineTestObject(string ObjectPath)
-        //    {
-
-        //        string head = ObjectPath.Split('.')[0];
-
-        //        switch (head.ToUpper())
-        //        {
-
-        //            case "DEPARTMENTS":
-        //                db.FindCollectionElementById(db.Departments,
-        //                    testObjects[ObjectPath], out department);
-        //                break;
-
-        //            case "EMPLOYEES":
-        //                db.FindCollectionElementById(db.Employees,
-        //                    testObjects[ObjectPath], out employee);
-        //                break;
-
-        //        }
-
-        //    }
-        //}
-
-        //private object TestObject(string TestPath)
-        //{
-        //    Department department;
-        //    db.FindCollectionElementById(db.Departments,
-        //        testObjects[TestPath], out department);
-
-        //    return department;
-        //}
-
-        //private Employee TestObject(string TestPath)
-        //{
-        //    Employee employee;
-        //    db.FindCollectionElementById(db.Employees,
-        //        testObjects[TestPath], out employee);
-
-        //    return employee;
-        //}
 
         #endregion Служебные методы
 
